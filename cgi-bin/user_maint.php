@@ -122,7 +122,6 @@ if (strlen($ldap_filter)>0) {
 
 }
 
-require('inc_menu.php');
 ?>
 
 <table border="0" width="100%">
