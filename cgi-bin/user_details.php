@@ -31,8 +31,6 @@ $r  = ldap_bind($ds,
                 $_SESSION['whm_directory_user_dn'],
                 $_SESSION['whm_credential']);
 
-$h1 = '<h1><font face="Arial, Helvetica, sans-serif">';
-$h1_end = "</font></h1>\n";
 $label_font = '<font face="Arial, Helvetica, sans-serif">';
 $data_font = '<font face="Times New Roman, Times, serif">';
 
@@ -60,6 +58,7 @@ if (strlen($dn) == 0 && strlen($in_uid)>0) {
     echo "</html>\n";
     exit;
 }
+
 $_SESSION['s_dn']  = $dn;
 $_SESSION['s_uid'] = $in_uid;
 
@@ -81,7 +80,7 @@ if ($entry = ldap_first_entry ($ds, $sr)) {
     
     $in_uid = $this['uid'];
     echo "<p>\n";
-    echo "$h1&nbsp;" . $this['cn'] . $h1;
+    echo '<h1 class="person">' . $this['cn'] . '</h1>';
     echo "\n";
     echo "<blockquote>\n";
     echo "<table border=\"0\">\n";
@@ -123,12 +122,12 @@ if ($entry = ldap_first_entry ($ds, $sr)) {
         }
         ksort($url_index);
         echo "<br>\n";
-        echo "$label_font Links</font>\n";
+        echo "<h1>Links</h1>\n";
         echo "<br>\n";
         echo "<table border=\"1\" cellpadding=\"2\">\n";
         echo "<tr>\n";
-        echo " <th>$label_font Description</font></th>\n";
-        echo " <th>$label_font URL</font></th>\n";
+        echo " <th>Description</th>\n";
+        echo " <th>URL</th>\n";
         echo "</tr>\n";
         foreach ($url_index as $desc => $i) {
             echo "<tr>\n";

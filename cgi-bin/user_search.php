@@ -102,8 +102,6 @@ if (strlen($base_filter)==0) {
 
 ?>
 
-<div id="main">
-
 To search for an somone just enter some or all of the data requested
 below.  If there is more than one match you will be presented with a 
 list to select from.  If your selection is too broad you will be presented 
@@ -351,9 +349,6 @@ if ($menuLoggedIn>0) {
 ?>
 <p>
 
-</div>
-
-<!-- end of main -->
 </div>
 
 <?php require('inc_footer.php');?>

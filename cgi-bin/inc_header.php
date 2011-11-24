@@ -32,3 +32,5 @@ header("Content-Type: text/html; charset=UTF-8");
  <div id="header">
  <h1>MacAllister Directory</h1>
  </div>
+
+ <div id="main">

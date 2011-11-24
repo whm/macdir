@@ -45,6 +45,17 @@ body {
     width:85%;
 }
 
+#main h1 {
+    font-family: Arial, sans-serif;
+    font-size: Huge;
+    text-align: Left;
+    color: #660000;
+}
+
+#main th td {
+    font-family: Arial, sans-serif;
+}
+
 #main p {
     margin: 2em;
 }
