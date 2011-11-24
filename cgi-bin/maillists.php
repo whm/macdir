@@ -71,7 +71,7 @@ if ($ret_cnt) {
     if (ldap_maillist_authorization($info[$i]['manageruid']) > 0) {
       $ml_maint[$mbx] = '<a href="maillist_maint.php'
                       . '?in_localmailbox=' . $mbx
-                      . '"><img src="images/icon-edit.png" border="0"></a>';
+                      . '"><img src="/macdir-images/icon-edit.png" border="0"></a>';
     }
 
 
@@ -107,7 +107,7 @@ if ($ret_cnt) {
 <tr>
    <td><?php echo $thisMaint;?>
        <a href="maillist_details?in_localmailbox=<?php echo $thisList;?>"><img
-              src="images/icon-view-details.png" border="0"></a>
+              src="/macdir-images/icon-view-details.png" border="0"></a>
        <?php echo $thisID;?></a></td>
    <td><?php echo $thisDescription;?> &nbsp;</td>
    <td><?php echo $thisAlias;?> &nbsp;</td>

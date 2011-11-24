@@ -306,16 +306,16 @@ if (strlen($base_filter)>0) {
       if ($ldap_admin>0) {
         $a_maint_link = '<a href="user_maint.php'
                       . '?in_uid=' . $a_uid
-                      . '"><img src="images/icon-edit.png" border="0"></a>';
+                      . '"><img src="/macdir-images/icon-edit.png" border="0"></a>';
       } elseif ($phone_admin>0) {
         $a_maint_link = '<a href="phone_maintenance.php'
                       . '?in_uid=' . $a_uid
-                      . '"><img src="images/icon-edit.png" border="0"></a>';
+                      . '"><img src="/macdir-images/icon-edit.png" border="0"></a>';
       }
       $detail_link = '';
       if ($menuLoggedIn>0) {
         $detail_link = "<a href=\"user_details.php?dn=$a_dn_url\">"
-             . '<img src="images/icon-view-details.png" border="0"</a>';
+             . '<img src="/macdir-images/icon-view-details.png" border="0"</a>';
       }
       echo "<tr>\n";
       echo " <td>$a_maint_link$detail_link&nbsp;$a_cn</td>\n";

@@ -130,7 +130,7 @@ if ($info_cnt>0) {
            . 'target="_blank">';
       echo " <tr>\n";
       echo "  <td align=\"center\">$cm_href<img ";
-      echo "src=\"images/icon-edit.png\" border=\"0\"></a></td>\n";
+      echo "src=\"/macdir-images/icon-edit.png\" border=\"0\"></a></td>\n";
       echo "  <td>$uid</td>\n";
       echo "  <td>\n";
       $br = ''; $t = '    ';

@@ -101,7 +101,7 @@ if ($ret_cnt) {
     if ($user_type > 1) {
       $app_define[$app] = '<a href="app_define.php'
                       . '?in_cn=' . $app
-                      . '"><img src="images/icon-edit.png" border="0"></a>';
+                      . '"><img src="/macdir-images/icon-edit.png" border="0"></a>';
     } elseif ($user_type == 1) {
       $access_maint[$app] = 'yes';
       $managed_cnt++;

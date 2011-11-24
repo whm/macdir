@@ -23,7 +23,7 @@ header("Content-Type: text/html; charset=UTF-8");
 <html>
 <head>
 <title><?php print $title;?></title>
-<link rel="stylesheet" type="text/css" href="macdir.css">
+<link rel="stylesheet" type="text/css" href="/macdir-styles/macdir.css">
 </head>
 
 <body>
