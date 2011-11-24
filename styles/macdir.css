@@ -1,0 +1,50 @@
+body {
+    background-color: #FFFFEE;
+    margin:0;
+    padding:0;
+    border:0; 
+    width:100%;
+    min-width:600px;
+}
+
+#wrap {
+    width:100%;
+    margin:0 auto;
+    background:#EEEEFF;
+}
+
+#header {
+    background:#FFFFEE;
+    clear:both;
+    float:left;
+    width:100%;
+}
+
+#header h1 {
+    font-family: Arial, sans-serif;
+    font-size: Larger;
+    text-align: center;
+    color: #660000;
+}
+
+#nav {
+    float:left;
+    width:15%;
+    background:EEEEFF;
+}
+
+#nav ul {
+    list-style-type: none;
+    line-height:1.3em;
+    font-family: Arial, sans-serif;
+    font-size: large;
+}
+
+#main {
+    float:right;
+    width:85%;
+}
+
+#main p {
+    margin: 2em;
+}

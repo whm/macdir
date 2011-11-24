@@ -1,0 +1,7 @@
+macdir (2.0) unstable; urgency=low
+
+  * Initial packaging of the scripts used to update data in the MacAllister 
+    directory.
+
+ -- Bill MacAllister <mac@spowl.ca-zephyr.org>  Thu, 24 Nov 2011 12:01:08 -0800
+
