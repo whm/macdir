@@ -44,8 +44,34 @@ if (strlen($in_cn)>0) {
 
 ?>
 
-<table border="0" width="100%">
-<tr><td align="center" width="90%">
+<script language="JavaScript">
+
+/* ----------------- */
+/* Verify input data */
+/* ----------------- */
+
+function checkIt() {
+
+    var f;
+    var i;
+    var outData = "";
+  
+    EmptyField = "";
+    f = document.maint;
+
+    var nondigit = /\D/;
+    var anumber = /^\d*\.?\d*$/;
+
+    if (f.in_cn.value == EmptyField) {
+        alert ("Please enter a Common Name");
+        return false;
+    }
+
+    return true;
+    
+}
+
+</script>
 
 <form name="maint_find"
       method="post"
@@ -82,49 +108,12 @@ if (session_is_registered('in_msg')) {
 </table>
 </form>
 
-</td>
-<td align="center" width="10%">
-
-<script language="JavaScript">
-
-/* ----------------- */
-/* Verify input data */
-/* ----------------- */
-
-function checkIt() {
-
-    var f;
-    var i;
-    var outData = "";
-  
-    EmptyField = "";
-    f = document.maint;
-
-    var nondigit = /\D/;
-    var anumber = /^\d*\.?\d*$/;
-
-    if (f.in_cn.value == EmptyField) {
-        alert ("Please enter a Common Name");
-        return false;
-    }
-
-    return true;
-    
-}
-
-</script>
-
-</td>
-</tr>
-</table>
-
-<p>
 <form name="maint"
       method="post"
       action="my_links_maint_action"
       onsubmit="return checkIt()">
 
-<table border="1" cellpadding="2">
+<table border="1" cellpadding="2" align="center">
 
 <tr>
   <td colspan="2" align="right">
