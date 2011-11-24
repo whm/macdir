@@ -1,4 +1,4 @@
- # end of main
+ <!-- end of main -->
  </div>
 
 <?php require('inc_menu.php');?>
