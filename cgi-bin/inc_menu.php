@@ -34,13 +34,6 @@ $menuItem['app_access_maint'] = array('inTitle'  => 'App Access',
                                        'outTitle' => '',
                                        'login'    => 'admin');
 
-$menuItem['computers']      = array('inTitle'  => 'Computers',
-                                     'outTitle' => '',
-                                     'login'    => 'admin');
-$menuItem['computer_maint'] = array('inTitle'  => 'Computer Maint',
-                                     'outTitle' => '',
-                                     'login'    => 'admin');
-
 $itemList = '';
 foreach ($menuItem as $id => $items) {
     if ($items['login'] == '') {
