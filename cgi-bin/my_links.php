@@ -201,7 +201,7 @@ if ($ret_cnt) {
         
         $a_maint_link = '<a href="my_links_maint.php'
             .'?in_cn=' . $a_cn_url
-            .'"><img src="images/icon-edit.png" border="0"></a>';
+            .'"><img src="/macdir-images/icon-edit.png" border="0"></a>';
         $a_href_url = '<a href="'
             .htmlentities($info[$i]["prideurl"][0])
             .'" target="_BLANK">'
