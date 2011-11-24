@@ -10,11 +10,9 @@ body {
 #wrap {
     width:100%;
     margin:0 auto;
-    background:#EEEEFF;
 }
 
 #header {
-    background:#FFFFEE;
     clear:both;
     float:left;
     width:100%;
@@ -30,7 +28,6 @@ body {
 #nav {
     float:left;
     width:15%;
-    background:EEEEFF;
 }
 
 #nav ul {
@@ -48,6 +45,13 @@ body {
 #main h1 {
     font-family: Arial, sans-serif;
     font-size: Huge;
+    text-align: Left;
+    color: #660000;
+}
+
+#main h2 {
+    font-family: Arial, sans-serif;
+    font-size: Large;
     text-align: Left;
     color: #660000;
 }

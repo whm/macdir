@@ -3,7 +3,7 @@
 
 <?php require('inc_menu.php');?>
 
-# end of wrap
+<!-- end of wrap -->
 </div>
 
 </body>

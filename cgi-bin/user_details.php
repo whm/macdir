@@ -122,7 +122,7 @@ if ($entry = ldap_first_entry ($ds, $sr)) {
         }
         ksort($url_index);
         echo "<br>\n";
-        echo "<h1>Links</h1>\n";
+        echo "<h2>Links</h2>\n";
         echo "<br>\n";
         echo "<table border=\"1\" cellpadding=\"2\">\n";
         echo "<tr>\n";
