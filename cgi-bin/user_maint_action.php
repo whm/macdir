@@ -451,6 +451,9 @@ $warn = '<font color="#cc0000">';
 $ok = '<font color="#00cc00">';
 $ef = "</font><br>\n";
 
+$krb_oc     = 'krb5Principal';
+$krb_attr   = 'krb5PrincipalName';
+
 // This array describes the "simple" attributes.  That is attributes
 // that have a simple value.
 $fld_list = array();
@@ -549,13 +552,12 @@ if (isset($btn_add)) {
             $_SESSION['in_msg'] .= "$ok adding objectClass = person$ef";
             $ldap_entry["objectclass"][] = "pridePerson";
             $_SESSION['in_msg'] .= "$ok adding objectClass = pridePerson$ef";
-            $ldap_entry["objectclass"][] = "krb5Principal";
-            $_SESSION['in_msg'] .= "$ok adding objectClass = krb5Principal$ef";
+            $ldap_entry["objectclass"][] = $krb_oc;
+            $_SESSION['in_msg'] .= "$ok adding objectClass = $krb_oc$ef";
             
             // Add kerberos principal name
-            $fld = 'krb5PrincipalName';
-            $ldap_entry[$fld][] = $thisPrincipal;
-            $_SESSION['in_msg'] .= "$ok adding $fld = $thisPrincipal$ef";
+            $ldap_entry[$krb_attr][] = $thisPrincipal;
+            $_SESSION['in_msg'] .= "$ok adding $krb_attr = $thisPrincipal$ef";
 
             // Create posix entry only when asked to
             $posix_entry = 0;
@@ -837,10 +839,8 @@ if (isset($btn_add)) {
         }
         
         // -- Make sure every entry has a kerberos principal
-        if (!isset($info[0]['krb5PrincipalName'][0])) {
+        if (!isset($info[0][$krb_attr][0])) {
             $krb_oc_add = 1;
-            $krb_oc     = 'krb5principal';
-            $krb_attr   = 'krb5principalname';
             foreach ($info[0]['objectclass'] as $oc) {
                 if ($oc==$krb_oc) {$krb_oc_add = 0;}
             }
