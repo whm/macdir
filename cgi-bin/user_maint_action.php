@@ -757,7 +757,9 @@ if (isset($btn_add)) {
         $_SESSION['in_msg'] .= "$warn No entry to update$ef";
         $ret_cnt = 0;
     } else {
-        $sr = @ldap_read ($ds, $in_dn, $ldap_filter, $fld_list);  
+        $return_list = $fld_list;
+        $return_list[] = $krb_attr;
+        $sr = @ldap_read ($ds, $in_dn, $ldap_filter, $return_list);  
         $info = @ldap_get_entries($ds, $sr);
         $err = ldap_errno ($ds);
         if ($err) {
