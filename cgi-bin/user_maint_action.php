@@ -838,7 +838,7 @@ if (isset($btn_add)) {
         
         // -- Make sure every entry has a kerberos principal
         if (!isset($info[0]['krb5principalname'][0])) {
-            $add_data['objectclass'][] = 'posixAccount';
+            $add_data['objectclass'][] = 'krb5Principal';
             $add_data['krb5principalname'][] = $thisPrincipal;
             $add_cnt++;
         }
