@@ -452,7 +452,7 @@ $ok = '<font color="#00cc00">';
 $ef = "</font><br>\n";
 
 $krb_oc     = 'krb5Principal';
-$krb_attr   = 'krb5PrincipalName';
+$krb_attr   = 'krb5principalname';
 
 // This array describes the "simple" attributes.  That is attributes
 // that have a simple value.
