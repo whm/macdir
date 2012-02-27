@@ -74,7 +74,8 @@ function mailbox_check ($in_uid, $addr, $local_domain) {
                         .= "$warn IMAP Create mailbox failure ("
                         . imap_last_error() . ")$ef";
                 } else {
-                    $_SESSION['in_msg'] .= "$ok IMAP mailbox created</font><br>";
+                    $_SESSION['in_msg'] 
+                        .= "$ok IMAP mailbox created</font><br>";
                 }
             }
             imap_setacl ($imapCnx, $acl_mbx, $in_uid,     'lrswipcda');
@@ -368,7 +369,8 @@ function mail_alias_check ($a_dn, $a_flag, $a_alias) {
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
             if ($err>0) {
-                $_SESSION['in_msg'] .= "$warn ldap error removing alias $a_alias "
+                $_SESSION['in_msg'] 
+                    .= "$warn ldap error removing alias $a_alias "
                     . "from $a_dn: $err - $err_msg.$ef";
             } else {
                 $_SESSION['in_msg'] .= "$ok Mail Alias $a_alias removed "
@@ -838,6 +840,7 @@ if (isset($btn_add)) {
         if (!isset($info[0]['krb5principalname'][0])) {
             $add_data['objectclass'][] = 'posixAccount';
             $add_data['krb5principalname'][] = $thisPrincipal;
+            $acc_cnt++;
         }
 
         // -- add attributes
@@ -941,7 +944,8 @@ if (isset($btn_add)) {
                         .  "directory$ef";
                     $ldapErr = ldap_errno ($ds);
                     $ldapMsg = ldap_error ($ds);
-                    $_SESSION['in_msg'] .= "$warn Error: $ldapErr, $ldapMsg$ef";
+                    $_SESSION['in_msg'] 
+                        .= "$warn Error: $ldapErr, $ldapMsg$ef";
                 }
             } else {
                 posix_group_check ($in_uid, $in_uid, $in_uid);
@@ -950,11 +954,14 @@ if (isset($btn_add)) {
         // check the listed posix groups
         if (isset($tags['count']['posixgroup'])) {
             if ($tags['count']['posixgroup']>0) {
-                foreach ($tags['data']['posixgroup'] as $idx => $this_posixgroup) {
+                foreach ($tags['data']['posixgroup'] 
+                         as $idx => $this_posixgroup) {
                     $flag = '';
                     if ($this_posixgroup['checked'] == 'Y'
                         && $in_uidnumber>0) {$flag = 'Y';}
-                    posix_group_check ($in_uid, $flag, $this_posixgroup['text']);
+                    posix_group_check ($in_uid, 
+                                       $flag, 
+                                       $this_posixgroup['text']);
                 }
             }
         }
