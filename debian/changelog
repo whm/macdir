@@ -1,3 +1,14 @@
+macdir (2.1) unstable; urgency=low
+
+  * Add support for kerberos principal names in person entries.  All 
+    person entries have krb5PrincipalNames.  This is the start of 
+    moving from having passwords in the directory.
+  * Cleanup whitespace in user_maint.php
+  * Change the format of include configuration variables to clearly 
+    identify them as configuration objects.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Sun, 26 Feb 2012 19:47:53 -0800
+
 macdir (2.0) unstable; urgency=low
 
   * Initial packaging of the scripts used to update data in the MacAllister 
