@@ -358,7 +358,14 @@ function checkIt() {
   <td align="right">Computer UID:</td>
   <td colspan="5">
     <table border="0" width="100%">
-      <tr><td><?php print $thisUID;?> </td>
+      <tr><td>
+            <?php
+            $z = '';
+            if (isset($info[0]["krb5PrincipalName"][0])) {
+              $z = ' ('.$info[0]["krb5PrincipalName"][0].'0';}
+            }
+            print $thisUID.$z;
+            ?> 
           </td>
           <td align="right"><a href="<?php echo $pwd_href;?>">
               Set Password</a>
@@ -773,7 +780,7 @@ print $br;
 # ---------------------------------------------------------------------
 # Samba LDAP maintenance
 # ---------------------------------------------------------------------
-if ($use_samba) {
+if ($CONF_use_samba) {
 ?>
 
 <tr bgcolor="#660000">

@@ -42,18 +42,18 @@ function mailbox_check ($in_uid, $addr, $local_domain) {
     
     global $ok;
     global $warn;
-    global $imap_host;
+    global $CONF_imap_host;
     global $imap_muser;
     global $imap_mpass;
 
     // Don't check a mailbox if there is none
     if (strlen($impa_host) == 0) {return;}
 
-    $imap_host_perl = '{'.$imap_host.':143}';
+    $CONF_imap_host_perl = '{'.$CONF_imap_host.':143}';
     $user_mbx = 'user/'.$in_uid;
-    $imap_mbx = $imap_host_perl.$user_mbx;
+    $imap_mbx = $CONF_imap_host_perl.$user_mbx;
     $acl_mbx = "user/$in_uid".'%';
-    if ( !($imapCnx = imap_open($imap_host_perl,
+    if ( !($imapCnx = imap_open($CONF_imap_host_perl,
                                 $imap_muser,
                                 $imap_mpass, 
                                 OP_HALFOPEN)) ) {
@@ -62,7 +62,7 @@ function mailbox_check ($in_uid, $addr, $local_domain) {
     } else {
         
         $mbx_exists = 0;
-        $mbxList = imap_list($imapCnx, $imap_host_perl, $user_mbx);
+        $mbxList = imap_list($imapCnx, $CONF_imap_host_perl, $user_mbx);
         if ( is_array($mbxList) ) {$mbx_exists = 1;}
         $pat = '/@'.$local_domain.'/i';
         if ( preg_match ($pat, $addr, $mat) ) {
@@ -346,11 +346,11 @@ function app_group_check ($a_uid, $a_flag, $a_app) {
 
 function mail_alias_check ($a_dn, $a_flag, $a_alias) {
     
-    global $ds, $ldap_base, $mail_domain, $ok, $warn, $ef;
+    global $ds, $ldap_base, $CONF_mail_domain, $ok, $warn, $ef;
     
     $add_alias = $a_alias;
     if ( strlen($a_alias) == strlen(str_replace('@','',$a_alias)) ) {
-        $add_alias .= '@' . $mail_domain;
+        $add_alias .= '@' . $CONF_mail_domain;
     }
     
     // search for attributes values to delete
@@ -392,11 +392,13 @@ function mail_alias_check ($a_dn, $a_flag, $a_alias) {
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
             if ($err != 0) {
-                $_SESSION['in_msg'] .= "$warn ldap error adding alias $a_alias "
+                $_SESSION['in_msg'] 
+                    .= "$warn ldap error adding alias $a_alias "
                     . "to $a_dn: "
                     . "$err - $err_msg.$ef";
             } else {
-                $_SESSION['in_msg'] .= "$ok Mail Alias $a_alias added to $a_dn.$ef";
+                $_SESSION['in_msg'] 
+                    .= "$ok Mail Alias $a_alias added to $a_dn.$ef";
             }
         }
     }
@@ -508,6 +510,9 @@ if (isset($in_xml_data)) {
     xml_parser_free($xml_parser);
 }
 
+// Set the kerberos principal name for everyone to use
+$thisPrincipal = $in_uid . '@' . $CONF_krb_realm;
+
 if (isset($btn_add)) {
     
     // -----------------------------------------------------
@@ -542,7 +547,15 @@ if (isset($btn_add)) {
             $_SESSION['in_msg'] .= "$ok adding objectClass = person$ef";
             $ldap_entry["objectclass"][] = "pridePerson";
             $_SESSION['in_msg'] .= "$ok adding objectClass = pridePerson$ef";
+            $ldap_entry["objectclass"][] = "krb5Principal";
+            $_SESSION['in_msg'] .= "$ok adding objectClass = krb5Principal$ef";
             
+            // Add kerberos principal name
+            $fld = 'krb5PrincipalName';
+            $ldap_entry[$fld][] = $thisPrincipal;
+            $_SESSION['in_msg'] .= "$ok adding $fld = $thisPrincipal$ef";
+
+            // Create posix entry only when asked to
             $posix_entry = 0;
             if (strlen($in_linux_add)>0) {$posix_entry = 1;}
             
@@ -660,7 +673,8 @@ if (isset($btn_add)) {
             // check the listed posix groups
             if ($tags['count']['posixgroup']>0) {
                 if ($tags['count']['posixgroup']>0) {
-                    foreach ($tags['data']['posixgroup'] as $idx => $this_posixgroup) {
+                    foreach ($tags['data']['posixgroup'] 
+                             as $idx => $this_posixgroup) {
                         $flag = '';
                         if ($this_posixgroup['checked'] == 'Y'
                             && $in_uidnumber>0) {$flag = 'Y';}
@@ -699,7 +713,7 @@ if (isset($btn_add)) {
             
         }
         // create a mailbox if necessary
-        mailbox_check ($in_uid, $in_maildelivery, $mailbox_domain);
+        mailbox_check ($in_uid, $in_maildelivery, $CONF_mailbox_domain);
         
         // Check mailalias
         if ($in_mailalias_cnt>0) {
@@ -718,10 +732,10 @@ if (isset($btn_add)) {
         }
         
         // notify the administrator
-        if ( strlen($ldap_manager_mailbox)>0 ) {
+        if ( strlen($CONF_ldap_manager_mailbox)>0 ) {
             $mail_msg .= strip_tags ($_SESSION['in_msg']);
             $subj = "New LDAP entry in $ldap_dir_title";
-            mail ($ldap_manager_mailbox,
+            mail ($CONF_ldap_manager_mailbox,
                   $subj,
                   $mail_msg);
         }
@@ -765,7 +779,9 @@ if (isset($btn_add)) {
             if (isset($$tmp)) {$val_in  = stripslashes(trim($$tmp));}
             
             $val_ldap = '';
-            if (isset($info[0]["$fld"][0])) {$val_ldap = trim($info[0]["$fld"][0]);}
+            if (isset($info[0]["$fld"][0])) {
+                $val_ldap = trim($info[0]["$fld"][0]);
+            }
             
             if ( $val_in != $val_ldap ) {
                 if (strlen($val_in)==0) {
@@ -818,6 +834,12 @@ if (isset($btn_add)) {
             }
         }
         
+        // -- Make sure every entry has a kerberos principal
+        if (!isset($info[0]['krb5principalname'][0])) {
+            $add_data['objectclass'][] = 'posixAccount';
+            $add_data['krb5principalname'][] = $thisPrincipal;
+        }
+
         // -- add attributes
         if ($add_cnt>0) {
             
@@ -835,12 +857,14 @@ if (isset($btn_add)) {
                 if ($thisUIDNumber == 0) { 
                     $thisUIDNumber = make_UID(4000); 
                     $add_data["uidnumber"][] = $thisUIDNumber;
-                    $_SESSION['in_msg'] .= "$ok adding uidNumber = $thisUIDNumber$ef";
+                    $_SESSION['in_msg'] 
+                        .= "$ok adding uidNumber = $thisUIDNumber$ef";
                 }
                 if ($thisGIDNumber == 0) { 
                     $thisGIDNumber = $thisUIDNumber; 
                     $add_data["gidnumber"][] = $thisUIDNumber;
-                    $_SESSION['in_msg'] .= "$ok adding gidNumber = $thisUIDNumber$ef";
+                    $_SESSION['in_msg'] 
+                        .= "$ok adding gidNumber = $thisUIDNumber$ef";
                 }
             }
             
@@ -952,7 +976,7 @@ if (isset($btn_add)) {
     }
     
     // check mailbox
-    mailbox_check ($in_uid, $in_maildelivery, $mailbox_domain);
+    mailbox_check ($in_uid, $in_maildelivery, $CONF_mailbox_domain);
     
     // Check PAM groups
     if (isset($tags['count']['pamgroup'])) {
@@ -1030,7 +1054,7 @@ if (isset($btn_add)) {
             . "$err - $err_msg.$ef";
     }
     
-    mailbox_check ($in_uid, "", $mailbox_domain);
+    mailbox_check ($in_uid, "", $CONF_mailbox_domain);
     
 } else {
     $_SESSION['in_msg'] .= "$warn invalid action$ef";
