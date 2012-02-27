@@ -840,7 +840,7 @@ if (isset($btn_add)) {
         if (!isset($info[0]['krb5principalname'][0])) {
             $add_data['objectclass'][] = 'posixAccount';
             $add_data['krb5principalname'][] = $thisPrincipal;
-            $acc_cnt++;
+            $add_cnt++;
         }
 
         // -- add attributes
