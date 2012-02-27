@@ -361,8 +361,9 @@ function checkIt() {
       <tr><td>
             <?php
             $z = '';
-            if ( isset($info[0]["krb5PrincipalName"][0]) ) {
-              $z = ' ('.$info[0]["krb5PrincipalName"][0].'0';
+            $krb_attr = 'krb5PrincipalName';
+            if ( strlen($info[0][$krb_attr][0]) == 0 ) {
+              $z = ' ('.$info[0][$krb_attr][0].')';
             }
             print $thisUID.$z;
             ?> 

@@ -837,10 +837,10 @@ if (isset($btn_add)) {
         }
         
         // -- Make sure every entry has a kerberos principal
-        if (!isset($info[0]['krb5principalname'][0])) {
+        if (!isset($info[0]['krb5PrincipalName'][0])) {
             $krb_oc_add = 1;
-            $krb_oc     = 'krb5principal';
-            $krb_attr   = 'krb5principalname';
+            $krb_oc     = 'krb5Principal';
+            $krb_attr   = 'krb5PrincipalName';
             foreach ($info[0]['objectclass'] as $oc) {
                 if ($oc==$krb_oc) {$krb_oc_add = 0;}
             }
