@@ -276,10 +276,10 @@ function checkIt() {
       outData += "<pamgroup>";
       outData += "<text>"+f.in_pam[i].value+"</text>";
       if (f.in_pam[i].checked) {
-	outData += "<checked>Y</checked>";
-	pam_cnt++;
+          outData += "<checked>Y</checked>";
+          pam_cnt++;
       } else {
-	outData += "<checked>N</checked>";
+          outData += "<checked>N</checked>";
       }
       outData += "</pamgroup>";
     }
@@ -302,10 +302,10 @@ function checkIt() {
       outData += "<posixgroup>";
       outData += "<text>"+f.in_posix[i].value+"</text>";
       if (f.in_posix[i].checked) {
-	outData += "<checked>Y</checked>";
-	posix_cnt++;
+          outData += "<checked>Y</checked>";
+          posix_cnt++;
       } else {
-	outData += "<checked>N</checked>";
+          outData += "<checked>N</checked>";
       }
       outData += "</posixgroup>";
     }
@@ -718,7 +718,7 @@ function checkIt() {
       print $br;
       $chk = '';
       if (strlen($thisPam["$a_cn"])>0) {
-	$chk = 'CHECKED';
+          $chk = 'CHECKED';
       }
 ?>
      <input type="checkbox" <?php print $chk;?>
