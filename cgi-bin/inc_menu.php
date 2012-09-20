@@ -46,16 +46,16 @@ foreach ($menuItem as $id => $items) {
         $title = $items['outTitle'];
         if ($menuLoggedIn) {$title = $items['inTitle'];}
         $url = $id;
-        if (strlen($items['outloginURL']) == 0) {
-            if (!$menuLoggedIn) {$url = '';}
-        } else {
+        if ( isset($items['outloginURL']) ) {
             if ($menuLoggedIn) {
                 $url = $items['inloginURL'];
             } else {
                 $url = $items['outloginURL'];
             }
+        } else {
+            if (!$menuLoggedIn) {$url = '';}
         }
-        if (strlen($url) > 0) {
+        if ( isset($url) ) {
             $itemList .= '<li>';
             $itemList .= '<a href="'.$url.'">'.$title."</a>";
             $itemList .= "</li>\n";
