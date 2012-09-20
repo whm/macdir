@@ -9,21 +9,6 @@
 require("whm_php_sessions.inc");
 require('whm_php_auth.inc');
 
-// handle login requests
-if (!isset($in_action)) {$in_action = '';}
-if (strlen($_SESSION['whm_directory_user'])>0) { 
-    if ($in_action == 'logout') {
-        session_destroy();
-        header("REFRESH: 0; URL=$PHP_SELF");
-        sleep(1);
-        exit;
-    }
-} else {
-    if ($in_action == 'login') {
-        whm_auth("user|phoneadmin|ldapadmin");
-    }
-}
-
 $title = 'Search for a Person';
 $heading = 'MacAllister Directory';
 require('inc_header.php');

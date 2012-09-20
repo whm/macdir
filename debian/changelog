@@ -1,3 +1,9 @@
+macdir (2.2) unstable; urgency=low
+
+  * Move to using webauth for access control to the application.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Wed, 19 Sep 2012 23:47:10 -0700
+
 macdir (2.1) unstable; urgency=low
 
   * Add support for kerberos principal names in person entries.  All 
