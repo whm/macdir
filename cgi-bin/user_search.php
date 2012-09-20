@@ -60,9 +60,11 @@ if (strlen($base_filter)==0) {
   // is no input data
   foreach ($form as $formName => $ldapName) {
     $sessName = "SEAR_$formName";
-    $a_val = $_SESSION[$sessName];
-    if (strlen($a_val) > 0) {
-      $base_filter .= "($ldapName=*$a_val*)";
+    if ( isset($_SESSION[$sessName]) ) {
+        $a_val = $_SESSION[$sessName];
+        if ( strlen($a_val) > 0 ) {
+            $base_filter .= "($ldapName=*$a_val*)";
+        }
     }
   }
 
