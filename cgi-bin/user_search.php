@@ -22,10 +22,10 @@ if ($menuLoggedIn == 0) {
   $more_search = 'no';
 }
 if (isset ($more_search) == 0) {
-  if (strlen ($_SESSION['s_more_search']) == 0) {
-    $more_search = 'no';
-  } else {
+  if ( isset($_SESSION['s_more_search']) ) {
     $more_search = $_SESSION['s_more_search'];
+  } else {
+    $more_search = 'no';
   }
 }
 $_SESSION['s_more_search'] = $more_search;
@@ -54,7 +54,7 @@ foreach ($form as $formName => $ldapName) {
   }
 }
 
-if (strlen($base_filter)==0) {
+if ( ! isset($base_filter) ) {
 
   // construct a filter from session information if there
   // is no input data
@@ -236,7 +236,7 @@ for the first name will return matches for Bill and William.
       <input type="submit" value="Search Directory" name="button">
       </td>
   </tr>
-<?php if (strlen($msg)>0) { ?>
+<?php if ( isset($msg) ) { ?>
   <tr><td align="center" colspan="2">
       <?php echo $msg;?>
       </td>
@@ -249,7 +249,7 @@ for the first name will return matches for Bill and William.
 
 <?php
 
-if (strlen($base_filter)>0) {
+if ( isset($base_filter) ) {
   $filter = '(&(objectclass=person)'.$base_filter.')';
   $base_dn = $ldap_base;
   $return_attr = array('cn',
