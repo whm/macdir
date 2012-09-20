@@ -2,7 +2,8 @@
 #
 # Generate navigation menu
 
-$menuLoggedIn = strlen($_SESSION['whm_directory_user']);
+$menuLoggedIn = 0;
+if ( isset($_SESSION['WEBAUTH_USER']) ) { $menuLoggedIn = 1; }
 
 $menuItem['user_search'] = array('Title' => 'Search',
                                   'login' => '');

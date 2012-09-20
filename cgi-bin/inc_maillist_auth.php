@@ -3,17 +3,26 @@
 // --------------------------------------------------------------
 // Check for admin access to mail distrubution lists
 
-function ldap_maillist_admin () {
+function ldap_maillist_admin ($right='email-admin') {
 
   $admin_access = 0;
 
-  if (count($_SESSION['whm_rights_list']) > 0) {
-    foreach  ($_SESSION['whm_rights_list'] as $rights_id) {
-      if ($rights_id == 'email-admin') {
-	$admin_access = 2;
-	break;
+  if ( isset($_SESSION['WEBAUTH_LDAP_PRIVGROUP1']) ) { 
+      $cnt = 1;
+      while ($cnt > 0) {
+          my $pg = 'WEBAUTH_LDAP_PRIVGROUP'.$cnt;
+          if ( isset($_SESSION[$pg]) ) {
+              if ($_SESSION[$pg] == $right) {
+                  $admin_access = 2;
+                  $cnt = 0;
+                  break;
+              } else {
+                  $cnt++;
+              }
+          } else {
+              $cnt = 0;
+          }
       }
-    }
   }
   return $admin_access;
 

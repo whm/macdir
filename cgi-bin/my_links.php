@@ -64,6 +64,11 @@ if (strlen($base_filter)==0) {
     }
     
 }
+
+$this_user = '';
+if ( isset($_SESSION['WEBAUTH_USER']) ) { 
+    $this_user = $_SESSION['WEBAUTH_USER']; 
+}
 ?>
 
 <p>
@@ -75,7 +80,7 @@ if (strlen($base_filter)==0) {
     <td> 
       <div align="right">Username:</div>
     </td>
-    <td><?php echo $_SESSION['whm_directory_user'];?></td>
+    <td><?php echo $this_user;?></td>
   </tr>
 
   <tr> 
@@ -161,7 +166,7 @@ $r  = ldap_bind($ds,
 $filter = '(&(objectclass=pridelistobject)'.$base_filter.')';
 $thisFilter = "(&";
 $thisFilter .= "(objectclass=person)";
-$thisFilter .= "(uid=".$_SESSION['whm_directory_user'].")";
+$thisFilter .= "(uid=".$this_uid.")";
 $thisFilter .= ")";
 $returnAttr = array('cn');
 $sr = ldap_search($ds, $my_base_dn, $thisFilter, $returnAttr);  

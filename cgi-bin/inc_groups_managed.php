@@ -5,9 +5,14 @@ $app_base = 'ou=applications,'.$pidir_base;
 
 // get a list of application group managed by this user
 
+$this_user = 'unknownUser';
+if ( isset($_SESSION['WEBAUTH_USER']) ) { 
+    $this_user = $_SESSION['WEBAUTH_USER'];
+}
+
 $g_filter = '(&';
 $g_filter .= '(objectclass=prideApplication)';
-$g_filter .= '(managerUid='.$_SESSION['whm_directory_user'].')';
+$g_filter .= '(managerUid='.$this_user.')';
 $g_filter .= ')';
 $g_attrs = array ('cn','description');
 $old_err = error_reporting(E_ERROR | E_PARSE);

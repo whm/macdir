@@ -12,13 +12,22 @@ function admin_check ($right) {
 
   $admin_access = 0;
 
-  if (count($_SESSION['whm_rights_list']) > 0) {
-    foreach  ($_SESSION['whm_rights_list'] as $rights_id) {
-      if ($rights_id == $right) {
-          $admin_access = 2;
-          break;
+  if ( isset($_SESSION['WEBAUTH_LDAP_PRIVGROUP1']) ) { 
+      $cnt = 1;
+      while ($cnt > 0) {
+          my $pg = 'WEBAUTH_LDAP_PRIVGROUP'.$cnt;
+          if ( isset($_SESSION[$pg]) ) {
+              if ($_SESSION[$pg] == $right) {
+                  $admin_access = 2;
+                  $cnt = 0;
+                  break;
+              } else {
+                  $cnt++;
+              }
+          } else {
+              $cnt = 0;
+          }
       }
-    }
   }
   return $admin_access;
 
@@ -35,12 +44,14 @@ function manager_check ($mgr_array) {
   $access_okay = admin_check('ldapadmin');
 
   if ($access_okay == 0) {
-    for ($i=0; $i<$mgr_array["count"]; $i++) {
-      if ($_SESSION['whm_directory_user'] == $mgr_array[$i]) {
-          $access_okay = 1;
-          break;
+      for ($i=0; $i<$mgr_array["count"]; $i++) {
+          if ( isset($_SESSION['WEBAUTH_USER']) ) { 
+              if ($_SESSION['WEBAUTH_USER'] == $mgr_array[$i]) {
+                  $access_okay = 1;
+                  break;
+              }
+          }
       }
-    }
   }
 
   return $access_okay;
