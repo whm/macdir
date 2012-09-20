@@ -1,6 +1,5 @@
 <?php
 // Open a session
-require('whm_php_sessions.inc');
 
 $title = 'PRIDE Directory Search Results';
 $heading = 'Employee Directory';

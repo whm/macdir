@@ -1,8 +1,9 @@
 macdir (2.2) unstable; urgency=low
 
   * Move to using webauth for access control to the application.
+  * Remove customized session support.
 
- -- Bill MacAllister <bill@ca-zephyr.org>  Wed, 19 Sep 2012 23:47:10 -0700
+ -- Bill MacAllister <bill@ca-zephyr.org>  Thu, 20 Sep 2012 00:38:37 -0700
 
 macdir (2.1) unstable; urgency=low
 

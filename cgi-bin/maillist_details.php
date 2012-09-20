@@ -5,10 +5,6 @@
 // author: Bill MacAllister
 // date:  7-Jul-2003
 
-// Session variable support
-require("whm_php_sessions.inc");
-require('whm_php_auth.inc');
-
 $title = 'Mail List Details';
 $heading = "Mail List Details";
 require('inc_header.php');

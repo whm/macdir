@@ -3,9 +3,6 @@
 # file: user_details.php
 # author: Bill MacAllister
 
-# -- Session variable support
-require("whm_php_sessions.inc");
-require("whm_php_auth.inc");
 $title = 'MacAllister Directory Search Details';
 $heading = "A Person's Details";
 require ('inc_header.php');

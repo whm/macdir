@@ -2,11 +2,6 @@
 // file: maillist_maint_action.php
 // author: Bill MacAllister
 
-// Open a session and check for authorization
-require('whm_php_sessions.inc');
-require('whm_php_auth.inc');
-whm_auth("email-admin|email-lists");
-
 require ('/etc/whm/macdir_auth.php');
 require('inc_maillist_auth.php');
 $ldap_ml_base = "ou=maillists,$ldap_base";

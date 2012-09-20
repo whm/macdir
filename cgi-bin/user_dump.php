@@ -1,7 +1,4 @@
 <?php 
-require('whm_php_sessions.inc');
-require('whm_php_auth.inc');
-whm_auth("ldapadmin");
 
 $title = 'MacAllister Directory Search Details';
 $heading = 'MacAllister Directory';

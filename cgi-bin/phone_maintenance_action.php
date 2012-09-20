@@ -3,11 +3,6 @@
 // author: Bill MacAllister
 // date:  2-Jan-2004
 
-// Open a session and check for authorization
-require('whm_php_sessions.inc');
-require('whm_php_auth.inc');
-whm_auth("phoneadmin|ldapadmin");
-
 session_register("in_msg");
 $_SESSION['in_msg'] = '';
 

@@ -3,12 +3,6 @@
 # file: my_list.php
 # author: Bill MacAllister
 
-# Session variable support
-require("whm_php_sessions.inc");
-require('whm_php_auth.inc');
-
-whm_auth("user|phoneadmin|ldapadmin");
-
 $title = "Search My Links";
 $heading = "Search My Links";
 require('inc_header.php');

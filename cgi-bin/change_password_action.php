@@ -4,9 +4,6 @@
 // Author: Bill MacAllister
 // Date: December 2002
 
-// Open a session 
-require('whm_php_sessions.inc');
-
 // -------------------------------
 // update the passwords stored in the ldap directory
 

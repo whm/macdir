@@ -5,10 +5,6 @@
 // author: Bill MacAllister
 // date: 15-Mar-2004
 
-// Session variable support
-require("whm_php_sessions.inc");
-require('whm_php_auth.inc');
-
 // --------------------------------------------------------------
 // Check for admin access 
 
@@ -19,8 +15,8 @@ function admin_check ($right) {
   if (count($_SESSION['whm_rights_list']) > 0) {
     foreach  ($_SESSION['whm_rights_list'] as $rights_id) {
       if ($rights_id == $right) {
-	$admin_access = 2;
-	break;
+          $admin_access = 2;
+          break;
       }
     }
   }
@@ -41,8 +37,8 @@ function manager_check ($mgr_array) {
   if ($access_okay == 0) {
     for ($i=0; $i<$mgr_array["count"]; $i++) {
       if ($_SESSION['whm_directory_user'] == $mgr_array[$i]) {
-	$access_okay = 1;
-	break;
+          $access_okay = 1;
+          break;
       }
     }
   }
@@ -72,7 +68,7 @@ $managed_cnt = 0;
 $filter = '(objectclass=prideApplication)';
 $base_dn = "ou=applications,$ldap_base";
 $return_attr = array('cn',
-		     'description',
+                     'description',
                      'manageruid',
                      'memberuid');
 
@@ -113,10 +109,10 @@ if ($ret_cnt) {
     for ($j=0; $j<$a_cnt; $j++) {
       $u = $info[$i]['memberuid'][$j];
       if ($user_type == 1) {
-	$app_users[$app] 
-	   .= "$c <a href=\"app_access_maint.php?in_uid=$u\">$u</a>";
+          $app_users[$app] 
+              .= "$c <a href=\"app_access_maint.php?in_uid=$u\">$u</a>";
       } else {
-	$app_users[$app] .= "$c $u";
+          $app_users[$app] .= "$c $u";
       }
       $c = ', ';
     }
@@ -152,37 +148,37 @@ if ($ret_cnt) {
      $group_header = 0;
      foreach ($group_list as $g => $gc) {
        if ($gc > $group_limit) {
-	 if ($group_header == 0) {
-	   $group_header = 1;
-	   echo "\n";
-	   echo "<table border=\"1\" cellpadding=\"2\">\n";
-	   echo " <tr>\n";
-	   echo "  <th>Show Group</th>\n";
-	   echo "  <th>Suppress Group</th>\n";
-	   echo "  <th>Group Identifier</th>\n";
-	   echo " </tr>\n";
-	 }
-	 $name = "show_$g";
-	 if ($$name == 'show') {
-	   $chked_show = ' CHECKED';
-	   $chked_hide = '';
-	 } else {
-	   $chked_hide = 'CHECKED';
-	   $chked_show = '';
-	   $$name = 'hide';
-	 }
-	 echo "  <td align=\"center\">\n";
-	 echo "    <input type=\"radio\"$chked_show\n";
-	 echo "           name=\"$name\"\n";
-	 echo "           value=\"show\">\n";
-	 echo "  </td>\n";
-	 echo "  <td align=\"center\">\n";
-	 echo "    <input type=\"radio\"$chked_hide\n";
-	 echo "           name=\"$name\"\n";
-	 echo "           value=\"hide\">\n";
-	 echo "  </td>\n";
-	 echo "  <td align=\"center\">$g</td>\n";
-	 echo " </tr>\n";
+           if ($group_header == 0) {
+               $group_header = 1;
+               echo "\n";
+               echo "<table border=\"1\" cellpadding=\"2\">\n";
+               echo " <tr>\n";
+               echo "  <th>Show Group</th>\n";
+               echo "  <th>Suppress Group</th>\n";
+               echo "  <th>Group Identifier</th>\n";
+               echo " </tr>\n";
+           }
+           $name = "show_$g";
+           if ($$name == 'show') {
+               $chked_show = ' CHECKED';
+               $chked_hide = '';
+           } else {
+               $chked_hide = 'CHECKED';
+               $chked_show = '';
+               $$name = 'hide';
+           }
+           echo "  <td align=\"center\">\n";
+           echo "    <input type=\"radio\"$chked_show\n";
+           echo "           name=\"$name\"\n";
+           echo "           value=\"show\">\n";
+           echo "  </td>\n";
+           echo "  <td align=\"center\">\n";
+           echo "    <input type=\"radio\"$chked_hide\n";
+           echo "           name=\"$name\"\n";
+           echo "           value=\"hide\">\n";
+           echo "  </td>\n";
+           echo "  <td align=\"center\">$g</td>\n";
+           echo " </tr>\n";
        }
      }
      if ($group_header>0) {
@@ -193,12 +189,12 @@ if ($ret_cnt) {
      // user type user or not logged in yet
      if ($managed_cnt > 0) {
        if ($managed_only == 'no') {
-	 $chked_all = ' CHECKED';
-	 $chked_managed = '';
+           $chked_all = ' CHECKED';
+           $chked_managed = '';
        } else {
-	 $chked_managed = ' CHECKED';
-	 $chked_all = '';
-	 $managed_only = 'yes';
+           $chked_managed = ' CHECKED';
+           $chked_all = '';
+           $managed_only = 'yes';
        }
        echo "\n";
        echo "<table border=\"0\">\n";
@@ -243,12 +239,12 @@ if ($ret_cnt) {
     $thisUsers       = $app_users[$thisApp];
     if ($managed_cnt > 0) {
       if ($managed_only == 'yes' && strlen($thisAccessMaint) == 0) {
-	$display_it = 0;
+          $display_it = 0;
       }
     } else {
       if ($group_list[$app_group[$thisApp]]>$group_limit) {
-	$name = 'show_'.$app_group[$thisApp];
-	if ($$name == 'hide') {$display_it = 0;}
+          $name = 'show_'.$app_group[$thisApp];
+          if ($$name == 'hide') {$display_it = 0;}
       }
     }
     if ($display_it>0) {

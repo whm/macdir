@@ -3,7 +3,6 @@
    // author: Bill MacAllister
    // date: December 2002
 
-require('whm_php_sessions.inc');
 session_destroy(); 
 header ("REFRESH: 0; URL=user_search.php");
 

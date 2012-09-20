@@ -4,12 +4,6 @@
 // Author: Bill MacAllister
 // Date: 22-Oct-2001
 
-// Open a session 
-require('whm_php_sessions.inc');
-// Enforce authentication
-require('whm_php_auth.inc');
-whm_auth("ldapadmin");
-
 // bind to the ldap directory
 require('/etc/whm/macdir_auth.php');
 $dirServer = ldap_connect($ldap_server);

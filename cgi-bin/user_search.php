@@ -5,10 +5,6 @@
 // author: Bill MacAllister
 // date: 14-Oct-2002
 
-// Session variable support
-require("whm_php_sessions.inc");
-require('whm_php_auth.inc');
-
 $title = 'Search for a Person';
 $heading = 'MacAllister Directory';
 require('inc_header.php');
