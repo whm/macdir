@@ -260,7 +260,7 @@ if ( isset($base_filter) ) {
                        'uid');
 
   $ds = ldap_connect($ldap_server);
-  $r  = ldap_bind($ds,$ldap_manager,$ldap_password);
+  $r  = ldap_sasl_bind($ds,'','','GSSAPI');
   $sr = ldap_search($ds, $base_dn, $filter, $return_attr);  
   $info = ldap_get_entries($ds, $sr);
   $ret_cnt = $info["count"];
