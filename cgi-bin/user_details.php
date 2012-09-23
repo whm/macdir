@@ -25,12 +25,12 @@ function prt_row($t, $v) {
 $label_font = '<font face="Arial, Helvetica, sans-serif">';
 $data_font = '<font face="Times New Roman, Times, serif">';
 
-if (strlen($dn) > 0 || strlen($in_uid)>0) {
+if ( isset($dn) || isset($in_uid) ) {
     $_SESSION['s_dn'] = $_SESSION['s_uid'] = '';
 }
-if (strlen($dn) == 0)     {$dn     = $_SESSION['s_dn'];}
-if (strlen($in_uid) == 0) {$in_uid = $_SESSION['s_uid'];}
-if (strlen($dn) == 0 && strlen($in_uid)>0) {
+if ( isset($dn) )     {$dn     = $_SESSION['s_dn'];}
+if ( inset($in_uid) ) {$in_uid = $_SESSION['s_uid'];}
+if ( isset($dn) && insset($in_uid) ) {
     $return_attr = array('cn');
     $filter = "(&(objectclass=person)(uid=$in_uid))";
     $sr = @ldap_search($macdirDS, $ldap_base, $filter, $return_attr);
@@ -57,10 +57,25 @@ $dump_url = 'user_dump.php?dn=' . urlencode($dn);
 $user_dn  = $dn;
 $filter   = '(objectclass=person)';
 
+$resetList = array ('givenName',
+                    'sn',
+                    'title',
+                    'location',
+                    'postalAddress',
+                    'l',
+                    'st',
+                    'postalCode',
+                    'mail',
+                    'telephoneNumber',
+                    'mobile',
+                    'pager',
+                    'comments');
+
 $sr = ldap_read($macdirDS, $user_dn, $filter);  
 if ($entry = ldap_first_entry ($macdirDS, $sr)) {
     $attrs = ldap_get_attributes ($macdirDS, $entry);
     $attr_cnt = $attrs["count"];
+    foreach ($resetList as $a) { $this[$a] = ''; }
     for ($i=0;$i<$attr_cnt;$i++) {
         $this_attr = $attrs[$i];
         $err_level = error_reporting (E_ERROR | E_PARSE);
@@ -86,7 +101,6 @@ if ($entry = ldap_first_entry ($macdirDS, $sr)) {
     prt_row('', $this['l'].$comma.' '.$this['st'].' '.$this['postalCode']);
     prt_row('eMail:',           $this['mail']);
     prt_row('Telephone:',       $this['telephoneNumber']);
-    prt_row('Work Telephone:',  $this['workPhone']);
     prt_row('MobileTelephone:', $this['mobile']);
     prt_row('Pager:',           $this['pager']);
     prt_row('Notes:',           $this['comments']);
