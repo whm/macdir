@@ -7,8 +7,8 @@
 
 $title = 'Search for a Person';
 $heading = 'MacAllister Directory';
+require('inc_macdir.php');
 require('inc_header.php');
-require ('/etc/whm/macdir_auth.php');
 
 // -- disable admin access without authentication
 $ldap_manager = '';
@@ -236,12 +236,6 @@ for the first name will return matches for Bill and William.
       <input type="submit" value="Search Directory" name="button">
       </td>
   </tr>
-<?php if ( isset($msg) ) { ?>
-  <tr><td align="center" colspan="2">
-      <?php echo $msg;?>
-      </td>
-  </tr>
-<?php } ?>
 </table>
 </form>
 
@@ -259,8 +253,21 @@ if ( isset($base_filter) ) {
                        'workphone',
                        'uid');
 
-  $ds = ldap_connect($ldap_server);
-  $r  = ldap_sasl_bind($ds,'','','GSSAPI');
+  $ds = ldap_connect('ldap://'.$ldap_server);
+  ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3); 
+  if($ds) {
+    $r = ldap_bind($ds);
+  } else {
+    $msg .= "Unable to connect to $ldap_server!<br>\n";
+  }
+
+  # SASL Bind
+  if (!ldap_sasl_bind($ds,'','','GSSAPI')) {
+    $msg .= "GSSAPI bind to the directory failed<br>\n";
+  } else {
+    $msg .= "GSSAPI bind complete<br>\n";
+  }
+  
   $sr = ldap_search($ds, $base_dn, $filter, $return_attr);  
   $info = ldap_get_entries($ds, $sr);
   $ret_cnt = $info["count"];
@@ -316,6 +323,16 @@ if ( isset($base_filter) ) {
     echo "</div>\n";
   }
 }
+
+if (strlen($msg)>0) {
+  echo "<p>\n";
+  echo "<div align=\"center\">\n";
+  echo "<font face=\"Arial, Helvetica, sans-serif\"\n";
+  echo "      size=\"+1\"\n";
+  echo "      color=\"#FF0000\">$msg</font>\n";
+  echo "</div>\n";
+}
+
 ?>
 <p>
 <?php 

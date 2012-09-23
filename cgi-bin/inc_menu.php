@@ -3,7 +3,7 @@
 # Generate navigation menu
 
 $menuLoggedIn = 0;
-if ( isset($_SESSION['WEBAUTH_USER']) ) { $menuLoggedIn = 1; }
+if ( isset($_SERVER['WEBAUTH_USER']) ) { $menuLoggedIn = 1; }
 
 $menuItem['user_search'] = array('Title' => 'Search',
                                   'login' => '');
