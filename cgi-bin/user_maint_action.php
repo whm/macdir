@@ -3,21 +3,22 @@
 // author: Bill MacAllister
 
 require('inc_config.php');
+require('inc_macdir.php');
 
 // --------------------------------------------------------------
 // Find a unique UID for use Linux
 
 function make_UID ($seed) {
     
-    global $ds, $ldap_base, $ok, $warn, $ef;
+    global $macdirDS, $ldap_base, $ok, $warn, $ef;
     
     $found_it = 0;
     $this_uid = $seed + 1;
     while ($found_it == 0) {
         $a_filter = "(&(objectclass=posixaccount)(uidnumber=$this_uid))";
         $a_attrs = array ('uidnumber');
-        $sr = @ldap_search ($ds, $ldap_base, $a_filter, $a_attrs);  
-        $e = @ldap_get_entries($ds, $sr);
+        $sr = @ldap_search ($macdirDS, $ldap_base, $a_filter, $a_attrs);  
+        $e = @ldap_get_entries($macdirDS, $sr);
         $cnt = $e["count"];
         if ($cnt < 1) {
             $found_it = $this_uid;
@@ -138,15 +139,15 @@ function characterData($parser, $data) {
 
 function common_name_check ($a_dn, $a_flag, $a_cn) {
     
-    global $ds, $ok, $warn, $ef;
+    global $macdirDS, $ok, $warn, $ef;
     
     $cn_attr['cn'] = $a_cn;
 
     // search for it
     $aFilter = "(&(objectclass=person)(cn=".$a_cn."))";
     $aReturn = array ('cn');
-    $sr = @ldap_read ($ds, $a_dn, $aFilter, $aReturn);  
-    $cnEntry = ldap_get_entries($ds, $sr);
+    $sr = @ldap_read ($macdirDS, $a_dn, $aFilter, $aReturn);  
+    $cnEntry = ldap_get_entries($macdirDS, $sr);
     $cn_cnt = $cnEntry["count"];
     
     if (strlen($a_flag)==0) {
@@ -155,9 +156,9 @@ function common_name_check ($a_dn, $a_flag, $a_cn) {
 
         // delete it if we find it
         if ($cn_cnt>0) {
-            $r = @ldap_mod_del($ds, $a_dn, $cn_attr);
-            $err = ldap_errno ($ds);
-            $err_msg = ldap_error ($ds);
+            $r = @ldap_mod_del($macdirDS, $a_dn, $cn_attr);
+            $err = ldap_errno ($macdirDS);
+            $err_msg = ldap_error ($macdirDS);
             if ($err>0) {
                 $_SESSION['in_msg'] .= "$warn ldap error removing $a_cn "
                     . "from $a_dn: $err - $err_msg.$ef";
@@ -170,9 +171,9 @@ function common_name_check ($a_dn, $a_flag, $a_cn) {
     } else {
         // add it if we don't have it
         if ($cn_cnt==0) {
-            $r = @ldap_mod_add($ds, $a_dn, $cn_attr);
-            $err = ldap_errno ($ds);
-            $err_msg = ldap_error ($ds);
+            $r = @ldap_mod_add($macdirDS, $a_dn, $cn_attr);
+            $err = ldap_errno ($macdirDS);
+            $err_msg = ldap_error ($macdirDS);
             if ($err != 0) {
                 $_SESSION['in_msg'] .= "$warn ldap error adding $a_cn to $a_dn: "
                     . "$err - $err_msg.$ef";
@@ -190,7 +191,7 @@ function common_name_check ($a_dn, $a_flag, $a_cn) {
 
 function posix_group_check ($a_uid, $a_flag, $a_group) {
     
-    global $ds, $ldap_base, $ldap_groupbase, $ok, $warn, $ef;
+    global $macdirDS, $ldap_base, $ldap_groupbase, $ok, $warn, $ef;
     
     $group_dn = "cn=$a_group,$ldap_groupbase";
     $group_attr['memberuid'] = $a_uid;
@@ -200,17 +201,17 @@ function posix_group_check ($a_uid, $a_flag, $a_group) {
     $posixFilter .= "(cn=$a_group)";
     $posixFilter .= "(memberUid=$a_uid))";
     $posixReturn = array ('gidNumber','cn');
-    $sr = @ldap_search ($ds, $ldap_base, $posixFilter, $posixReturn);  
-    $posix = ldap_get_entries($ds, $sr);
+    $sr = @ldap_search ($macdirDS, $ldap_base, $posixFilter, $posixReturn);  
+    $posix = ldap_get_entries($macdirDS, $sr);
     $posix_cnt = $posix["count"];
     
     if (strlen($a_flag)==0) {
         
         // delete it if we find it
         if ($posix_cnt>0) {
-            $r = @ldap_mod_del($ds, $group_dn, $group_attr);
-            $err = ldap_errno ($ds);
-            $err_msg = ldap_error ($ds);
+            $r = @ldap_mod_del($macdirDS, $group_dn, $group_attr);
+            $err = ldap_errno ($macdirDS);
+            $err_msg = ldap_error ($macdirDS);
             $_SESSION['in_msg'] .= "$ok $a_uid removed from $a_group.$ef";
             if ($err>0) {
                 $_SESSION['in_msg'] .= "$warn ldap error removing $a_uid "
@@ -221,9 +222,9 @@ function posix_group_check ($a_uid, $a_flag, $a_group) {
     } else {
         // add it if we don't 
         if ($posix_cnt==0) {
-            $r = @ldap_mod_add($ds, $group_dn, $group_attr);
-            $err = ldap_errno ($ds);
-            $err_msg = ldap_error ($ds);
+            $r = @ldap_mod_add($macdirDS, $group_dn, $group_attr);
+            $err = ldap_errno ($macdirDS);
+            $err_msg = ldap_error ($macdirDS);
             $_SESSION['in_msg'] .= "$ok $a_uid added to $a_group.$ef";
             if ($err != 0) {
                 $_SESSION['in_msg'] .= "$warn ldap error add $a_uid to $a_group: "
@@ -239,7 +240,7 @@ function posix_group_check ($a_uid, $a_flag, $a_group) {
 
 function pam_group_check ($a_dn, $a_flag, $a_group) {
     
-    global $ds, $ldap_base, $ldap_groupbase, $ok, $warn, $ef;
+    global $macdirDS, $ldap_base, $ldap_groupbase, $ok, $warn, $ef;
     
     $group_dn = "cn=$a_group,$ldap_groupbase";
     $group_attr['memberdn'] = $a_dn;
@@ -249,8 +250,8 @@ function pam_group_check ($a_dn, $a_flag, $a_group) {
     $pamFilter .= "(cn=$a_group)";
     $pamFilter .= "(memberDN=$a_dn))";
     $pamReturn = array ('cn');
-    $sr = @ldap_search ($ds, $ldap_base, $pamFilter, $pamReturn);  
-    $pam = @ldap_get_entries($ds, $sr);
+    $sr = @ldap_search ($macdirDS, $ldap_base, $pamFilter, $pamReturn);  
+    $pam = @ldap_get_entries($macdirDS, $sr);
     $pam_cnt = $pam["count"];
     
     if (strlen($a_flag)==0) {
@@ -258,9 +259,9 @@ function pam_group_check ($a_dn, $a_flag, $a_group) {
         // delete it if we find it
         if ($pam_cnt>0) {
             $group_dn = $pam[0]['dn'];
-            $r = @ldap_mod_del($ds, $group_dn, $group_attr);
-            $err = ldap_errno ($ds);
-            $err_msg = ldap_error ($ds);
+            $r = @ldap_mod_del($macdirDS, $group_dn, $group_attr);
+            $err = ldap_errno ($macdirDS);
+            $err_msg = ldap_error ($macdirDS);
             $_SESSION['in_msg'] .= "$ok $a_dn removed from $a_group.$ef";
             if ($err>0) {
                 $_SESSION['in_msg'] .= "$warn ldap error removing $a_dn "
@@ -272,9 +273,9 @@ function pam_group_check ($a_dn, $a_flag, $a_group) {
         
         // add it if we don't 
         if ($pam_cnt==0) {
-            $r = @ldap_mod_add($ds, $group_dn, $group_attr);
-            $err = ldap_errno ($ds);
-            $err_msg = ldap_error ($ds);
+            $r = @ldap_mod_add($macdirDS, $group_dn, $group_attr);
+            $err = ldap_errno ($macdirDS);
+            $err_msg = ldap_error ($macdirDS);
             $_SESSION['in_msg'] .= "$ok $a_dn added to $a_group.$ef";
             if ($err != 0) {
                 $_SESSION['in_msg'] .= "$warn ldap error add $a_dn to $a_group: "
@@ -290,7 +291,7 @@ function pam_group_check ($a_dn, $a_flag, $a_group) {
 
 function app_group_check ($a_uid, $a_flag, $a_app) {
     
-    global $ds, $ldap_base, $ok, $warn, $ef;
+    global $macdirDS, $ldap_base, $ok, $warn, $ef;
     
     $group_attr['memberUid'] = $a_uid;
     
@@ -299,8 +300,8 @@ function app_group_check ($a_uid, $a_flag, $a_app) {
     $aFilter .= "(cn=$a_app)";
     $aFilter .= "(memberUid=$a_uid))";
     $aRetAttrs = array ('cn');
-    $sr = @ldap_search ($ds, $ldap_base, $aFilter, $aRetAttrs);  
-    $app = @ldap_get_entries($ds, $sr);
+    $sr = @ldap_search ($macdirDS, $ldap_base, $aFilter, $aRetAttrs);  
+    $app = @ldap_get_entries($macdirDS, $sr);
     $aCnt = $app["count"];
     
     if (strlen($a_flag)==0) {
@@ -308,9 +309,9 @@ function app_group_check ($a_uid, $a_flag, $a_app) {
         // delete it if we find it
         if ($aCnt>0) {
             $app_dn = $app[0]['dn'];
-            $r = @ldap_mod_del($ds, $app_dn, $group_attr);
-            $err = ldap_errno ($ds);
-            $err_msg = ldap_error ($ds);
+            $r = @ldap_mod_del($macdirDS, $app_dn, $group_attr);
+            $err = ldap_errno ($macdirDS);
+            $err_msg = ldap_error ($macdirDS);
             if ($err>0) {
                 $_SESSION['in_msg'] .= "$warn ldap error removing $a_uid "
                     . "from $a_app: $err - $err_msg.$ef";
@@ -324,9 +325,9 @@ function app_group_check ($a_uid, $a_flag, $a_app) {
         // add it if we don't 
         if ($aCnt==0) {
             $app_dn = "cn=$a_app,ou=applications,$ldap_base";
-            $r = @ldap_mod_add($ds, $app_dn, $group_attr);
-            $err = ldap_errno ($ds);
-            $err_msg = ldap_error ($ds);
+            $r = @ldap_mod_add($macdirDS, $app_dn, $group_attr);
+            $err = ldap_errno ($macdirDS);
+            $err_msg = ldap_error ($macdirDS);
             if ($err != 0) {
                 $_SESSION['in_msg'] .= "$warn ldap error add $a_uid to $app_dn: "
                     . "$err - $err_msg.$ef";
@@ -342,7 +343,7 @@ function app_group_check ($a_uid, $a_flag, $a_app) {
 
 function mail_alias_check ($a_dn, $a_flag, $a_alias) {
     
-    global $ds, $ldap_base, $CONF_mail_domain, $ok, $warn, $ef;
+    global $macdirDS, $ldap_base, $CONF_mail_domain, $ok, $warn, $ef;
     
     $add_alias = $a_alias;
     if ( strlen($a_alias) == strlen(str_replace('@','',$a_alias)) ) {
@@ -352,17 +353,17 @@ function mail_alias_check ($a_dn, $a_flag, $a_alias) {
     // search for attributes values to delete
     $aFilter = "mailAlias=$a_alias";
     $aRetAttrs = array ('cn');
-    $sr = @ldap_read ($ds, $a_dn, $aFilter, $aRetAttrs);  
-    $ml_entry = @ldap_get_entries($ds, $sr);
+    $sr = @ldap_read ($macdirDS, $a_dn, $aFilter, $aRetAttrs);  
+    $ml_entry = @ldap_get_entries($macdirDS, $sr);
     $aCnt = $ml_entry["count"];
     
     // delete it if we find it
     if (strlen($a_flag)==0 || $add_alias != $a_alias) {
         if ($aCnt>0) {
             $group_attr['mailalias'] = $a_alias;
-            $r = @ldap_mod_del($ds, $a_dn, $group_attr);
-            $err = ldap_errno ($ds);
-            $err_msg = ldap_error ($ds);
+            $r = @ldap_mod_del($macdirDS, $a_dn, $group_attr);
+            $err = ldap_errno ($macdirDS);
+            $err_msg = ldap_error ($macdirDS);
             if ($err>0) {
                 $_SESSION['in_msg'] 
                     .= "$warn ldap error removing alias $a_alias "
@@ -377,17 +378,17 @@ function mail_alias_check ($a_dn, $a_flag, $a_alias) {
     // search for attributes values to add
     $aFilter = "mailAlias=$add_alias";
     $aRetAttrs = array ('cn');
-    $sr = @ldap_read ($ds, $a_dn, $aFilter, $aRetAttrs);  
-    $ml_entry = @ldap_get_entries($ds, $sr);
+    $sr = @ldap_read ($macdirDS, $a_dn, $aFilter, $aRetAttrs);  
+    $ml_entry = @ldap_get_entries($macdirDS, $sr);
     $aCnt = $ml_entry["count"];
     
     // add it if we need to
     if (strlen($a_flag)>0 || $add_alias != $a_alias) {
         if ($aCnt==0) {
             $add_attr['mailalias'] = $add_alias;
-            $r = @ldap_mod_add($ds, $a_dn, $add_attr);
-            $err = ldap_errno ($ds);
-            $err_msg = ldap_error ($ds);
+            $r = @ldap_mod_add($macdirDS, $a_dn, $add_attr);
+            $err = ldap_errno ($macdirDS);
+            $err_msg = ldap_error ($macdirDS);
             if ($err != 0) {
                 $_SESSION['in_msg'] 
                     .= "$warn ldap error adding alias $a_alias "
@@ -411,7 +412,7 @@ function check_groups ($a_dn,
                        $a_AppAddList,
                        $a_AppDelList) {
     
-    global $ds;
+    global $macdirDS;
     global $ok;
     global $warn;
     global $ef;
@@ -477,17 +478,6 @@ array_push ($fld_list, 'uid');
 array_push ($fld_list, 'uidnumber');
 array_push ($fld_list, 'workphone');
 
-require ('/etc/whm/macdir_auth.php');
-$ds = ldap_connect($ldap_server);
-if (!$ds) {
-    $_SESSION['in_msg'] .= "Problem connecting to the $ldap_server server";
-    $btn_add = '';
-    $btn_update = '';
-    $btn_delete = '';
-} else {
-    $r=ldap_bind($ds,$ldap_manager,$ldap_password);
-}
-
 // get a list of pam, posix, and application groups
 require ('inc_groups.php');
 
@@ -529,8 +519,8 @@ if (isset($btn_add)) {
         
         $filter = "(uid=$in_uid)";
         $attrs = array ('cn');
-        $sr = @ldap_search ($ds, $ldap_base, $filter, $attrs);  
-        $entries = @ldap_get_entries($ds, $sr);
+        $sr = @ldap_search ($macdirDS, $ldap_base, $filter, $attrs);  
+        $entries = @ldap_get_entries($macdirDS, $sr);
         $uid_cnt = $entries["count"];
         if ($uid_cnt>0) {
             $a_cn = $entries[0]['cn'][0];
@@ -617,13 +607,13 @@ if (isset($btn_add)) {
             
             // add data to directory
             $this_dn = "uid=$in_uid,ou=people,$ldap_base";
-            if (@ldap_add($ds, $this_dn, $ldap_entry)) {
+            if (@ldap_add($macdirDS, $this_dn, $ldap_entry)) {
                 $_SESSION['in_msg'] .= "$ok Directory updated.$ef";
             } else {
                 $_SESSION['in_msg'] 
                     .= "$warn Problem adding $this_dn to directory$ef";
-                $ldapErr = ldap_errno ($ds);
-                $ldapMsg = ldap_error ($ds);
+                $ldapErr = ldap_errno ($macdirDS);
+                $ldapMsg = ldap_error ($macdirDS);
                 $_SESSION['in_msg'] .= "$warn Error: $ldapErr, $ldapMsg<br>";
             }
             
@@ -635,11 +625,11 @@ if (isset($btn_add)) {
                 $posixFilter = "(&(objectclass=posixGroup)";
                 $posixFilter .= "(cn=$in_uid))";
                 $posixReturn = array ('gidNumber','cn');
-                $sr = @ldap_search ($ds, 
+                $sr = @ldap_search ($macdirDS, 
                                     $ldap_base, 
                                     $posixFilter, 
                                     $posixReturn);  
-                $posix = @ldap_get_entries($ds, $sr);
+                $posix = @ldap_get_entries($macdirDS, $sr);
                 $posix_cnt = $posix["count"];
                 
                 // create a posix group for this user
@@ -651,17 +641,17 @@ if (isset($btn_add)) {
                     $posix_attrs['gidNumber'][0] = $in_gidnumber;
                     $posix_attrs['description'][0] = $first_cn;
                     $posix_dn = "cn=$in_uid,$ldap_groupbase";
-                    $r = @ldap_add($ds, $posix_dn, $posix_attrs);
-                    $err = ldap_errno ($ds);
-                    $err_msg = ldap_error ($ds);
+                    $r = @ldap_add($macdirDS, $posix_dn, $posix_attrs);
+                    $err = ldap_errno ($macdirDS);
+                    $err_msg = ldap_error ($macdirDS);
                     if ($err == 0) {
                         $_SESSION['in_msg'] .= "$ok $posix_dn updated.$ef";
                     } else {
                         $_SESSION['in_msg'] 
                             .= "$warn Problem adding $posix_dn to "
                             .  "directory$ef";
-                        $ldapErr = ldap_errno ($ds);
-                        $ldapMsg = ldap_error ($ds);
+                        $ldapErr = ldap_errno ($macdirDS);
+                        $ldapMsg = ldap_error ($macdirDS);
                         $_SESSION['in_msg'] 
                             .= "$warn Error: $ldapErr, $ldapMsg$ef";
                     }
@@ -754,11 +744,11 @@ if (isset($btn_add)) {
     } else {
         $return_list = $fld_list;
         $return_list[] = $krb_attr;
-        $sr = @ldap_read ($ds, $in_dn, $ldap_filter, $return_list);  
-        $info = @ldap_get_entries($ds, $sr);
-        $err = ldap_errno ($ds);
+        $sr = @ldap_read ($macdirDS, $in_dn, $ldap_filter, $return_list);  
+        $info = @ldap_get_entries($macdirDS, $sr);
+        $err = ldap_errno ($macdirDS);
         if ($err) {
-            $err_msg = ldap_error ($ds);
+            $err_msg = ldap_error ($macdirDS);
             $_SESSION['in_msg'] .= "errors: $err $err_msg<br>\n";
         }
         $ret_cnt = $info["count"];
@@ -789,9 +779,9 @@ if (isset($btn_add)) {
                     if (strlen($val_ldap)>0) {
                         // delete the attribute
                         $new_data["$fld"] = $val_ldap;
-                        $r = @ldap_mod_del($ds, $in_dn, $new_data);
-                        $err = ldap_errno ($ds);
-                        $err_msg = ldap_error ($ds);
+                        $r = @ldap_mod_del($macdirDS, $in_dn, $new_data);
+                        $err = ldap_errno ($macdirDS);
+                        $err_msg = ldap_error ($macdirDS);
                         $_SESSION['in_msg'] 
                             .= "$ok $fld: $val_ldap deleted.$ef";
                         if ($err>0) {
@@ -805,9 +795,9 @@ if (isset($btn_add)) {
                     // try and replace it, if that fails try and add it
                     
                     // replace
-                    $r = @ldap_mod_replace($ds, $in_dn, $new_data);
-                    $err = ldap_errno ($ds);
-                    $err_msg = ldap_error ($ds);
+                    $r = @ldap_mod_replace($macdirDS, $in_dn, $new_data);
+                    $err = ldap_errno ($macdirDS);
+                    $err_msg = ldap_error ($macdirDS);
                     if ($err == 0) {
                         $_SESSION['in_msg'] .= "$ok $fld replaced.$ef";
                         
@@ -879,9 +869,9 @@ if (isset($btn_add)) {
             }
             
             // -- add the needed attributes
-            $r = @ldap_mod_add($ds, $in_dn, $add_data);
-            $err = ldap_errno ($ds);
-            $err_msg = ldap_error ($ds);
+            $r = @ldap_mod_add($macdirDS, $in_dn, $add_data);
+            $err = ldap_errno ($macdirDS);
+            $err_msg = ldap_error ($macdirDS);
             if ($err != 0) {
                 $_SESSION['in_msg'] .= "$warn ldap error adding attributes: "
                     . "$err - $err_msg.$ef";
@@ -928,8 +918,8 @@ if (isset($btn_add)) {
             $posixFilter = "(&(objectclass=posixGroup)";
             $posixFilter .= "(cn=$in_uid))";
             $posixReturn = array ('gidNumber','cn');
-            $sr = @ldap_search ($ds, $ldap_base, $posixFilter, $posixReturn);  
-            $posix = @ldap_get_entries($ds, $sr);
+            $sr = @ldap_search ($macdirDS, $ldap_base, $posixFilter, $posixReturn);  
+            $posix = @ldap_get_entries($macdirDS, $sr);
             $posix_cnt = $posix["count"];
             
             // create a posix group for this user
@@ -941,16 +931,16 @@ if (isset($btn_add)) {
                 $posix_attrs['gidNumber'][0] = $in_gidnumber;
                 $posix_attrs['description'][0] = "User's personal group";
                 $posix_dn = "cn=$in_uid,$ldap_groupbase";
-                $r = @ldap_add($ds, $posix_dn, $posix_attrs);
-                $err = ldap_errno ($ds);
-                $err_msg = ldap_error ($ds);
+                $r = @ldap_add($macdirDS, $posix_dn, $posix_attrs);
+                $err = ldap_errno ($macdirDS);
+                $err_msg = ldap_error ($macdirDS);
                 if ($err == 0) {
                     $_SESSION['in_msg'] .= "$ok $posix_dn updated.$ef";
                 } else {
                     $_SESSION['in_msg'] .= "$warn Problem adding $posix_dn to "
                         .  "directory$ef";
-                    $ldapErr = ldap_errno ($ds);
-                    $ldapMsg = ldap_error ($ds);
+                    $ldapErr = ldap_errno ($macdirDS);
+                    $ldapMsg = ldap_error ($macdirDS);
                     $_SESSION['in_msg'] 
                         .= "$warn Error: $ldapErr, $ldapMsg$ef";
                 }
@@ -1010,9 +1000,9 @@ if (isset($btn_add)) {
     
     // delete their posix group if they have one
     $del_dn = "cn=$in_uid,$ldap_groupbase";
-    $r = @ldap_delete($ds, $posix_dn);
-    $err = ldap_errno ($ds);
-    $err_msg = ldap_error ($ds);
+    $r = @ldap_delete($macdirDS, $posix_dn);
+    $err = ldap_errno ($macdirDS);
+    $err_msg = ldap_error ($macdirDS);
     if ($err == 0) {
         $_SESSION['in_msg'] .= "$ok $del_dn deleted.$ef";
     }
@@ -1020,8 +1010,8 @@ if (isset($btn_add)) {
     // delete from other posix groups
     $pg_filter = "(&(objectclass=posixGroup)(memberUid=$in_uid))";
     $pg_attrs = array ('cn','description');
-    $sr = @ldap_search ($ds, $ldap_base, $pg_filter, $pg_attrs);  
-    $pg_group = @ldap_get_entries($ds, $sr);
+    $sr = @ldap_search ($macdirDS, $ldap_base, $pg_filter, $pg_attrs);  
+    $pg_group = @ldap_get_entries($macdirDS, $sr);
     $pg_cnt = $pg_group["count"];
     
     if ($pg_cnt >0) {
@@ -1033,8 +1023,8 @@ if (isset($btn_add)) {
     // delete from pam groups
     $pg_filter = "(&(objectclass=pamGroup)(memberDN=$in_dn))";
     $pg_attrs = array ('cn','description');
-    $sr = @ldap_search ($ds, $ldap_base, $pg_filter, $pg_attrs);  
-    $pg_group = @ldap_get_entries($ds, $sr);
+    $sr = @ldap_search ($macdirDS, $ldap_base, $pg_filter, $pg_attrs);  
+    $pg_group = @ldap_get_entries($macdirDS, $sr);
     $pg_cnt = $pg_group["count"];
     
     if ($pg_cnt >0) {
@@ -1047,8 +1037,8 @@ if (isset($btn_add)) {
     $pg_filter = "(&(objectclass=prideApplication)(memberUid=$in_uid))";
     $pg_filter = "memberUid=$in_uid";
     $pg_attrs = array ('cn','description');
-    $sr = @ldap_search ($ds, $ldap_base, $pg_filter, $pg_attrs);  
-    $pg_group = @ldap_get_entries($ds, $sr);
+    $sr = @ldap_search ($macdirDS, $ldap_base, $pg_filter, $pg_attrs);  
+    $pg_group = @ldap_get_entries($macdirDS, $sr);
     $pg_cnt = $pg_group["count"];
     
     if ($pg_cnt > 0) {
@@ -1058,9 +1048,9 @@ if (isset($btn_add)) {
     }
     
     // now delete the entry
-    $r = @ldap_delete($ds, $in_dn);
-    $err = ldap_errno ($ds);
-    $err_msg = ldap_error ($ds);
+    $r = @ldap_delete($macdirDS, $in_dn);
+    $err = ldap_errno ($macdirDS);
+    $err_msg = ldap_error ($macdirDS);
     if ($err == 0) {
         $_SESSION['in_msg'] .= "$ok $in_dn deleted.$ef";
     } else {

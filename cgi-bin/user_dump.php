@@ -2,12 +2,8 @@
 
 $title = 'MacAllister Directory Search Details';
 $heading = 'MacAllister Directory';
+require('inc_macdir.php');
 require ('inc_header.php');
-require ('/etc/whm/macdir_auth.php');
-
-// -- disable admin access without authentication
-//$ldap_manager = '';
-//$ldap_password = '';
 
 ?>
 
@@ -22,17 +18,17 @@ $filter = '(objectclass=person)';
 $dn_array = ldap_explode_dn ($dn, 1);
 $in_uid = $dn_array[0];
 
-$ds = ldap_connect($ldap_server);
-$r  = ldap_bind($ds,$ldap_manager,$ldap_password);
+$macdirDS = ldap_connect($ldap_server);
+$r  = ldap_bind($macdirDS,$ldap_manager,$ldap_password);
 
-$sr = ldap_read($ds, $base_dn, $filter);  
-if ($entry = ldap_first_entry ($ds, $sr)) {
+$sr = ldap_read($macdirDS, $base_dn, $filter);  
+if ($entry = ldap_first_entry ($macdirDS, $sr)) {
   echo "<table border=\"1\">\n";
   echo "<tr>\n";
   echo " <th>Attribute</th>\n";
   echo " <th>Value</th>\n";
   echo "</tr>\n";
-  $attrs = ldap_get_attributes ($ds, $entry);
+  $attrs = ldap_get_attributes ($macdirDS, $entry);
   $attr_cnt = $attrs["count"];
   $attr_list = array();
   for ($i=0;$i<$attr_cnt;$i++) {
@@ -42,7 +38,7 @@ if ($entry = ldap_first_entry ($ds, $sr)) {
   asort ($attr_list);
   foreach ($attr_list as $this_attr) {
     $err_level = error_reporting (E_ERROR | E_PARSE);
-    $vals = ldap_get_values ($ds, $entry, $this_attr);
+    $vals = ldap_get_values ($macdirDS, $entry, $this_attr);
     error_reporting ($err_level);
     $val_cnt = $vals["count"];
     if ($val_cnt > 0) {

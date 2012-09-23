@@ -5,18 +5,13 @@
 // description: This form is for updating phone information for people
 //              listed in the LDAP Directory.
 
-// Open a session and check for authorization
-require('whm_php_sessions.inc');
-require('whm_php_auth.inc');
-whm_auth("ldapadmin");
-
 require('inc_config.php');
+require('inc_macdir.php');
 
 $title = 'User Maintenance';
 $heading = 'User Maintenance';
 
 require ('inc_header.php');
-require('/etc/whm/macdir_auth.php');
 $ds = ldap_connect($ldap_server);
 
 // -----------------------------------------------------
@@ -38,10 +33,10 @@ if (strlen($in_uid)>0) {
 if (strlen($ldap_filter)>0) {
 
   $return_attr = array();
-  $r=ldap_bind($ds,$ldap_manager,$ldap_password);
+  $r=ldap_bind($macdirDS,$ldap_manager,$ldap_password);
   $old_err = error_reporting(E_ERROR | E_PARSE);
-  $sr = ldap_search ($ds, $ldap_base, $ldap_filter, $return_attr);
-  $info = ldap_get_entries($ds, $sr);
+  $sr = ldap_search ($macdirDS, $ldap_base, $ldap_filter, $return_attr);
+  $info = ldap_get_entries($macdirDS, $sr);
   $tmp_err = error_reporting($old_err);
   $ret_cnt = $info["count"];
   if ($ret_cnt == 1) {
@@ -63,8 +58,8 @@ if (strlen($ldap_filter)>0) {
     $posixFilter = "(&(objectclass=posixGroup)(memberUid=$thisUID))";
     $posixReturn = array ('gidNumber','cn','description');
     $old_err = error_reporting(E_ERROR | E_PARSE);
-    $sr = ldap_search ($ds, $ldap_groupbase, $posixFilter, $posixReturn);
-    $posixEntries = ldap_get_entries($ds, $sr);
+    $sr = ldap_search ($macdirDS, $ldap_groupbase, $posixFilter, $posixReturn);
+    $posixEntries = ldap_get_entries($macdirDS, $sr);
     $tmp_err = error_reporting($old_err);
     $thisPosix_cnt = $posixEntries["count"];
     $thisPosix = array();
@@ -86,8 +81,8 @@ if (strlen($ldap_filter)>0) {
     $pamFilter = "(&(objectclass=pamGroup)(memberDN=$thisDN))";
     $pamReturn = array ('cn','description');
     $old_err = error_reporting(E_ERROR | E_PARSE);
-    $sr = ldap_search ($ds, $ldap_groupbase, $pamFilter, $pamReturn);
-    $thisPamEntries = ldap_get_entries($ds, $sr);
+    $sr = ldap_search ($macdirDS, $ldap_groupbase, $pamFilter, $pamReturn);
+    $thisPamEntries = ldap_get_entries($macdirDS, $sr);
     $tmp_err = error_reporting($old_err);
     $thisPam_cnt = $thisPamEntries["count"];
     $thisPam = array();
@@ -106,8 +101,8 @@ if (strlen($ldap_filter)>0) {
     $aFilter = "(&(objectclass=prideApplication)(memberUid=$thisUID))";
     $aRetAttrs = array ('cn','description');
     $old_err = error_reporting(E_ERROR | E_PARSE);
-    $sr = ldap_search ($ds, $ldap_base, $aFilter, $aRetAttrs);
-    $aEntries = ldap_get_entries($ds, $sr);
+    $sr = ldap_search ($macdirDS, $ldap_base, $aFilter, $aRetAttrs);
+    $aEntries = ldap_get_entries($macdirDS, $sr);
     $tmp_err = error_reporting($old_err);
     $aCnt = $aEntries["count"];
     $thisApps = array();
@@ -948,6 +943,5 @@ foreach ($samba_acct_flags['desc'] as $f_id => $f_desc) {
 </form>
 
 <?php
- ldap_close($ds);
  require ('inc_footer.php');
 ?>
