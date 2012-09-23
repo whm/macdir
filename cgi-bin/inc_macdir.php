@@ -1,8 +1,8 @@
 <?php
 
 // Get LDAP directory properties
-$macdirPROPS = '/etc/whm'.$_SERVER['HTTP_HOST'].'macdir.conf';
-$fh = fopen(macdirPROPS, 'r');
+$macdirPROPS = '/etc/whm/macdir.'.$_SERVER['HTTP_HOST'].'.conf';
+$fh = fopen($macdirPROPS, 'r');
 $macdirLDAP = array();
 if ($fh) {
     while (($line = fgets($fh, 512)) != false) {
@@ -56,8 +56,4 @@ if ($menuLoggedIn>0) {
         }
     }
 }
-
-// Make sure data from the directory displays correctly 
-// by setting the character set.
-header("Content-Type: text/html; charset=UTF-8");
 ?>
