@@ -13,7 +13,7 @@ if ($fh) {
         }
     }
 } else {
-    die "ERROR: Problem reading $macdirPROPS\n";
+    die("ERROR: Problem reading $macdirPROPS\n");
 }
 
 $macdirDS = ldap_connect('ldap://'.$macdirDS['ldap_server']);
@@ -21,20 +21,20 @@ ldap_set_option($macdirDS, LDAP_OPT_PROTOCOL_VERSION, 3);
 if($macdirDS) {
     $r = ldap_bind($macdirDS);
 } else {
-    die "ERROR: Unable to connect to $ldap_server\n";
+    die("ERROR: Unable to connect to $ldap_server\n");
 }
 
 # Bind to the directory
 if ( isset($macdirPROPS['ldap_tgt']) ) {
     putenv('KRB5CCNAME='.$macdirPROPS['ldap_tgt']);
     if (!ldap_sasl_bind($macdirDS,'','','GSSAPI')) {
-        die "ERROR: GSSAPI bind to the directory failed\n";
+        die("ERROR: GSSAPI bind to the directory failed\n");
     }
 } elseif ( isset($macdirPROPS['ldap_bind_dn']) ) {
     if ( !ldap_bind($macdirDS,
                     $macdirPROPS['ldap_bind_dn'],
                     $macdirPROPS['ldap_bind_password']) ) {
-        die "ERROR: Simple bind to the directory failed\n";
+        die("ERROR: Simple bind to the directory failed\n");
     }
 }
   
