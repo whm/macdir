@@ -35,7 +35,6 @@ $form["commonname"]         = "commonname";
 $form["postaladdress"]      = "postaladdress";
 $form["state"]              = "st";
 $form["telephone_number"]   = "telephonenumber";
-$form["workphone"]          = "workphone";
 $form["cell_number"]        = "mobile";
 $form["email"]              = "mail";
 $form["maildistributionid"] = "maildistributionid";
@@ -185,17 +184,6 @@ for the first name will return matches for Bill and William.
   </tr>
   <tr> 
     <td> 
-      <div align="right">Work Telephone Number:</div>
-    </td>
-    <td> 
-      <input type="text" 
-             name="in_workphone" 
-             value="<?php print $_SESSION['SEAR_workphone'];?>"
-             size="32">
-    </td>
-  </tr>
-  <tr> 
-    <td> 
       <div align="right">Cell Phone Number:</div>
     </td>
     <td> 
@@ -246,7 +234,6 @@ if ( isset($base_filter) ) {
                        'mail',
                        'mobile',
                        'telephonenumber',
-                       'workphone',
                        'uid');
 
   $sr = ldap_search($macdirDS, $base_dn, $filter, $return_attr);  
@@ -267,10 +254,16 @@ if ( isset($base_filter) ) {
       $a_cn = $info[$i]["cn"][0];
       $a_uid = $info[$i]["uid"][0];
 
-      $a_mail = $info[$i]["mail"][0];
-      $a_mobile = $info[$i]["mobile"][0];
-      $a_workphone = $info[$i]["workphone"][0];
-      $a_phone = $info[$i]["telephonenumber"][0];
+      $a_mail = $a_mobile = $a_phone = '';
+      if ( isset($info[$i]["mail"][0]) ) {
+          $a_mail = $info[$i]["mail"][0];
+      }
+      if ( isset($info[$i]["mobile"][0]) ) { 
+          $a_mobile = $info[$i]["mobile"][0];
+      }
+      if ( isset($info[$i]["telephonenumber"][0]) ) { 
+          $a_phone = $info[$i]["telephonenumber"][0] ;
+      }
       $a_maint_link = '';
       if ($ldap_admin>0) {
         $a_maint_link = '<a href="user_maint.php'
@@ -290,7 +283,6 @@ if ( isset($base_filter) ) {
       echo " <td>$a_maint_link$detail_link&nbsp;$a_cn</td>\n";
       echo " <td><a href=\"mailto:$a_mail\">$a_mail</a>&nbsp;</td>\n";
       echo " <td>$a_phone &nbsp;</td>\n";
-      echo " <td>$a_workphone &nbsp;</td>\n";
       echo " <td>$a_mobile &nbsp;</td>\n";
       echo "</tr>\n";
     }
