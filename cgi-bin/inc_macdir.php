@@ -3,20 +3,20 @@
 // Get LDAP directory properties
 $macdirPROPS = '/etc/whm/macdir.'.$_SERVER['HTTP_HOST'].'.conf';
 $fh = fopen($macdirPROPS, 'r');
-$macdirLDAP = array();
+$macdirPROPS = array();
 if ($fh) {
     while (($line = fgets($fh, 512)) != false) {
         if (preg_match("/^\s*$/", $line))  { continue; }
         if (preg_match("/^\s*\#/", $line)) { continue; }
         if (preg_match("/\s*([\w\d\-_]+)\s*=\s*(\S+)/", $line, $mat)) {
-            $macdirLDAP[$mat[1]] = $mat[2];
+            $macdirPROPS[$mat[1]] = $mat[2];
         }
     }
 } else {
     die("ERROR: Problem reading $macdirPROPS\n");
 }
 
-$macdirDS = ldap_connect('ldap://'.$macdirDS['ldap_server']);
+$macdirDS = ldap_connect('ldap://'.$macdirPROPS['ldap_server']);
 ldap_set_option($macdirDS, LDAP_OPT_PROTOCOL_VERSION, 3); 
 if($macdirDS) {
     $r = ldap_bind($macdirDS);
