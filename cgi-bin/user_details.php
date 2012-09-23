@@ -29,7 +29,7 @@ if ( isset($dn) || isset($in_uid) ) {
     $_SESSION['s_dn'] = $_SESSION['s_uid'] = '';
 }
 if ( isset($dn) )     {$dn     = $_SESSION['s_dn'];}
-if ( inset($in_uid) ) {$in_uid = $_SESSION['s_uid'];}
+if ( isset($in_uid) ) {$in_uid = $_SESSION['s_uid'];}
 if ( isset($dn) && insset($in_uid) ) {
     $return_attr = array('cn');
     $filter = "(&(objectclass=person)(uid=$in_uid))";
