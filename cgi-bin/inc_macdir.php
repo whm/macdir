@@ -1,7 +1,7 @@
 <?php
 
 // Get LDAP directory properties
-macdirPROPS = '/etc/whm'.$_SERVER['HTTP_HOST'].'macdir.conf';
+$macdirPROPS = '/etc/whm'.$_SERVER['HTTP_HOST'].'macdir.conf';
 $fh = fopen(macdirPROPS, 'r');
 $macdirLDAP = array();
 if ($fh) {
