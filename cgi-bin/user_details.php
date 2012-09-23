@@ -5,8 +5,8 @@
 
 $title = 'MacAllister Directory Search Details';
 $heading = "A Person's Details";
-require ('inc_header.php');
-require ('/etc/whm/macdir_auth.php');
+require('inc_macdir.php');
+require('inc_header.php');
 
 # -- print a row if there is something to print
 
@@ -22,12 +22,6 @@ function prt_row($t, $v) {
     }
 }
 
-// -- disable admin access without authentication
-$ds = ldap_connect($ldap_server);
-$r  = ldap_bind($ds,
-                $_SESSION['whm_directory_user_dn'],
-                $_SESSION['whm_credential']);
-
 $label_font = '<font face="Arial, Helvetica, sans-serif">';
 $data_font = '<font face="Times New Roman, Times, serif">';
 
@@ -39,8 +33,8 @@ if (strlen($in_uid) == 0) {$in_uid = $_SESSION['s_uid'];}
 if (strlen($dn) == 0 && strlen($in_uid)>0) {
     $return_attr = array('cn');
     $filter = "(&(objectclass=person)(uid=$in_uid))";
-    $sr = @ldap_search($ds, $ldap_base, $filter, $return_attr);
-    $info = @ldap_get_entries($ds, $sr);
+    $sr = @ldap_search($macdirDS, $ldap_base, $filter, $return_attr);
+    $info = @ldap_get_entries($macdirDS, $sr);
     $ret_cnt = $info["count"];
     if ($ret_cnt>0) {
         $dn = $info[0]["dn"];
@@ -63,14 +57,14 @@ $dump_url = 'user_dump.php?dn=' . urlencode($dn);
 $user_dn  = $dn;
 $filter   = '(objectclass=person)';
 
-$sr = ldap_read($ds, $user_dn, $filter);  
-if ($entry = ldap_first_entry ($ds, $sr)) {
-    $attrs = ldap_get_attributes ($ds, $entry);
+$sr = ldap_read($macdirDS, $user_dn, $filter);  
+if ($entry = ldap_first_entry ($macdirDS, $sr)) {
+    $attrs = ldap_get_attributes ($macdirDS, $entry);
     $attr_cnt = $attrs["count"];
     for ($i=0;$i<$attr_cnt;$i++) {
         $this_attr = $attrs[$i];
         $err_level = error_reporting (E_ERROR | E_PARSE);
-        $vals = ldap_get_values ($ds, $entry, $attrs[$i]);
+        $vals = ldap_get_values ($macdirDS, $entry, $attrs[$i]);
         error_reporting ($err_level);
         $this[$this_attr] = $vals[0];
     }
@@ -109,8 +103,8 @@ if ($entry = ldap_first_entry ($ds, $sr)) {
     
     $filter = "(&(objectclass=pridelistobject)(prideURLPrivate=N))";
     $return_attr = array();
-    $sr = ldap_search($ds, $user_dn, $filter, $return_attr);  
-    $info = ldap_get_entries($ds, $sr);
+    $sr = ldap_search($macdirDS, $user_dn, $filter, $return_attr);  
+    $info = ldap_get_entries($macdirDS, $sr);
     $ret_cnt = $info["count"];
     if ($ret_cnt) {
         $url_index = array();
