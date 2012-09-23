@@ -253,7 +253,10 @@ if ( isset($base_filter) ) {
                        'workphone',
                        'uid');
 
-  $sr = ldap_search($macdirDS, $base_dn, $filter, $return_attr);  
+  $sr = ldap_search($macdirDS, 
+                    $macdirPROPS['ldap_base_dn'], 
+                    $filter, 
+                    $return_attr);  
   $info = ldap_get_entries($macdirDS, $sr);
   $ret_cnt = $info["count"];
   if ($ret_cnt) {
