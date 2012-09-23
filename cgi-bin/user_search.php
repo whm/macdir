@@ -253,23 +253,8 @@ if ( isset($base_filter) ) {
                        'workphone',
                        'uid');
 
-  $ds = ldap_connect('ldap://'.$ldap_server);
-  ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3); 
-  if($ds) {
-    $r = ldap_bind($ds);
-  } else {
-    $msg .= "Unable to connect to $ldap_server!<br>\n";
-  }
-
-  # SASL Bind
-  if (!ldap_sasl_bind($ds,'','','GSSAPI')) {
-    $msg .= "GSSAPI bind to the directory failed<br>\n";
-  } else {
-    $msg .= "GSSAPI bind complete<br>\n";
-  }
-  
-  $sr = ldap_search($ds, $base_dn, $filter, $return_attr);  
-  $info = ldap_get_entries($ds, $sr);
+  $sr = ldap_search($macdirDS, $base_dn, $filter, $return_attr);  
+  $info = ldap_get_entries($macdirDS, $sr);
   $ret_cnt = $info["count"];
   if ($ret_cnt) {
     echo "<table border=\"1\" cellpadding=\"2\">\n";

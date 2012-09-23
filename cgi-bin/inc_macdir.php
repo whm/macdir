@@ -16,7 +16,7 @@ if ($fh) {
     die "ERROR: Problem reading $macdirPROPS\n";
 }
 
-$macdirDS = ldap_connect('ldap://'.$ldap_server);
+$macdirDS = ldap_connect('ldap://'.$macdirDS['ldap_server']);
 ldap_set_option($macdirDS, LDAP_OPT_PROTOCOL_VERSION, 3); 
 if($macdirDS) {
     $r = ldap_bind($macdirDS);
