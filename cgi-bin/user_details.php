@@ -30,7 +30,7 @@ if ( isset($dn) || isset($in_uid) ) {
 }
 if ( isset($dn) )     {$dn     = $_SESSION['s_dn'];}
 if ( isset($in_uid) ) {$in_uid = $_SESSION['s_uid'];}
-if ( isset($dn) && insset($in_uid) ) {
+if ( isset($dn) && isset($in_uid) ) {
     $return_attr = array('cn');
     $filter = "(&(objectclass=person)(uid=$in_uid))";
     $sr = @ldap_search($macdirDS, $ldap_base, $filter, $return_attr);
