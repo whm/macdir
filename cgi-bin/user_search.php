@@ -10,10 +10,6 @@ $heading = 'MacAllister Directory';
 require('inc_macdir.php');
 require('inc_header.php');
 
-// -- disable admin access without authentication
-$ldap_manager = '';
-$ldap_password = '';
-
 // clean out the messages
 $msg = '';
 
@@ -245,7 +241,7 @@ for the first name will return matches for Bill and William.
 
 if ( isset($base_filter) ) {
   $filter = '(&(objectclass=person)'.$base_filter.')';
-  $base_dn = $ldap_base;
+  $base_dn = $macdirPROPS['ldap_base_dn'];
   $return_attr = array('cn',
                        'mail',
                        'mobile',
@@ -253,10 +249,7 @@ if ( isset($base_filter) ) {
                        'workphone',
                        'uid');
 
-  $sr = ldap_search($macdirDS, 
-                    $macdirPROPS['ldap_base_dn'], 
-                    $filter, 
-                    $return_attr);  
+  $sr = ldap_search($macdirDS, $base_dn, $filter, $return_attr);  
   $info = ldap_get_entries($macdirDS, $sr);
   $ret_cnt = $info["count"];
   if ($ret_cnt) {
