@@ -4,8 +4,8 @@
 $g_filter = "(objectclass=pamGroup)";
 $g_attrs = array ('cn','description');
 $old_err = error_reporting(E_ERROR | E_PARSE);
-$sr = ldap_search ($ds, $ldap_groupbase, $g_filter, $g_attrs);  
-$g_group = ldap_get_entries($ds, $sr);
+$sr = ldap_search ($macdirDS, $ldap_groupbase, $g_filter, $g_attrs);  
+$g_group = ldap_get_entries($macdirDS, $sr);
 $tmp_err = error_reporting($old_err);
 $pam_group_cnt = $g_group["count"];
 
@@ -22,8 +22,8 @@ if ($pam_group_cnt >0) {
 $g_filter = "(objectclass=posixGroup)";
 $g_attrs = array ('cn','description');
 $old_err = error_reporting(E_ERROR | E_PARSE);
-$sr = ldap_search ($ds, $ldap_groupbase, $g_filter, $g_attrs);  
-$g_group = ldap_get_entries($ds, $sr);
+$sr = ldap_search ($macdirDS, $ldap_groupbase, $g_filter, $g_attrs);  
+$g_group = ldap_get_entries($macdirDS, $sr);
 $tmp_err = error_reporting($old_err);
 $posix_group_cnt = $g_group["count"];
 
@@ -43,8 +43,8 @@ if ($posix_group_cnt >0) {
 $g_filter = "(&(objectclass=posixGroup)(cn=fs-*))";
 $g_attrs = array ('cn','description');
 $old_err = error_reporting(E_ERROR | E_PARSE);
-$sr = ldap_search ($ds, $ldap_groupbase, $g_filter, $g_attrs);
-$g_group = ldap_get_entries($ds, $sr);
+$sr = ldap_search ($macdirDS, $ldap_groupbase, $g_filter, $g_attrs);
+$g_group = ldap_get_entries($macdirDS, $sr);
 $tmp_err = error_reporting($old_err);
 $fs_group_cnt = $g_group["count"];
 
@@ -62,8 +62,8 @@ if ($fs_group_cnt >0) {
 // get a list of application groups 
 $g_filter = "(objectclass=prideApplication)";
 $g_attrs = array ('cn','description');
-$sr = @ldap_search ($ds, $ldap_base, $g_filter, $g_attrs);  
-$g_group = @ldap_get_entries($ds, $sr);
+$sr = @ldap_search ($macdirDS, $ldap_base, $g_filter, $g_attrs);  
+$g_group = @ldap_get_entries($macdirDS, $sr);
 $app_group_cnt = $g_group["count"];
 
 $app_groups = array();
@@ -78,8 +78,8 @@ if ($app_group_cnt >0) {
 // get a list of NT Domains
 $g_filter = "(objectclass=sambaDomain)";
 $g_attrs = array ('sambadomainname','sambasid','cn','iphostnumber');
-$sr = @ldap_search ($ds, $ldap_domainbase, $g_filter, $g_attrs);
-$g_group = @ldap_get_entries($ds, $sr);
+$sr = @ldap_search ($macdirDS, $ldap_domainbase, $g_filter, $g_attrs);
+$g_group = @ldap_get_entries($macdirDS, $sr);
 $samba_domain_cnt = $g_group["count"];
 
 $samba_domains = array();

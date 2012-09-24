@@ -12,7 +12,6 @@ $title = 'User Maintenance';
 $heading = 'User Maintenance';
 
 require ('inc_header.php');
-$ds = ldap_connect($ldap_server);
 
 // -----------------------------------------------------
 // get a list of pam and application groups
@@ -22,6 +21,7 @@ require('inc_groups.php');
 // ---------------------------------------------------------
 // Lookup an entry
 
+$msg = '';
 $entry_found = 0;
 $add_delete_flag = 1;
 $thisUID = $thisDN = $ldap_filter = '';
@@ -33,7 +33,6 @@ if (strlen($in_uid)>0) {
 if (strlen($ldap_filter)>0) {
 
   $return_attr = array();
-  $r=ldap_bind($macdirDS,$ldap_manager,$ldap_password);
   $old_err = error_reporting(E_ERROR | E_PARSE);
   $sr = ldap_search ($macdirDS, $ldap_base, $ldap_filter, $return_attr);
   $info = ldap_get_entries($macdirDS, $sr);
