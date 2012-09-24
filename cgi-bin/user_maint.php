@@ -41,7 +41,7 @@ if (strlen($ldap_filter)>0) {
   if ($ret_cnt == 1) {
      $entry_found = 1;
      $in_uid = $info[0]["uid"][0];
-  } elseif ($retcnt > 1) {
+  } elseif ($ret_cnt > 1) {
      $msg .= "More than on entry found for $ldap_filter search.\n";
   } else {
      $msg .= "No entry found.\n";
