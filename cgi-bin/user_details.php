@@ -6,7 +6,6 @@
 $title = 'MacAllister Directory Search Details';
 $heading = "A Person's Details";
 require('inc_macdir.php');
-require('inc_header.php');
 
 # -- print a row if there is something to print
 
@@ -25,21 +24,7 @@ function prt_row($t, $v) {
 $label_font = '<font face="Arial, Helvetica, sans-serif">';
 $data_font = '<font face="Times New Roman, Times, serif">';
 
-if ( isset($dn) || isset($in_uid) ) {
-    $_SESSION['s_dn'] = $_SESSION['s_uid'] = '';
-}
-if ( isset($dn) )     {$dn     = $_SESSION['s_dn'];}
-if ( isset($in_uid) ) {$in_uid = $_SESSION['s_uid'];}
-if ( isset($dn) && isset($in_uid) ) {
-    $return_attr = array('cn');
-    $filter = "(&(objectclass=person)(uid=$in_uid))";
-    $sr = @ldap_search($macdirDS, $ldap_base, $filter, $return_attr);
-    $info = @ldap_get_entries($macdirDS, $sr);
-    $ret_cnt = $info["count"];
-    if ($ret_cnt>0) {
-        $dn = $info[0]["dn"];
-    }
-} elseif (strlen($dn) == 0) {
+if ( !isset($_REQUEST['dn']) && !isset($_SESSION['s_dn']) ) {
     header ("REFRESH: 0; URL=user_search");
     echo "<html>\n";
     echo "<header><title>MacAllister Directory</title></head>\n";
@@ -49,12 +34,15 @@ if ( isset($dn) && isset($in_uid) ) {
     echo "</html>\n";
     exit;
 }
+require('inc_header.php');
 
-$_SESSION['s_dn']  = $dn;
-$_SESSION['s_uid'] = $in_uid;
+if ( !isset($_REQUEST['dn']) ) {
+  $_REQUEST['dn'] = $_SESSION['s_dn'];
+}
+$_SESSION['s_dn']  = $_REQUEST['dn'];
 
-$dump_url = 'user_dump.php?dn=' . urlencode($dn);
-$user_dn  = $dn;
+$dump_url = 'user_dump.php?dn=' . urlencode($_REQUEST['dn']);
+$user_dn  = $_REQUEST['dn'];
 $filter   = '(objectclass=person)';
 
 $resetList = array ('givenName',

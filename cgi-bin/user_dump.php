@@ -13,13 +13,10 @@ require ('inc_header.php');
 </div>
 <?php
 
-$base_dn = $dn;
+$base_dn = $_REQUEST['dn'];
 $filter = '(objectclass=person)';
-$dn_array = ldap_explode_dn ($dn, 1);
+$dn_array = ldap_explode_dn ($_REQUEST['dn'], 1);
 $in_uid = $dn_array[0];
-
-$macdirDS = ldap_connect($ldap_server);
-$r  = ldap_bind($macdirDS,$ldap_manager,$ldap_password);
 
 $sr = ldap_read($macdirDS, $base_dn, $filter);  
 if ($entry = ldap_first_entry ($macdirDS, $sr)) {
