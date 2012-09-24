@@ -461,17 +461,6 @@ function checkIt() {
    <input type="text" name="in_telephonenumber" value="<?php print $z;?>"></td>
 </tr>
 <tr>
- <td align="right">Work Telephone Number:</td>
-   <?php
-     $z = '';
-     if (isset($info[0]["workphone"][0])) {
-       $z = $info[0]["workphone"][0];
-     }
-   ?>
- <td colspan="5">
-   <input type="text" name="in_workphone" value="<?php print $z;?>"></td>
-</tr>
-<tr>
  <td align="right">Cell Telephone Number:</td>
    <?php
      $z = '';
@@ -590,7 +579,10 @@ function checkIt() {
  <td align="right">Mail Aliases:</td>
  <td colspan="5">
   <?php
-    $ma_cnt = $info[0]["mailalias"]["count"];
+    $ma_cnt = 0;
+    if ( isset($info[0]["mailalias"]["count"]) ) {
+       $ma_cnt = $info[0]["mailalias"]["count"];
+    }
     echo "    <input type=\"hidden\" name=\"in_mailalias_cnt\" value=\"$ma_cnt\">\n";
     if ($ma_cnt>0) {
       for ($i=0; $i<$ma_cnt; $i++) {
@@ -636,7 +628,7 @@ function checkIt() {
   </td>
 </tr>
 
-<?php if (strlen($info[0]["uidnumber"][0]) == 0) {?>
+<?php if ( ! isset($info[0]["uidnumber"][0]) ) {?>
 <tr>
  <td align="right">Add Linux Access:</td>
  <td colspan="5">
@@ -747,7 +739,7 @@ if (count($fs_groups)>0) {
     $posix_checked[$group] = '';
   }
 }
-if (count($thisPosix)>0) {
+if ( isset($thisPosix) ) {
   foreach ($thisPosix as $group => $description) {
     $posix_display[$group] = $description;
     $posix_checked[$group] = 'CHECKED';
