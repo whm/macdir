@@ -5,8 +5,8 @@
 
 $title = "Search My Links";
 $heading = "Search My Links";
+require('inc_macdir.php');
 require('inc_header.php');
-require ('/etc/whm/macdir_auth.php');
 
 # create a form to attribute mapping
 $form["commonname"]  = "cn";
@@ -159,32 +159,38 @@ if ( isset($_SESSION['WEBAUTH_USER']) ) {
 $my_base_dn = 'uid='.$_SESSION['whm_directory_user']
        .','.$ldap_user_base;
 $base_filter .= $private_filter;
-$ds = ldap_connect($ldap_server);
-$r  = ldap_bind($ds,
-                $_SESSION['whm_directory_user_dn'],
-                $_SESSION['whm_credential']);
 $filter = '(&(objectclass=pridelistobject)'.$base_filter.')';
 $thisFilter = "(&";
 $thisFilter .= "(objectclass=person)";
 $thisFilter .= "(uid=".$this_uid.")";
 $thisFilter .= ")";
 $returnAttr = array('cn');
-$sr = ldap_search($ds, $my_base_dn, $thisFilter, $returnAttr);  
-$r = ldap_get_entries($ds, $sr);
+$sr = ldap_search($macdirDS, $my_base_dn, $thisFilter, $returnAttr);  
+$r = ldap_get_entries($macdirDS, $sr);
 if ($r["count"]) {
     $base_db = $r['dn'];
 }
 
+objectClass: whmPersonalNote
+cn: trainmaster-mysql
+description: Trainmaster mysql
+whmUrlVisibility: private
+uid: mac
+whmCredential: wardetee1948
+
 $return_attr = array('cn',
                      'description',
-                     'prideurl',
-                     'linkuid',
-                     'pridecredential',
-                     'prideurlprivate');
-$sr = ldap_search($ds, $my_base_dn, $filter, $return_attr);  
-ldap_sort($ds, $sr, 'description');
-$info = ldap_get_entries($ds, $sr);
-$ret_cnt = $info["count"];
+                     'whmCredential',
+                     'whmEntryStatus',
+                     'whmEntryVisibility',
+                     'whmUrl',
+                     'whmUrlVisibility' );
+
+$sr = ldap_search($macdirDS, $my_base_dn, $filter, $return_attr);  
+ldap_sort($macdirDS, $sr, 'description');
+$info = ldap_get_entries($macdirDS, $sr);
+$ret_cnt = 0;
+if ( isset($info['count']) ) {$ret_cnt = $info["count"];}
 if ($ret_cnt) {
     echo "<table border=\"1\" cellpadding=\"2\">\n";
     echo "<tr>\n";
@@ -198,13 +204,13 @@ if ($ret_cnt) {
         $a_cn = $info[$i]["cn"][0];
         $a_cn_url = urlencode($a_cn);
         
-        $a_maint_link = '<a href="my_links_maint.php'
+        $a_maint_link = '<a href="notes_maint.php'
             .'?in_cn=' . $a_cn_url
             .'"><img src="/macdir-images/icon-edit.png" border="0"></a>';
         $a_href_url = '<a href="'
-            .htmlentities($info[$i]["prideurl"][0])
+            .htmlentities($info[$i]["whmurl"][0])
             .'" target="_BLANK">'
-            .$info[$i]["prideurl"][0].'</a>';
+            .$info[$i]["whmurl"][0].'</a>';
         
         echo "<tr>\n";
         echo ' <td valign="center">'.$a_maint_link

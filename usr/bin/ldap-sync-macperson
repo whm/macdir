@@ -1,0 +1,889 @@
+#!/usr/bin/perl
+#
+# ldap-sync-tree - Replace a ldap directory branch to another branch
+#                  in the same directory.
+#
+# Written by Bill MacAllister <whm@stanford.edu>
+#
+# Copyright 2012 Board of Trustees, Leland Stanford Jr. University
+
+##############################################################################
+# Site configuration
+##############################################################################
+
+use AppConfig qw(:argcount :expand);
+use Convert::ASN1;
+use Getopt::Long;
+use Net::LDAPapi;
+use Pod::Usage;
+use strict;
+
+our @IN_ATTRS  = ();
+our %OCCLASSES = ();
+our %OUT_ATTRS = ();
+our %OUT_OCS   = ();
+our %SUB       = ();
+
+our %dn_attrs;
+
+our $CONF;
+our $DEBUG_TIME;
+our $LDAP_IN;
+our $LDAP_OUT;
+
+our $opt_debug;
+our $opt_help;
+our $opt_manual;
+our $opt_fullsync;
+our $opt_refresh;
+our $opt_update;
+
+use constant NULL => '';
+use constant LDAP_okay => -1;
+
+our %PEOPLE_MAP = ('maildistributionid' => 'mailgroup');
+
+our %NOTE_MAP = ('pridecredential' => 'whmcredential',
+                 'prideurl'        => 'whmurl',
+                 'prideurlprivate' => 'whmurlvisibility',
+                 'linkuid'         => 'uid'
+);
+
+##########################################################################
+# Utility functions
+##########################################################################
+
+# ------------------------------------------------------------
+# Trim leading and trailing spaces
+
+sub trim {
+    my @parms = @_;
+    for (@parms) { 
+        s/^\s+//;
+        s/\s+$//;
+    }
+    return wantarray ? @parms : $parms[0];
+}
+
+# ------------------------------------------------------------
+# Lower case everything and remove leading and trailing spaces
+
+sub trimLC {
+    my @parms = @_;
+    for my $s (@parms) { 
+        $s =~ s/^\s+//;
+        $s =~ s/\s+$//;
+        $s = lc($s);
+    }
+    return wantarray ? @parms : $parms[0];
+}
+
+# ------------------------------------------------------------
+# Remove all white space
+
+sub squeeze {
+    my @parms = @_;
+    for (@parms) { 
+        s/\s+//g;
+    }
+    return wantarray ? @parms : $parms[0];
+}
+
+# ------------------------------------------------------------
+# Generate informational and error messages.  Die if the 
+# severify is set to 'fatal'.
+
+sub msg {
+    my ($severity, $msg) = @_;
+    print uc($severity)." $msg\n";
+    syslog('warning', uc($severity)." $msg");
+    die $msg if $severity eq 'fatal';
+}
+
+# ------------------------------------------------------------
+# Print debugging output 
+
+sub dbg {
+    (my $tmp) = @_;
+    my $now = time;
+    my $elapsed = $now - $DEBUG_TIME;
+    print "$now ($elapsed) $tmp \n";
+    $DEBUG_TIME = $now;
+    return;
+}
+
+# ------------------------------------------------------------
+# Perform a dns lookup if we are supplied with a name and make 
+# sure the host exists in the DNS.
+
+sub valid_host {
+
+    my ($hn) = @_;
+    my @ip = split qw(\.), $hn;
+
+    # check for a ip literal
+    if (scalar(@ip) == 4) {
+        my $okay = 1;
+        for (my $i=0; $i<4; $i++) {
+            $okay = 0 if ($ip[$i] !~ /^\d+$/);
+            $okay = 0 if ($ip[$i] < 0);
+            $okay = 0 if ($ip[$i] > 255);
+            last unless $okay;
+        }
+        return 1 if $okay;
+    }
+
+    # If we don't get an octets it is because it is a bad hostname
+    my $raw_addr = (gethostbyname($hn))[4];
+    my @octets = unpack("C4", $raw_addr);
+    return 0 unless scalar(@octets);
+
+    # Don't use the hostname, but might need it sometime
+    my $ip = join(".", @octets);
+    return 1;
+}
+
+# ------------------------------------------------------------
+# Read the configuration file
+
+sub read_config {
+    my ($conf_file) = @_;
+    $CONF = AppConfig->new({});
+
+    $CONF->define('in_base_dn',
+                  {DEFAULT  => 'ou=people,dc=macallister,dc=grass-valley,dc=ca,\
+dc=us',
+                   ARGCOUNT => ARGCOUNT_ONE});
+    $CONF->define('in_host',
+                  {DEFAULT  => 'ldap.ca-zephyr.org',
+                   ARGCOUNT => ARGCOUNT_ONE});
+    $CONF->define('in_auth_dn',
+                  {ARGCOUNT => ARGCOUNT_ONE});
+    $CONF->define('in_password',
+                  {ARGCOUNT => ARGCOUNT_ONE});
+    $CONF->define('out_base_dn',
+                  {DEFAULT => 'cn=people,dc==ca-zephyr,dc=org',
+                   ARGCOUNT => ARGCOUNT_ONE});
+    $CONF->define('out_host',
+                  {DEFAULT => 'tektonic.ca-zephyr.org',
+                   ARGCOUNT => ARGCOUNT_ONE});
+    $CONF->file($conf_file);
+
+    # Set debugging if requested in the configuration file
+    $opt_debug   = 1 if $CONF->debug();
+
+
+    $CONF->file($conf_file);
+    return;
+}
+
+##########################################################################
+# LDAP functions
+##########################################################################
+
+# ------------------------------------------------------------
+# Bind to the directory for reading
+
+sub ldap_connect {
+
+    my %in = @_;                                                                
+                                                                                
+    my $ldap;
+    dbg("binding to server ".$in{'host'}) if ($in{'debug'});
+    if ( ($ldap = Net::LDAPapi->new ($in{'host'})) == -1 ) {
+        die "ERROR Connection to ".$in{'host'}." failed.");
+    }
+    my $status;
+    if ($in{'password'}) {
+        $status = $ldap->bind_s($in{'dn'}, $in{'password'});
+    } else {
+        $ldap->sasl_parms(-mech=>"GSSAPI");
+        $status = $ldap->bind_s(-type=>LDAP_AUTH_SASL);
+    }
+    if ($status != LDAP_SUCCESS) {
+        $ldap->unbind;
+        die 'ERROR Bind error connecting to '.$in{'host'};
+    }
+    return $ldap;
+}
+
+# ------------------------------------------------------------
+# Create hashes used for testing what output attributes and 
+# objectclasses are required.
+
+sub gen_test_hashes {
+
+    # Get a list of attributes that we need to write.  Make it a 
+    # hash so that testing where to include and input attribute 
+    # in the output is easier.
+    my @oAttrs = get_attributes(@{$CONF->out_objectclass});
+    foreach my $a (@oAttrs) {$OUT_ATTRS{trimLC($a)}++;}
+
+    # Turn array of output objectclasses into hash for simplified 
+    # testing.
+    foreach my $o (@{$CONF->out_objectclass}) { $OUT_OCS{trimLC($o)}++; }
+
+    # Get a list of input attributes.
+    my @IN_ATTRS = get_attributes(@{$CONF->in_objectclass});
+    # Add objectclass to the input list of attributes separately.
+    push @IN_ATTRS, 'objectclass';
+
+    # Get substitution specifications
+    foreach my $line (@{$CONF->sub}) {
+        my ($target, $val) = split /=/, $line, 2;
+        $SUB{$target} = $val;
+    }
+
+    return;
+}
+
+# ------------------------------------------------------------
+# Return the number of entries given a search base and filter
+
+sub get_entry_cnt {
+    my ($base, $filter, $scope, $ldap) = @_;
+
+    my @attrs = ('objectclass');
+    my $stat = $ldap->search_s($base,$scope,$filter,\@attrs,0);
+    return 0 if $stat == LDAP_NO_SUCH_OBJECT;
+    if ($stat != LDAP_SUCCESS) {
+        msg ('warning', 
+             "LDAP search error Base:$base Filter:$filter Scope:$scope");
+        my $m;
+        $m .= $ldap->errstring if $ldap->errstring;
+        $m .= " - ".$ldap->extramsg if $ldap->extramsg;
+        $m = "Unknown LDAP error status = $stat" unless $m;
+        msg ('fatal', $m);
+    }
+    my $entry_ref = $ldap->get_all_entries;
+    my %entry = %$entry_ref;
+    my $entry_cnt = keys %entry;
+    return $entry_cnt;
+}
+
+# ------------------------------------------------------------
+# Delete everything in a branch.  This really only works for 
+# branches that consist completely of leaf nodes.
+
+sub delete_branch {
+    my $scope  = LDAP_SCOPE_SUBTREE;
+    my $base   = $CONF->out_base_dn;
+    my @attrs  = ('objectClass');
+    my $filter = 'objectClass=*';
+    dbg("deleting branch:".$CONF->out_base_dn) if $opt_debug;
+    my $stat = $LDAP_OUT->search_s($base,$scope,$filter,\@attrs,0);
+    return if $stat == LDAP_NO_SUCH_OBJECT;
+    if ($stat != LDAP_SUCCESS) {
+        msg ('warning', 
+             "LDAP search error Base:$base Filter:$filter Scope:$scope");
+        my $m;
+        $m .= $LDAP->errstring if $LDAP->errstring;
+        $m .= " - ".$LDAP->extramsg if $LDAP->extramsg;
+        $m = "Unknown LDAP error status = $stat" unless $m;
+        msg ('fatal', $m);
+    }
+    my $entry_ref = $LDAP_OUT->get_all_entries;
+    my %entry = %$entry_ref;
+    my $entry_cnt = keys %entry;
+
+    my $branch_base = trimLC($CONF->out_base_dn);
+
+    foreach my $dn (keys %entry) {
+        next if trimLC($dn) eq $branch_base;
+        dbg("deleting $dn") if $opt_debug;
+        $LDAP_OUT->delete_s($dn);
+    }
+    return;
+}
+
+# ------------------------------------------------------------
+# Return a list of user DN's
+
+sub select_dns {
+
+    my ($sBase, $sFilter) = @_;
+
+    my $sScope   = LDAP_SCOPE_SUBTREE;
+    my @sAttrs   = ('objectclass');
+
+    if ($opt_debug) {
+        dbg("select_base: $sBase");
+        dbg("select_filter: $sFilter");
+        dbg('attrs:'.join " ", @sAttrs);
+    }
+
+    my $stat = $LDAP_IN->search_s($sBase,$sScope,$sFilter,\@sAttrs,0);
+    if ($stat != LDAP_SUCCESS) {
+        msg ('warning', 
+             "LDAP search error Base:$sBase Filter:$sFilter Scope:$sScope");
+        my $m;
+        $m .= $LDAP_IN->errstring if $LDAP_IN->errstring;
+        $m .= " - ".$LDAP_IN->extramsg if $LDAP_IN->extramsg;
+        $m = "Unknown LDAP error status = $stat" unless $m;
+        msg ('fatal', $m);
+    }
+    my $entry_ref = $LDAP_IN->get_all_entries;
+    my %entry = %$entry_ref;
+    my $entry_cnt = keys %entry;
+
+    my @dnList = ();
+    foreach my $dn (keys %entry) {
+        push @dnList, $dn;
+    }
+    
+    return @dnList;
+}
+
+# ------------------------------------------------------------
+# Add an entry to the output tree
+
+sub add_entry {
+    my ($dn) = @_;
+
+    my $inBase = $CONF->in_base_dn;
+    my $outBase = $CONF->out_base_dn;
+    my $out_dn = $dn;
+    $out_dn =~ s/$inBase$/$outBase/i;
+
+    dbg("Adding person entry for $out_dn") if $opt_debug;
+
+    # Read from the source branch and write to the output branch
+    my $scope = LDAP_SCOPE_BASE;
+    my $base  = $dn
+    my $filter = '(objectclass=person)';
+    my @attrs = ();
+    if ($opt_debug) {
+        dbg("search base:$base");
+        dbg("search filter:$filter");
+    }
+
+    # The output entry values
+    my %out_entry = ();
+
+    # Read and write
+    my $stat = $LDAP_IN->search_s($base,$scope,$filter,\@attrs,0);
+    my $in_cnt;
+    if ($stat == LDAP_NO_SUCH_OBJECT) {
+        $in_cnt = 0;
+    } elsif ($stat != LDAP_SUCCESS) {
+        msg ('warning', 
+             "LDAP search error Base:$base Filter:$filter Scope:$scope");
+        my $m;
+        $m .= $LDAP_IN->errstring if $ldap->errstring;
+        $m .= " - ".$LDAP_IN->extramsg if $ldap->extramsg;
+        $m = "Unknown LDAP error status = $stat" unless $m;
+        dir ("ERROR $m");
+    }
+    my $in_entry_ref = $LDAP_IN->get_all_entries;
+    my %in_entry = %$in_entry_ref;
+    my $in_cnt = keys %in_entry;
+    return if $in_cnt == 0;
+
+    foreach my $dn (keys %in_entry) {
+        dbg("found: dn: $dn") if $opt_debug;
+        my %out_entry = ();
+        foreach my $attr (keys %{$in_entry{$dn}}) {
+            my @out_vals = ();
+            foreach my $val (@{$in_entry{$in_dn}{$attr}}) {
+                my $out_val = $val;
+                $out_val = 'whmPerson' 
+                    if $attr =~ /objectclass/i 
+                    && $val =~ /prideperson/i;
+                my $out_attr = $attr;
+                $out_attr = $PEOPLE_MAP{lc($attr)} if $PEOPLE_MAP{lc($attr)};
+                push @out_vals, $out_val;
+            }
+            if (scalar(@out_vals) == 0) {
+                next;
+            } elsif (scalar(@out_vals) == 1) {
+                dbg("add: $attr: $out_vals[0]") if $opt_debug; 
+                $out_entry{$attr} = $out_vals[0];
+            } else {
+                dbg("add: $attr: ".join(" | ", @out_vals))
+                    if $opt_debug; 
+                push @{$out_entry{$attr}}, @out_vals;
+            }
+        }
+
+        # Nothing to write
+        if (keys(%out_entry) == 0) {
+            msg('warning', "No values to be written dn:$out_dn, skipping")
+                if $opt_debug || $opt_verbose;
+            return;
+        }
+
+        # write the output entry
+        dbg("Adding $out_dn") if $opt_debug || $opt_verbose;
+        if ($opt_update) {
+            my $status = $LDAP_OUT->add_s($out_dn, \%out_entry);
+            if ($status != LDAP_SUCCESS) {
+                msg('warning', "LDAP write error for $out_dn");
+                my $m = $LDAP_OUT->errstring;
+                $m .= " - ".$LDAP_OUT->extramsg if $LDAP_OUT->extramsg;
+                msg('warning', $m);
+            }
+        } else {
+            print "Proposing to add $out_dn\n";
+        }
+    }
+
+    # add notes if there are any to add
+
+    dbg("Adding notes entry for $out_dn") if $opt_debug;
+
+    # Read from the source branch and write to the output branch
+    my $scope = LDAP_SCOPE_SUBTREE;
+    my $base = $dn;
+    my $filter = '(objectclass=prideListObject)';
+    my @attrs = ();
+    if ($opt_debug) {
+        dbg("search base:$base");
+        dbg("search filter:$filter");
+    }
+
+    # Read and write
+    my $stat = $LDAP_IN->search_s($base,$scope,$filter,\@attrs,0);
+    my $in_cnt;
+    if ($stat == LDAP_NO_SUCH_OBJECT) {
+        $in_cnt = 0;
+    } elsif ($stat != LDAP_SUCCESS) {
+        msg ('warning', 
+             "LDAP search error Base:$base Filter:$filter Scope:$scope");
+        my $m;
+        $m .= $LDAP_IN->errstring if $ldap->errstring;
+        $m .= " - ".$LDAP_IN->extramsg if $ldap->extramsg;
+        $m = "Unknown LDAP error status = $stat" unless $m;
+        dir ("ERROR $m");
+    }
+    my $in_entry_ref = $LDAP_IN->get_all_entries;
+    my %in_entry = %$in_entry_ref;
+    my $in_cnt = keys %in_entry;
+    return if $in_cnt == 0;
+
+    foreach my $dn (keys %in_entry) {
+        dbg("found: dn: $dn") if $opt_debug;
+
+        my %out_entry = ();
+        my $out_dn = $dn;
+        $out_dn =~ s/$inBase$/$outBase/i;
+
+        foreach my $attr (keys %{$in_entry{$dn}}) {
+            my @out_vals = ();
+            foreach my $val (@{$in_entry{$in_dn}{$attr}}) {
+                my $out_val = $val;
+                $out_val = 'whmPersonalNote' 
+                    if $attr =~ /objectclass/i 
+                    && $val =~ /pridelistobject/i;
+                my $out_attr = $attr;
+                $out_attr = $NOTE_MAP{lc($attr)} if $NOTE_MAP{lc($attr)};
+                if ($out_attr eq 'whmurlvisibility') {
+                    if ($val =~ /y/i) {
+                        $out_val = 'private';
+                    } else {
+                        $out_val = 'world';
+                    }
+                }
+                push @out_vals, $out_val;
+            }
+            if (scalar(@out_vals) == 0) {
+                next;
+            } elsif (scalar(@out_vals) == 1) {
+                dbg("add: $attr: $out_vals[0]") if $opt_debug; 
+                $out_entry{$attr} = $out_vals[0];
+            } else {
+                dbg("add: $attr: ".join(" | ", @out_vals))
+                    if $opt_debug; 
+                push @{$out_entry{$attr}}, @out_vals;
+            }
+        }
+
+        # Nothing to write
+        if (keys(%out_entry) == 0) {
+            msg('warning', "No values to be written dn:$out_dn, skipping")
+                if $opt_debug || $opt_verbose;
+            next;
+        }
+
+        # write the output entry
+        dbg("Adding $out_dn") if $opt_debug || $opt_verbose;
+        if ($opt_update) {
+            my $status = $LDAP_OUT->add_s($out_dn, \%out_entry);
+            if ($status != LDAP_SUCCESS) {
+                msg('warning', "LDAP write error for $out_dn");
+                my $m = $LDAP_OUT->errstring;
+                $m .= " - ".$LDAP_OUT->extramsg if $LDAP_OUT->extramsg;
+                msg('warning', $m);
+            }
+        } else {
+            print "Proposing to add $out_dn\n";
+        }
+    }
+
+
+    return;
+}
+
+# ------------------------------------------------------------
+# Delete an entry
+
+sub delete_entry {
+    my ($dn) = @_;
+    if ($opt_update) {
+        dbg("deleting: $dn") if $opt_debug;
+        my $dstat = $LDAP_OUT->delete_s($dn);
+        if ($dstat != LDAP_SUCCESS) {
+            msg ('warning', "LDAP delete error dn:$dn");
+            my $m;
+            $m .= $LDAP_OUT->errstring if $LDAP_OUT->errstring;
+            $m .= " - ".$LDAP_OUT->extramsg if $LDAP_OUT->extramsg;
+            $m = "Unknown LDAP error status = $dstat" unless $m;
+            msg ('fatal', $m);
+        }
+    } else {
+        print "Proposed to delete $dn\n";
+    }
+    return;
+}
+    
+# ------------------------------------------------------------
+# Check that a single entry in the output tree matches the 
+# values from the input tree
+
+sub sync_entry {
+
+    my ($dn) = @_;
+
+    my $inBase = $CONF->in_base_dn;
+    my $outBase = $CONF->out_base_dn;
+    my $out_dn = $dn;
+    $out_dn =~ s/$inBase$/$outBase/i;
+    
+    if ($opt_debug || $opt_verbose) {
+        dbg("------------------------------------------------------------");
+        dbg("syncing $out_dn");
+    }
+
+    # If the entry does not exist then just add it
+    my $out_scope = LDAP_SCOPE_BASE;
+    my $out_filter = '(objectclass=person)';
+    my $out_cnt = ($out_dn, $out_filter, $out_scope, $LDAP_OUT);
+    
+    # Should be only one entry.  If there are more than one, 
+    # delete them all, set the count to zero so that one will 
+    # get added back in.
+    if ($out_cnt > 1) {
+        print "WARN Duplicate entries found for $out_dn, "
+            . "deleting and recreating entry\n";
+        foreach my $dn (keys %out_entry) { delete_entry($dn); }
+        $out_cnt = 0;
+    }
+
+    # No entry to compare against, just add a new entry and return
+    if ($out_cnt == 0) {
+        add_entry($dn);
+        return;
+    }
+    
+    # read input person, compare to output
+    my $in_scope = LDAP_SCOPE_BASE;
+    my $in_filter = '(objectclass=person)';
+    my @attrs = ();
+    my $stat = $LDAP_IN->search_s($dn,$in_scope,$in_filter,\@attrs,0);
+    if ($stat == LDAP_NO_SUCH_OBJECT) {
+        print "WARN $dn not found.  Skipping\n";
+        return;
+    } elsif ($stat != LDAP_SUCCESS) {
+        my $m;
+        $m .= "WARNING LDAP search error "
+          . "Base:$base Filter:$filter Scope:$scope\n";
+        $m .= $LDAP_IN->errstring if $ldap->errstring;
+        $m .= " - ".$LDAP_IN->extramsg if $ldap->extramsg;
+        $m = "Unknown LDAP error status = $stat" unless $m;
+        die ("ERROR $m");
+    }
+
+    my $in_entry_ref = $LDAP_IN->get_all_entries;
+    my %in_entry = %$in_entry_ref;
+    my $in_cnt = keys %in_entry;
+    if ($in_cnt == 0) {
+        print "WARN $dn not found.  Skipping\n";
+        return;
+    }
+=======================
+    foreach my $dn (keys %in_entry) {
+        dbg("found: dn: $dn") if $opt_debug;
+        my %ldap_mods = ();
+        foreach my $attr (keys %{$in_entry{$dn}}) {
+            foreach my $val (@{$in_entry{$in_dn}{$attr}}) {
+
+        my $in_entry_ref = $LDAP->get_all_entries;
+        my %in_entry = %$in_entry_ref;
+        # Compare the output attributes that we have to see 
+        # if anything has changed.
+        dbg("attribute delete scan ...") if $opt_debug;
+        foreach my $attr (keys %{$out_entry{$dn}}) {
+            foreach my $val (@{$out_entry{$dn}{$attr}}) {
+                my $val_found = 0;
+                foreach my $in_raw (@{$in_entry{$owner_dn}{$attr}}) {
+                    my $in_val = sub_values($owner_dn, 
+                                            $attr, 
+                                            $in_raw, 
+                                            $in_entry{$owner_dn});
+                    if ($val eq $in_val) {
+                        $val_found = 1;
+                        last;
+                    }
+                }
+                if ( !$val_found ) {
+                    push @{$ldap_mods{$attr}{'d'}}, $val;
+                    dbg("deleting $attr: $val") if $opt_debug || $opt_verbose;
+                }
+            }
+        }
+        # Compare the input attributes to see if there is anything 
+        # that should be added.
+        dbg("attribute add scan ...") if $opt_debug;
+        foreach my $attr (keys %{$in_entry{$owner_dn}}) {
+            my $a = trimLC($attr);
+            next unless $OUT_ATTRS{$a} || $attr eq 'objectclass';
+            foreach my $in_raw (@{$in_entry{$owner_dn}{$attr}}) {
+                my $val_found = 0;
+                my $in_val = sub_values($owner_dn, 
+                                        $attr, 
+                                        $in_raw, 
+                                        $in_entry{$owner_dn});
+                foreach my $out_val (@{$out_entry{$dn}{$attr}}) {
+                    if ($in_val eq $out_val) {
+                        $val_found = 1;
+                        last;
+                    }
+                }
+                if ( !$val_found ) {
+                    push @{$ldap_mods{$attr}{'a'}}, $in_val;
+                    dbg("Adding $attr:$in_val") if $opt_debug || $opt_verbose;
+                }
+            }
+        }
+
+        # Put the whole mess away
+        if (keys %ldap_mods) {
+            if ($opt_update) {
+                eval {
+                    $LDAP_UPDATE->modify_s($dn,\%ldap_mods);
+                };
+                if ($@) {
+                    msg ('warning', "LDAP update error dn:$dn");
+                    my $m = $LDAP_UPDATE->errstring;
+                    $m .= " - ".$LDAP_UPDATE->extramsg 
+                        if $LDAP_UPDATE->extramsg;
+                    msg('warning', $m);
+                    # Try just deleting what we have and re-creating it.
+                    delete_entry($dn);
+                    add_entry($u);
+                }
+            } else {
+                print "  Proposing update to $dn\n";
+            }
+        } else {
+            dbg("No updates found for $dn") if $opt_debug || $opt_verbose;
+        }
+    }
+}
+
+# ------------------------------------------------------------
+# Add entries or update entries.  No delete run.
+
+sub forwardsync {
+
+    # Get a list of unique idenfifiers
+    my @peopleDN = select_dns($CONF->in_base_dn, 'objectclass=person');
+
+    # Sync each entry, and create a hash that will be used to test 
+    # for deletes
+    my %activeList = ();
+    foreach my $dn (@peopleDN) {
+        sync_person($dn);
+        sync_notes($dn);
+        $activeList{$dn}++;
+    }
+
+    return;
+}
+
+# ------------------------------------------------------------
+# Complete refresh of the output tree.  Delete everything and 
+# then re-add it from the source trees.
+
+sub refresh {
+
+    # Delete everything in the output branch
+    delete_branch($CONF->out_base_dn);
+
+    # Get a list of unique idenfifiers
+    my @peopleDN = select_dns($CONF->in_base_dn, 'objectclass=person');
+
+    # Recreate everything
+    foreach my $dn (@peopleDN) { add_entry($dn); }
+
+    return;
+}
+
+##########################################################################
+# Main program
+##########################################################################
+
+# -- get options
+GetOptions(
+           'debug'    => \$opt_debug,
+           'help'     => \$opt_help,
+           'manual'   => \$opt_manual,
+           'fullsync' => \$opt_fullsync,
+           'refresh'  => \$opt_refresh,
+           'update'   => \$opt_update,
+           'verbose'  => \$opt_verbose
+           );
+
+# -- help the poor souls out
+if (lc($ARGV[0]) eq 'help' || $opt_help) {
+    pod2usage(-verbose => 0);
+}
+if (lc($ARGV[0]) eq 'manual' || $opt_manual) {
+    pod2usage(-verbose => 2);
+}
+
+# the configuration file
+my $conf_file = $ARGV[0];
+$conf_file = '/etc/ldapadmin/ldap-sync-tree.conf' unless $conf_file;
+msg('fatal', "Configuration file not found ($conf_file)") if ! -e $conf_file;
+read_config($conf_file);
+
+# Open the syslog interface
+openlog('ldap-sync-tree', 'pid', 'local3');
+
+# Set debugging or verbose is requested in the configuration file
+$opt_debug   = 1 if $CONF->debug();
+$opt_verbose = 1 if $CONF->verbose();
+
+if (!valid_host($CONF->ldap_host())) {
+    msg('fatal', "Invalid host name '".$CONF->ldap_host()."'");
+}
+
+dbg('Initializing timer') if $opt_debug || $opt_verbose;
+
+ldap_connect();
+ldap_update_connect();
+
+check_container($CONF->out_base_dn);
+
+# Generate hashes use to test which attributes and objectclasses 
+# need to be written.
+gen_test_hashes();
+
+if ($opt_fullsync) {
+    fullsync();
+} elsif ($opt_refresh) {
+    refresh();
+} else {
+    pod2usage(-verbose => 0);
+}
+
+ldap_update_disconnect();
+ldap_disconnect();
+closelog();
+
+exit;
+
+__END__
+
+##############################################################################
+# Documentation
+##############################################################################
+
+=head1 NAME
+
+ldap-sync-tree - Watch changes published in OpenLDAP's accesslog 
+
+=head1 SYNOPSIS
+
+ldap-sync-tree [configfile] [--fullsync] [--refresh] [--debug]
+[--verbose] [--help] [--manual]
+
+=head1 DESCRIPTION
+
+This script updates a selected attribute set based on changes detected
+in the access log.
+
+The configuration file is a simple attribute=value format text file.
+This example contains all of the valid attributres that can be
+specified.
+
+    #
+    # Host to update
+    ldap_host = ldap-unixdev1.stanford.edu
+    #
+    # Entries to select 
+    select_base   = cn=people,dc=stanford,dc=edu
+    select_filter = suPrivilegeGroup=highwire:*
+    select_attr   = uid
+    # 
+    # Entries to write
+    in_base_dn = cn=accounts,dc=stanford,dc=edu"
+    in_filter = suAccountStatus=active
+    in_objectclass = dgIdentityAux
+    in_objectclass = labeledURIObject
+    in_objectclass = posixAccount
+    in_objectclass = suAccount
+    in_objectclass = suPrivilegeGroup
+    in_objectclass = suPrivilegeGroupObject
+    #
+    # Where to write the entries
+    out_base_dn = cn=test,cn=posixAccounts,dc=stanford,dc=edu
+    out_objectclass = posixAccount
+    out_objectclass = suAccount
+    out_objectclass = suPrivilegeGroupObject
+    #
+    sub = owner=%{dn}
+    #
+
+=head1 OPTIONS
+
+=over 4
+
+=item --fullsync 
+
+Select all of the entries for the specified watch base distinguished
+names and update any entry that does not have the update_attribute set
+by settting the update_attribute to the source_attribute.
+
+=item --debug
+
+Generate debugging messages.  If specified then no output is sent to 
+syslog.
+
+=item --verbose
+
+Display progress messages.
+
+=item --help
+
+A short help message.
+
+=item --manual 
+
+The complete documentation.
+
+=back 
+
+=head1 REQUIREMENTS
+
+Net::LDAPapi is used for the syncrepl interface to the accesslog, monitoring
+changes to LDAP for us.
+
+Process information is written with Sys::Syslog.
+
+=head1 AUTHORS
+
+Bill MacAllister <whm@stanford.edu>
+
+=cut
+

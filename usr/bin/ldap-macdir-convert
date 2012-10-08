@@ -1,0 +1,754 @@
+#!/usr/bin/perl
+#
+# ldap-sync-attributes - Copy an attribute from one entry to another
+#
+# Bill MacAllister <whm@stanford.edu>
+#
+# Copyright 2012 Board of Trustees, Leland Stanford Jr. University
+
+##############################################################################
+# Site configuration
+##############################################################################
+
+use AppConfig qw(:argcount :expand);
+use Getopt::Long;
+use Net::LDAPapi;
+use Pod::Usage;
+use strict;
+use Time::gmtime;
+
+our $CONF;
+our $DEBUG_TIME = time();
+our $LDAP_IN;
+our $LDAP_OUT;
+
+our $opt_conf = 'ldap-sync-people.conf';
+our $opt_debug;
+our $opt_help;
+our $opt_manual;
+our $opt_update;
+
+use constant NULL => '';
+use constant LDAP_okay => -1;
+
+our %PEOPLE_MAP = ('objectclass' => 'objectclass',
+                   'cn' => 'cn',
+                   'givenname' => 'givenname',
+                   'sn' => 'sn',
+                   'uid' => 'uid',
+                   'st' => 'st',
+                   'loginshell' => 'loginshell',
+                   'mailgroup' => 'maildistributionid',
+                   'workphone' => 'workPhone',
+                   'mobile' => 'mobile',
+                   'l' => 'l',
+                   'postalcode' => 'postalcode',
+                   'postaladdress' => 'postaladdress',
+                   'telephonenumber' => 'telephonenumber',
+                   'mailalias' => 'mailAlias',
+                   'maildelivery' => 'maildelivery',
+                   'homedirectory' => 'homedirectory',
+                   'uidnumber' => 'uidnumber',
+                   'gidnumber' => 'gidnumber',
+                   'comments' => 'comments',
+                   'mail' => 'mail',
+                   'krb5principalname' => 'krb5principalname');
+
+our %NOTE_MAP = ('objectclass'      => 'objectclass',
+                 'cn'               => 'cn',
+                 'description'      => 'description',
+                 'whmcredential'    => 'pridecredential',
+                 'whmurl'           => 'prideurl',
+                 'whmurlvisibility' => 'prideurlprivate',
+                 'uid'              => 'linkuid');
+);
+
+
+##########################################################################
+# Utility functions
+##########################################################################
+
+# ------------------------------------------------------------
+# Trim leading and trailing spaces
+
+sub trim {
+    my @parms = @_;
+    for (@parms) { 
+        s/^\s+//;
+        s/\s+$//;
+    }
+    return wantarray ? @parms : $parms[0];
+}
+
+# ------------------------------------------------------------
+# Lower case everything and remove leading and trailing spaces
+
+sub trimLC {
+    my @parms = @_;
+    for my $s (@parms) { 
+        $s =~ s/^\s+//;
+        $s =~ s/\s+$//;
+        $s = lc($s);
+    }
+    return wantarray ? @parms : $parms[0];
+}
+
+# ------------------------------------------------------------
+# Remove all white space
+
+sub squeeze {
+    my @parms = @_;
+    for (@parms) { 
+        s/\s+//g;
+    }
+    return wantarray ? @parms : $parms[0];
+}
+
+# ------------------------------------------------------------
+# Generate informational and error messages.  Die if the 
+# severify is set to 'fatal'.
+
+sub msg {
+    my ($severity, $msg) = @_;
+    print uc($severity)." $msg\n";
+    syslog('warning', uc($severity)." $msg");
+    die $msg if $severity eq 'fatal';
+}
+
+# ------------------------------------------------------------
+# Print debugging output 
+
+sub dbg {
+    (my $tmp) = @_;
+    my $now = time;
+    my $elapsed = $now - $DEBUG_TIME;
+    print "$now ($elapsed) $tmp \n";
+    $DEBUG_TIME = $now;
+    return;
+}
+
+# ------------------------------------------------------------
+# Read the configuration file
+
+sub read_config {
+    my ($conf_file) = @_;
+
+    my @bits = split '/', $0;
+    my $thisScript = $bits[scalar(@bits)-1];
+    my $default_tgt = '/tmp/krb5_'.$thisScript.'_'.$$.'tgt';
+
+    $CONF = AppConfig->new({});
+    $CONF->define('in_base_dn',
+                  {DEFAULT  => 'ou=people,dc=macallister,dc=grass-valley,dc=ca,dc=us',
+                   ARGCOUNT => ARGCOUNT_ONE});
+    $CONF->define('in_host',         
+                  {DEFAULT  => 'ldap.ca-zephyr.org',
+                   ARGCOUNT => ARGCOUNT_ONE});
+    $CONF->define('in_auth_dn',
+                  {ARGCOUNT => ARGCOUNT_ONE});
+    $CONF->define('in_password',
+                  {ARGCOUNT => ARGCOUNT_ONE});
+    $CONF->define('out_base_dn',
+                  {DEFAULT => 'cn=people,dc==ca-zephyr,dc=org',
+                   ARGCOUNT => ARGCOUNT_ONE});
+    $CONF->define('out_host',
+                  {DEFAULT => 'tektonic.ca-zephyr.org',
+                   ARGCOUNT => ARGCOUNT_ONE});
+    $CONF->file($conf_file);
+
+    # Set debugging if requested in the configuration file
+    $opt_debug   = 1 if $CONF->debug();
+
+    return;
+}
+
+##########################################################################
+# LDAP functions
+##########################################################################
+
+
+# ------------------------------------------------------------
+# Return the number of entries given a search base and filter
+
+sub get_entry_cnt {
+    my ($base, $filter, $scope) = @_;
+
+    my @attrs = ('objectclass');
+    my $stat = $LDAP->search_s($base,$scope,$filter,\@attrs,0);
+    return 0 if $stat == LDAP_NO_SUCH_OBJECT;
+    if ($stat != LDAP_SUCCESS) {
+        msg ('warning', 
+             "LDAP search error Base:$base Filter:$filter Scope:$scope");
+        my $m;
+        $m .= $LDAP->errstring if $LDAP->errstring;
+        $m .= " - ".$LDAP->extramsg if $LDAP->extramsg;
+        $m = "Unknown LDAP error status = $stat" unless $m;
+        msg ('fatal', $m);
+    }
+    my $entry_ref = $LDAP->get_all_entries;
+    my %entry = %$entry_ref;
+    my $entry_cnt = keys %entry;
+    return $entry_cnt;
+}
+
+# ------------------------------------------------------------------------
+# Bind to the directory for reading
+
+sub ldap_connect {
+    my %in = @_;
+
+    my $ldap;
+    dbg("binding to server ".$in{'host'}) if ($in{'debug'});
+    if ( ($ldap = Net::LDAPapi->new ($in{'host'})) == -1 ) {
+        die "ERROR Connection to ".$in{'host'}." failed.");
+    }
+    my $status;
+    if ($in{'password'}) {
+        $status = $ldap->bind_s($in{'dn'}, $in{'password'});
+    } else {
+        $ldap->sasl_parms(-mech=>"GSSAPI");
+        $status = $ldap->bind_s(-type=>LDAP_AUTH_SASL);
+    }
+    if ($status != LDAP_SUCCESS) {
+        $ldap->unbind;
+        die 'ERROR Bind error connecting to '.$in{'host'};
+    }
+    return $ldap;
+}
+
+
+# ------------------------------------------------------------
+# Update an existing entry in the directory.
+
+sub update_ldap {
+
+    my ($dn, %mods) = @_;
+
+    if (!$LDAP_UPDATE) {
+        $LDAP_UPDATE = ldap_connect(host      => $CONF->ldap_host,
+                                    principal => $CONF->principal_name,
+                                    keytab    => $CONF->keytab_file,
+                                    tgt       => $CONF->tgt_file,
+                                    debug     => $opt_debug);
+    }
+
+    if (keys %mods) {
+        if ($opt_update) {
+            my $stat = $LDAP_UPDATE->modify_s($dn,\%mods);
+            if ($stat != LDAP_SUCCESS) {
+                msg ('warning', "LDAP update error dn:$dn");
+                my $m = $LDAP_UPDATE->errstring;
+                $m .= " - ".$LDAP_UPDATE->extramsg 
+                    if $LDAP_UPDATE->extramsg;
+                msg('fatal', $m);
+                return;
+            }
+        } else {
+            print "  Proposing update to $dn\n";
+        }
+    } else {
+        dbg("No updates found for $dn") if $opt_debug;
+    }
+    return;
+}
+
+
+# ------------------------------------------------------------
+# Use the command line filter and the configuration file 
+# filter to select entries to sync.
+
+sub sync_entries {
+
+    my $filter = $CONF->in_filter;
+    my $base   = $CONF->in_base_dn;
+    my $scope  = LDAP_SCOPE_SUBTREE;
+    my @attrs  = ('objectclass');
+
+    my $stat = $LDAP->search_s($base,$scope,$filter,\@attrs,0);
+    if ($stat == LDAP_NO_SUCH_OBJECT) {
+        msg ('warning', 
+             "No entrys found. Base:$base Filter:$filter Scope:$scope");
+        return;
+    }
+    if ($stat != LDAP_SUCCESS) {
+        msg ('warning', 
+             "LDAP search error Base:$base Filter:$filter Scope:$scope");
+        my $m;
+        $m .= $LDAP->errstring if $LDAP->errstring;
+        $m .= " - ".$LDAP->extramsg if $LDAP->extramsg;
+        $m = "Unknown LDAP error status = $stat" unless $m;
+        msg ('fatal', $m);
+    }
+
+    my $entry_ref = $LDAP->get_all_entries;
+    my %entry = %$entry_ref;
+    foreach my $dn (keys %entry) {
+        sync_entry($dn);
+    }
+
+    return;
+}
+
+# ------------------------------------------------------------
+# Check that a single entry in the output tree matches the 
+# values from the input tree
+
+sub sync_entry {
+
+    my ($sync_dn) = @_;
+
+    if ($opt_debug) {
+        dbg("-----------------------------------------------------");
+        dbg("syncing $sync_dn");
+    }
+
+    my @attrs = ();
+
+    # -----------------------
+    # Get input entry
+    my $in_scope = LDAP_SCOPE_BASE;
+    my $in_filter = '(objectclass=*)';
+    dbg("base:$sync_dn filter:$in_filter scope:$in_scope") if $opt_debug;
+    my $stat = $LDAP->search_s($sync_dn,$in_scope,$in_filter,\@attrs,0);
+    my $in_cnt;
+    my %entry;
+    if ($stat == LDAP_NO_SUCH_OBJECT) {
+        dbg("Entry not found") if $opt_debug;
+        return;
+    } elsif ($stat != LDAP_SUCCESS) {
+        msg ('warning', 
+             "LDAP search error ($stat) "
+              . "Base:$sync_dn Filter:$in_filter Scope:$in_scope");
+        my $m;
+        $m .= $LDAP->errstring if $LDAP->errstring;
+        $m .= " - ".$LDAP->extramsg if $LDAP->extramsg;
+        $m = "Unknown LDAP error status = $stat" unless $m;
+        msg ('fatal', $m);
+    } else {
+        dbg("Entry found") if $opt_debug;
+        my $entry_ref = $LDAP->get_all_entries;
+        %entry = %$entry_ref;
+        $in_cnt = keys %entry;
+    }
+
+    # Issue warnings if we get anything other than one entry back and
+    # bail out.
+    msg('warn', "Duplicates found for $sync_dn ... skipping ") if $in_cnt>1;
+    dbg("Entry not found for $sync_dn") if $opt_debug && $in_cnt==0;
+    return unless $in_cnt==1;
+
+    # Get the input dn
+    my $in_dn;
+    foreach my $dn (keys %entry) { $in_dn = $dn; }
+
+    # Pull out the join value
+    my $joinAttr = 'uid';
+    my $joinValue;
+    foreach my $attr (keys %{$entry{$in_dn}}) {
+        if ($attr =~ /^$joinAttr$/i) {
+            $joinValue = ${$entry{$in_dn}{$attr}}[0];
+        }
+    }
+
+    # -----------------------
+    # Get output entry
+    my $base_out   = $CONF->out_base_dn;
+    my $scope  = LDAP_SCOPE_SUBTREE;
+    my $filter = $CONF->join_attribute.'='.$joinValue;
+
+    dbg("Base:$base filter:$filter scope:$scope") if $opt_debug;
+    $stat = $LDAP->search_s($base, $scope, $filter, \@attrs, 0);
+    if ($stat != LDAP_SUCCESS) {
+        msg ('warning', 
+             "LDAP search error Base:$base Filter:$filter Scope:$scope");
+        my $m;
+        $m .= $LDAP->errstring if $LDAP->errstring;
+        $m .= " - ".$LDAP->extramsg if $LDAP->extramsg;
+        $m = "Unknown LDAP error status = $stat" unless $m;
+        msg ('fatal', $m);
+    }
+    my $out_entry_ref = $LDAP->get_all_entries;
+    my %out_entry = %$out_entry_ref;
+    my $out_cnt = keys %out_entry;
+
+    # Issue warnings if we get anything other than one entry back and
+    # bail out.
+    msg('warn', "Duplicates found for base:$base filter:$filter scope:$scope "
+        . '... skipping ') if $out_cnt>1;
+    dbg("Entry not found for base:$base filter:$filter scope:$scope") 
+        if $opt_debug && $out_cnt==0;
+    return unless $out_cnt==1;
+
+    # Get the output dn
+    my $out_dn;
+    foreach my $dn (keys %out_entry) { $out_dn = $dn; }
+
+    # -----------------------
+    # Compare entries
+
+    # Figure out if this is a person or a note
+    my $in_person = 0;
+    foreach my $attr (keys %{$in_entry{$in_dn}}) {
+        foreach my $in_val (@{$in_entry{$in_dn}{$attr}}) {
+            $in_person = 1
+                if $attr =~ /objectclass/i
+                && $in_value =~ /person/i;
+        }
+    }
+
+    # Compare the output attributes that we have to see if there is
+    # anything that needs to be removed.
+    my %ldap_mods = ();
+    dbg("attribute delete scan ...") if $opt_debug;
+    foreach my $attr (keys %{$out_entry{$out_dn}}) {
+        foreach my $out_val (@{$out_entry{$out_dn}{$attr}}) {
+            my $val_found = 0;
+            my $in_attr = $IN_NOTE_MAP{$attr};
+            $in_attr = $IN_PERSON_MAP{$attr} if $in_person;
+            foreach my $in_val (@{$entry{$in_dn}{$in_attr}}) {
+                if ($attr =~ /objectclass/i) {
+                    $in_val = 'whmpersonalnote' 
+                        if $inval =~ /prideListObject/i;
+                    $in_val = 'whmperson' 
+                        if $inval =~ /prideperson/i;
+                }
+                if ($out_val eq $in_val) {
+                    $val_found = 1;
+                    last;
+                }
+            }
+            if ( !$val_found ) {
+                push @{$ldap_mods{$attr}{'d'}}, $out_val;
+                dbg("deleting $attr: $out_val") if $opt_debug;
+            }
+        }
+    }
+
+    # Compare the input attributes to see if there is anything that
+    # should be added.
+    dbg("attribute add scan ...") if $opt_debug;
+    foreach my $attr (keys %{$entry{$in_dn}}) {
+        foreach my $in_val (@{$entry{$in_dn}{$attr}}) {
+            my $out_attr = $OUT_NOTE_MAP{$attr};
+            $out_attr = $OUT_PERSON_MAP{$attr} if $in_person;
+            my $val_found = 0;
+            foreach my $out_val (@{$out_entry{$out_dn}{$out_attr}}) {
+                if ($in_val eq $out_val) {
+                    $val_found = 1;
+                    last;
+                }
+            }
+            if ( !$val_found ) {
+                push @{$ldap_mods{$out_attr}{'a'}}, $in_val;
+                dbg("Adding $attr:$in_val") if $opt_debug;
+            }
+        }
+    }
+
+    # -----------------------
+    # Put the whole mess away
+    if (keys %ldap_mods) {
+        msg('info', "Updating $out_dn") if $opt_update;
+        update_ldap ($out_dn, %ldap_mods);
+    }
+
+    return;
+}
+
+# ------------------------------------------------------------
+# Remove attributes from the output entry.
+
+sub clean_entry {
+
+    my ($dn) = @_;
+
+    dbg("Cleaning entry $dn") if $opt_debug;
+
+    my $base   = $dn;
+    my $scope  = LDAP_SCOPE_BASE;
+    my $filter = 'objectclass=*';
+    my @attrs;
+    push @attrs, @{$CONF->attribute};
+    dbg("Base:$base filter:$filter scope:$scope") if $opt_debug;
+    my $stat = $LDAP->search_s($base, $scope, $filter, \@attrs, 0);
+    if ($stat != LDAP_SUCCESS) {
+        msg ('warning', 
+             "LDAP search error Base:$base Filter:$filter Scope:$scope");
+        my $m;
+        $m .= $LDAP->errstring if $LDAP->errstring;
+        $m .= " - ".$LDAP->extramsg if $LDAP->extramsg;
+        $m = "Unknown LDAP error status = $stat" unless $m;
+        msg ('fatal', $m);
+    }
+    my $entry_ref = $LDAP->get_all_entries;
+    my %entry = %$entry_ref;
+    my $cnt = keys %entry;
+
+    foreach my $thisDN (keys %entry) {
+        my %ldap_mods = ();
+        dbg("attribute delete scan ...") if $opt_debug;
+        foreach my $attr (keys %{$entry{$thisDN}}) {
+            push @{$ldap_mods{$attr}{'d'}};
+            dbg("deleting $attr") if $opt_debug;
+        }
+
+        # Remove the objectclass if it is there
+        foreach my $oc (@{$CONF->out_objectclass}) {
+            my $cnt = get_entry_cnt($thisDN, 
+                                    "objectClass=$oc", 
+                                    LDAP_SCOPE_BASE);
+            push @{$ldap_mods{'objectClass'}{'d'}}, $oc if $cnt;
+            dbg("Delete objectClass: $oc") if $opt_debug;
+        }
+
+        # -----------------------
+        # Put the whole mess away
+        if (keys %ldap_mods) {
+            msg('info', "Cleaning attributes from $thisDN") if $opt_update;
+            update_ldap($thisDN, %ldap_mods);
+        }
+    }
+
+    return;
+}
+
+# ------------------------------------------------------------
+# Check each entry in the input tree and make sure that the 
+# corresponding output entry has the correct attributes.
+
+sub forward_sync {
+
+    # Check the whole input tree to make sure it matches what 
+    # is in the output tree.
+
+    my $base  = $CONF->in_base_dn;
+    my $scope = LDAP_SCOPE_SUBTREE;
+    my $in_filter = '(objectclass=*)';
+    my @attrs = ('dn');
+    my %entry;
+    my $in_cnt;
+    dbg("base:$base filter:$in_filter scope:$scope") if $opt_debug;
+    my $stat = $LDAP_IN->search_s($base,$scope,$in_filter,\@attrs,0);
+    if ($stat == LDAP_NO_SUCH_OBJECT) {
+        dbg("Entry not found") if $opt_debug;
+    } elsif ($stat != LDAP_SUCCESS) {
+        msg ('warning', 
+             "LDAP search error ($stat) "
+              . "Base:$base Filter:$in_filter Scope:$scope");
+        my $m;
+        $m .= $LDAP->errstring if $LDAP->errstring;
+        $m .= " - ".$LDAP->extramsg if $LDAP->extramsg;
+        $m = "Unknown LDAP error status = $stat" unless $m;
+        msg ('fatal', $m);
+    } else {
+        dbg("Entry found") if $opt_debug;
+        my $entry_ref = $LDAP->get_all_entries;
+        %entry = %$entry_ref;
+        $in_cnt = keys %entry;
+    }
+    if ($in_cnt) {
+        foreach my $dn (keys %entry) {
+            sync_entry($dn);
+        }
+    }
+
+    return;
+
+}
+
+##########################################################################
+# Main program
+##########################################################################
+
+# -- get options
+GetOptions(
+           'conf=s'           => \$opt_conf,
+           'debug'            => \$opt_debug,
+           'help'             => \$opt_help,
+           'manual'           => \$opt_manual,
+           'update'           => \$opt_update
+           );
+
+# Flush output immediately
+$| = 1;
+
+# Help without conf file requires switches
+pod2usage(-verbose => 0) if $opt_help;
+pod2usage(-verbose => 2) if $opt_manual;
+
+# the configuration file
+msg('fatal', "Configuration file not found ($opt_conf)") if ! -e $opt_conf;
+read_config($opt_conf);
+
+dbg('debug set') if $opt_debug;
+
+$LDAP_IN = ldap_connect(host     => $CONF->in_host,
+                        password => $CONF->in_password,
+                        dn       => $CONF->in_auth_dn);
+$LDAP_OUT = ldap_connect(host => $CONF->out_host);
+
+sync_entries();
+
+exit;
+
+__END__
+
+##############################################################################
+# Documentation
+##############################################################################
+
+=head1 NAME
+
+ldap-sync-attribute - Copy attributes from one branch to another
+
+=head1 SYNOPSIS
+
+        ldap-sync-attribute sync ldapFilter [OPTIONS]
+        ldap-sync-attribute forwardsync [OPTIONS]
+        ldap-sync-attribute reversesync [OPTIONS]
+        ldap-sync-attribute fullsync [OPTIONS]
+        ldap-sync-attribute listen [OPTIONS]
+
+=head1 DESCRIPTION
+
+This copies attributes in one branch of the directory to corresponding
+entries in an alternate branch.  The script assumes a one to one
+relationship between entries in the two branches.  Multiple attributes 
+can be copied and the script will insure that the attribute values 
+in the two branches are the same.
+
+=head1 ACTIONS
+
+=over 4
+
+=item forwardsync 
+
+In forward sync mode the script will examine all of the entries in the
+input branch and make sure the attributes specified in the
+configuration file are the same in the input and output branch by
+updating the output branch.  
+
+=item fullsync
+
+In full sync mode the script first performs a reverse
+sync and then performs a forward sync.
+
+=item reversesync
+
+In reverse sync mode the script scans the output branch for any
+entries that do not have corresponding entry in the input branch and
+removes the attributes specified in configuration file attributes from
+the output branch entries.
+
+=item sync 
+
+In sync mode a filter must be supplied on the command line and it is
+used to select entries from the input branch and synchronizes the
+corresponding output entries attributes.
+
+=item listen
+
+In listen mode the script reads the accesslog and performs a sync 
+for any configuration file attribute changes to the affected entry.
+
+This action is not intended to be invoked from the command line and 
+the --update option is assumed.
+
+=back
+
+=head1 OPTIONS
+
+=over 4
+
+=item --config=file
+
+The configuration file is a simple attribute=value format text file.
+
+This example contains all of the valid properties that can be
+specified and shows the default settings for each property.
+
+    #
+    # Host to update
+    ldap_host = ldap.stanford.edu
+    #
+    # Attributes to update.  Multiple values may be specified.
+    attribute = subprivlegegroup
+    #
+    # Entries to select 
+    in_base_dn = cn=people,dc=stanford,dc=edu
+    in_filter = objectClass=*
+    #
+    # Common attribute to both brances of the directory
+    join_attribute = uid
+    # 
+    # Entries to write
+    out_base_dn = cn=accounts,dc=stanford,dc=edu"
+    #
+    # No default for the out_filter.  This filter should be rarely used.
+    #out_filter = suAccountStatus=active
+    #
+    # Multiple out_objectclasses can be specified.  If an output
+    # objectClass is specified in the configuration file then the
+    # script attempts to add if the output entry does not have the
+    # object class and removes it when the attributes are being
+    # deleted by the reverse sync process.
+    out_objectclass = suPrivilegeGroupObject
+    #
+    # Listen parameters for reading the ldap transaction log
+    log_base_dn = cn=accesslog
+    log_filter  = objectclass=*
+    log_cookie  = /var/run/ldap-sync-attribute.cookie
+    #
+    # Kerberos parameters.  There is not default for keytab_file or
+    # principal_name.  If a keytab file is specified then a principal 
+    # must be specified and a ticket cache is created.  It the tgt_file
+    # exists then it will be used as is.
+    #keytab_file = /etc/file.keytab
+    #principal_name = service/some
+    tgt_file = /tmp/krb5_<scriptname>_<pid>.tgt
+    #
+    # If the remctl_subcommand string matches the first command line 
+    # argument then it is removed from the command line.
+    remctl_subcommand = privsync
+    #
+    # Display dbugging messages
+    debug = 0
+
+=item --keytab_file=file
+
+The name of a keytab file.  If specified then --principal_name must be
+specified.
+
+=item --principal_name=service/name
+
+The name of the Kerberos principal to be used in access the directory.
+If --keytab_file is repecified then this switch is required, otherwise
+this switch is ignored.
+
+=item --update 
+
+Perform the updates.  The default is to just display the proposed actions 
+with the exception of the listen action.  For the listen action the default 
+is --update.
+
+=item --debug
+
+Generate debugging messages.  If specified then no output is sent to 
+syslog.
+
+=item --help
+
+A short help message.
+
+=item --manual 
+
+The complete documentation.
+
+=back 
+
+=head1 AUTHORS
+
+Bill MacAllister <whm@stanford.edu>
+
+=cut
+
