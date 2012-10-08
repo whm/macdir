@@ -160,7 +160,7 @@ $note_base_dn = 'uid='.$_SERVER['WEBAUTH_USER']
        .','.$ldap_user_base;
 $base_filter .= $visibility_filter;
 $filter = '(&(objectclass=whmPersonalNote)';
-$filter .= $base_filter
+$filter .= $base_filter;
 $filter .= '(objectclass=whmPersonalNote)';
 $filter .= ")";
 $return_attr = array('cn',
