@@ -33,7 +33,7 @@ $visibility_filter = '(whmurlvisibility=$in_visibility)';
 foreach ($form as $formName => $ldapName) {
     $name = "in_$formName"; 
     $sessName = "NOTES_$formName";
-    if (strlen($btn_search)>0) {
+    if (isset($btn_search)) {
         $_SESSION[$sessName] = $$name;
     } else {
         $_SESSION[$sessName] = '';
@@ -63,8 +63,8 @@ if (strlen($base_filter)==0) {
 }
 
 $this_user = '';
-if ( isset($_SESSION['WEBAUTH_USER']) ) { 
-    $this_user = $_SESSION['WEBAUTH_USER']; 
+if ( isset($_SERVER['WEBAUTH_USER']) ) { 
+    $this_user = $_SERVER['WEBAUTH_USER']; 
 } else {
     die ('WEBAUTH failure');
 }
