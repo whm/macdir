@@ -5,8 +5,8 @@
 
 $title = "Search Notes";
 $heading = "Search Notes";
+require('inc_config.php');
 require('inc_macdir.php');
-require('inc_header.php');
 
 # create a form to attribute mapping
 $form["commonname"]  = "cn";
@@ -62,12 +62,7 @@ if (strlen($base_filter)==0) {
     }
 }
 
-$this_user = '';
-if ( isset($_SERVER['WEBAUTH_USER']) ) { 
-    $this_user = $_SERVER['WEBAUTH_USER']; 
-} else {
-    die ('WEBAUTH failure');
-}
+require('inc_header.php');
 ?>
 
 <p>
