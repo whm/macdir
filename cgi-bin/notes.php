@@ -143,7 +143,7 @@ if ( isset($_SERVER['WEBAUTH_USER']) ) {
       <input type="submit" value="Search Directory" name="btn_search">
       </td>
   </tr>
-<?php if (strlen($msg)>0) { ?>
+<?php if (isset($msg)) { ?>
   <tr><td align="center" colspan="2">
       <?php echo $msg;?>
       </td>
@@ -156,21 +156,13 @@ if ( isset($_SERVER['WEBAUTH_USER']) ) {
 
 <?php
 
-$my_base_dn = 'uid='.$_SESSION['whm_directory_user']
+$note_base_dn = 'uid='.$_SERVER['WEBAUTH_USER']
        .','.$ldap_user_base;
 $base_filter .= $visibility_filter;
-$filter = '(&(objectclass=whmPersonalNote)'.$base_filter.')';
-$thisFilter = "(&";
-$thisFilter .= "(objectclass=person)";
-$thisFilter .= "(uid=".$this_uid.")";
-$thisFilter .= ")";
-$returnAttr = array('cn');
-$sr = ldap_search($macdirDS, $my_base_dn, $thisFilter, $returnAttr);  
-$r = ldap_get_entries($macdirDS, $sr);
-if ($r["count"]) {
-    $base_db = $r['dn'];
-}
-
+$filter = '(&(objectclass=whmPersonalNote)';
+$filter .= $base_filter
+$filter .= '(objectclass=whmPersonalNote)';
+$filter .= ")";
 $return_attr = array('cn',
                      'description',
                      'whmCredential',
@@ -179,7 +171,7 @@ $return_attr = array('cn',
                      'whmUrl',
                      'whmUrlVisibility' );
 
-$sr = ldap_search($macdirDS, $my_base_dn, $filter, $return_attr);  
+$sr = ldap_search($macdirDS, $note_base_dn, $filter, $return_attr);  
 ldap_sort($macdirDS, $sr, 'description');
 $info = ldap_get_entries($macdirDS, $sr);
 $ret_cnt = 0;
