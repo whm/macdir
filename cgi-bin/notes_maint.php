@@ -1,5 +1,5 @@
 <?php
-# file: my_links_maint.php
+# file: notes_maint.php
 # author: Bill MacAllister
 
 $title = 'Link Maintenance';
@@ -16,7 +16,7 @@ if (strlen($in_cn)>0) {
     
     $return_attr = array();
     $link_base = $_SESSION['whm_directory_user_dn'];
-    $link_filter = "(&(objectclass=pridelistobject)(cn=$in_cn))";
+    $link_filter = "(&(objectclass=whmPersonalNote)(cn=$in_cn))";
     $sr = @ldap_search ($ds, $link_base, $link_filter, $return_attr);
     $info = @ldap_get_entries($ds, $sr);
     $ret_cnt = $info["count"];
@@ -28,11 +28,9 @@ if (strlen($in_cn)>0) {
         $msg .= "No entry found.\n";
     }
 
-    $chk_prideurlprivate_y = $chk_prideurlprivate_n = '';
-    if ($info[0]['prideurlprivate'][0] == 'N') {
-        $chk_prideurlprivate_n = 'CHECKED';
-    } else {
-        $chk_prideurlprivate_y = 'CHECKED';
+    $visib = 'private';
+    if (isset($info[0]['whmurlvisibility'][0])) {
+        $visib = $info[0]['whmurlvisibility'][0]);
     }
 
 }
@@ -105,7 +103,7 @@ if (session_is_registered('in_msg')) {
 
 <form name="maint"
       method="post"
-      action="my_links_maint_action"
+      action="notes_maint_action"
       onsubmit="return checkIt()">
 
 <table border="1" cellpadding="2" align="center">
@@ -137,22 +135,14 @@ if (session_is_registered('in_msg')) {
 
 <tr>
  <td align="right">View:</td>
-    <td> 
-      <input type="radio" 
-            <?php echo $chk_prideurlprivate_n;?> name="in_prideurlprivate" 
-             value="N">Public
-      &nbsp;&nbsp;&nbsp;
-      <input type="radio" 
-            <?php echo $chk_prideurlprivate_y;?> name="in_prideurlprivate" 
-             value="Y">Private
-    </td>
+ <td> <input type="text" value="<?php print $visib; ?>"> </td>
 </tr>
 
 <tr>
  <td align="right">URL:</td>
  <td>
-   <input type="text" size="50" name="in_prideurl" 
-          value="<?php print $info[0]['prideurl'][0];?>">
+   <input type="text" size="50" name="in_whmurl" 
+          value="<?php print $info[0]['whmurl'][0];?>">
  </td>
 </tr>
 
@@ -167,8 +157,8 @@ if (session_is_registered('in_msg')) {
 <tr>
  <td align="right">Password:</td>
  <td>
-   <input type="text" size="50" name="in_pridecredential" 
-          value="<?php print $info[0]['pridecredential'][0];?>">
+   <input type="text" size="50" name="in_whmcredential" 
+          value="<?php print $info[0]['whmcredential'][0];?>">
  </td>
 </tr>
 

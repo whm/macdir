@@ -3,37 +3,36 @@
 # file: my_list.php
 # author: Bill MacAllister
 
-$title = "Search My Links";
-$heading = "Search My Links";
+$title = "Search Notes";
+$heading = "Search Notes";
 require('inc_macdir.php');
 require('inc_header.php');
 
 # create a form to attribute mapping
 $form["commonname"]  = "cn";
 $form["description"] = "description";
-$form["password"]    = "pridecredential";
-$form["url"]         = "prideurl";
+$form["password"]    = "whmcredential";
+$form["url"]         = "whmurl";
 
-if (strlen($in_private) == 0 && $_SESSION['MY_private']>0) {
-    $in_private = $_SESSION['MY_private'];
+$valid_visibility['private']   = 'Private';
+$valid_visibility['ca-zephyr'] = 'CA Zephyr';
+$valid_visibility['public']    = 'Public';
+
+if ( !isset($in_visbility) ) {
+    if ( isset($_SESSION['NOTES_visibility']) )  {
+        $in_visibility = $_SESSION['NOTES_visibility'];
+    } else {
+        $in_visibility = 'public';
+    }
 }
-$_SESSION['MY_private'] = $in_private;
-$chk_private_y = $chk_private_n = $chk_private_all = '';
-if ($in_private == 'Y') {
-    $chk_private_y = 'CHECKED';
-    $private_filter = '(prideurlprivate=Y)';
-} elseif ($in_private == 'ALL') {
-    $chk_private_all = 'CHECKED';
-    $private_filter = '';
-} else {
-    $chk_private_n = 'CHECKED';
-    $private_filter = '(!(prideurlprivate=Y))';
-}
+
+$_SESSION['NOTES_visibility'] = $in_visibility;
+$visibility_filter = '(whmurlvisibility=$in_visibility)';
 
 # set session information
 foreach ($form as $formName => $ldapName) {
     $name = "in_$formName"; 
-    $sessName = "MY_$formName";
+    $sessName = "NOTES_$formName";
     if (strlen($btn_search)>0) {
         $_SESSION[$sessName] = $$name;
     } else {
@@ -52,22 +51,22 @@ foreach ($form as $formName => $ldapName) {
 }
 
 if (strlen($base_filter)==0) {
-
     // construct a filter from session information if there
     // is no input data
     foreach ($form as $formName => $ldapName) {
-        $sessName = "MY_$formName";
+        $sessName = "NOTES_$formName";
         $a_val = $_SESSION[$sessName];
         if (strlen($a_val) > 0) {
             $base_filter .= "($ldapName=*$a_val*)";
         }
     }
-    
 }
 
 $this_user = '';
 if ( isset($_SESSION['WEBAUTH_USER']) ) { 
     $this_user = $_SESSION['WEBAUTH_USER']; 
+} else {
+    die ('WEBAUTH failure');
 }
 ?>
 
@@ -90,7 +89,7 @@ if ( isset($_SESSION['WEBAUTH_USER']) ) {
     <td> 
       <input type="text" 
              name="in_commonname" 
-             value="<?php print $_SESSION['MY_commonname'];?>"
+             value="<?php print $_SESSION['NOTES_commonname'];?>"
              size="32">
     </td>
   </tr>
@@ -102,7 +101,7 @@ if ( isset($_SESSION['WEBAUTH_USER']) ) {
     <td> 
       <input type="text" 
              name="in_description" 
-             value="<?php print $_SESSION['MY_description'];?>"
+             value="<?php print $_SESSION['NOTES_description'];?>"
              size="32">
     </td>
   </tr>
@@ -114,27 +113,28 @@ if ( isset($_SESSION['WEBAUTH_USER']) ) {
     <td> 
       <input type="text" 
              name="in_url" 
-             value="<?php print $_SESSION['MY_url'];?>"
+             value="<?php print $_SESSION['NOTES_url'];?>"
              size="32">
     </td>
   </tr>
 
   <tr> 
     <td> 
-      <div align="right">Private:</div>
+      <div align="right">Visibility:</div>
     </td>
     <td> 
-      <input type="radio" 
-            <?php echo $chk_private_n;?> name="in_private" 
-             value="N">Only Public
-      &nbsp;&nbsp;&nbsp;
-      <input type="radio" 
-            <?php echo $chk_private_y;?> name="in_private" 
-             value="Y">Only Private
-      &nbsp;&nbsp;&nbsp;
-      <input type="radio" 
-            <?php echo $chk_private_all;?>  name="in_private" 
-             value="ALL">All
+<?php 
+        foreach ($valid_visibility as $vval => $vdesc) {
+            print '<input type="radio"';
+            if ($vval == $in_visibility) {print ' CHECKED';}
+            print ' name="in_visibility">';
+            print "&nbsp;&nbsp;&nbsp;\n";
+        }
+        print '<input type="radio"';
+        if ($in_visibility == 'ALL') {print ' CHECKED';}
+        print ' name="in_visibility">';
+        print "\n";
+?>
     </td>
   </tr>
 
@@ -158,8 +158,8 @@ if ( isset($_SESSION['WEBAUTH_USER']) ) {
 
 $my_base_dn = 'uid='.$_SESSION['whm_directory_user']
        .','.$ldap_user_base;
-$base_filter .= $private_filter;
-$filter = '(&(objectclass=pridelistobject)'.$base_filter.')';
+$base_filter .= $visibility_filter;
+$filter = '(&(objectclass=whmPersonalNote)'.$base_filter.')';
 $thisFilter = "(&";
 $thisFilter .= "(objectclass=person)";
 $thisFilter .= "(uid=".$this_uid.")";
@@ -170,13 +170,6 @@ $r = ldap_get_entries($macdirDS, $sr);
 if ($r["count"]) {
     $base_db = $r['dn'];
 }
-
-objectClass: whmPersonalNote
-cn: trainmaster-mysql
-description: Trainmaster mysql
-whmUrlVisibility: private
-uid: mac
-whmCredential: wardetee1948
 
 $return_attr = array('cn',
                      'description',
@@ -196,7 +189,7 @@ if ($ret_cnt) {
     echo "<tr>\n";
     echo " <th>Description</th>\n";
     echo " <th>URL</th>\n";
-    echo " <th>Private</th>\n";
+    echo " <th>Visibility</th>\n";
     echo " <th>Username</th>\n";
     echo " <th>Password</th>\n";
     echo "</tr>\n";
@@ -217,7 +210,7 @@ if ($ret_cnt) {
             .$info[$i]["description"][0]."&nbsp;</td>\n";
         echo " <td>$a_href_url &nbsp;</td>\n";
         echo ' <td align="center">'
-            .$info[$i]["prideurlprivate"][0]."&nbsp;</td>\n";
+            .$info[$i]["whmurlvisibility"][0]."&nbsp;</td>\n";
         echo " <td>".$info[$i]["linkuid"][0]."&nbsp;</td>\n";
         echo " <td>".$info[$i]["pridecredential"][0]."&nbsp;</td>\n";
         echo "</tr>\n";

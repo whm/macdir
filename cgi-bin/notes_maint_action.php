@@ -1,5 +1,5 @@
 <?php 
-// file: my_links_maint_action.php
+// file: notes_maint_action.php
 // author: Bill MacAllister
 
 // -------------------------------------------------------------
@@ -14,10 +14,10 @@ $ef = "</font><br>\n";
 // that have a simple value.
 $fld_list = array();
 array_push ($fld_list, 'description');
-array_push ($fld_list, 'prideurl');
-array_push ($fld_list, 'prideurlprivate');
+array_push ($fld_list, 'whmurl');
+array_push ($fld_list, 'whmurlvisibility');
 array_push ($fld_list, 'linkuid');
-array_push ($fld_list, 'pridecredential');
+array_push ($fld_list, 'whmcredential');
 
 require ('/etc/whm/macdir_auth.php');
 $ds = ldap_connect($ldap_server);
@@ -33,7 +33,7 @@ if (!$ds) {
 }
 
 $link_base = $_SESSION['whm_directory_user_dn'];
-$link_filter = "(&(objectclass=pridelistobject)(cn=$in_cn))";
+$link_filter = "(&(objectclass=whmPersonalNote)(cn=$in_cn))";
 
 if (isset($btn_add)) {
 
@@ -62,9 +62,9 @@ if (isset($btn_add)) {
 
             $ldap_entry["objectclass"][] = "top";
             $_SESSION['in_msg'] .= "$ok adding objectClass = top$ef";
-            $ldap_entry["objectclass"][] = "pridelistobject";
+            $ldap_entry["objectclass"][] = "whmPersonalNote";
             $_SESSION['in_msg'] .= "$ok adding objectClass = "
-                . "pridelistobject$ef";
+                . "whmPersonalNote$ef";
             $ldap_entry["cn"][] = $in_cn;
             $_SESSION['in_msg'] .= "$ok adding cn = $in_cn$ef";
 
@@ -203,7 +203,7 @@ if (isset($btn_add)) {
 
 }
 
-$a_url = "my_links_maint.php?in_cn=$in_cn";
+$a_url = "notes_maint.php?in_cn=$in_cn";
 header ("REFRESH: 0; URL=$a_url");
 ?>
 
