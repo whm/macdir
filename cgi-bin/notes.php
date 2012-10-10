@@ -152,7 +152,7 @@ require('inc_header.php');
 <?php
 
 $note_base_dn = 'uid='.$_SERVER['WEBAUTH_USER']
-       .','.$ldap_user_base;
+            .','.$macdirPROPS['ldap_user_base_dn'];
 $base_filter .= $visibility_filter;
 $filter = '(&(objectclass=whmPersonalNote)';
 $filter .= $base_filter;
