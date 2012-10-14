@@ -167,7 +167,6 @@ $note_base_dn = 'uid='.$_SERVER['WEBAUTH_USER']
             .','.$macdirPROPS['ldap_user_base_dn'];
 $filter = '(&(objectclass=whmPersonalNote)';
 $filter .= $visibility_filter;
-$filter .= '(objectclass=whmPersonalNote)';
 $filter .= ")";
 $return_attr = array('cn',
                      'description',
@@ -176,7 +175,7 @@ $return_attr = array('cn',
                      'whmEntryVisibility',
                      'whmUrl',
                      'whmUrlVisibility' );
-$msg = "filter:$filter<br>\n";
+$thisMsg = "filter:$filter<br>\n";
 $sr = ldap_search($macdirDS, $note_base_dn, $filter, $return_attr);  
 ldap_sort($macdirDS, $sr, 'description');
 $info = ldap_get_entries($macdirDS, $sr);
@@ -222,11 +221,11 @@ if ($ret_cnt) {
     echo "      color=\"#FF0000\">No entries found.</font>\n";
     echo "</div>\n";
 }
-if (isset($msg)) {
+if (isset($thisMsg)) {
     echo "<p>\n";
     echo "<div align=\"center\">\n";
     echo "<font face=\"Arial, Helvetica, sans-serif\"\n";
-    echo "      size=\"+1\">$msg</font>\n";
+    echo "      size=\"+1\">$thisMsg</font>\n";
     echo "</div>\n";
 }
 ?>
