@@ -18,16 +18,21 @@ $valid_visibility['private']   = 'Private';
 $valid_visibility['ca-zephyr'] = 'CA Zephyr';
 $valid_visibility['public']    = 'Public';
 
-if ( !isset($in_visbility) ) {
-    if ( isset($_SESSION['NOTES_visibility']) )  {
-        $in_visibility = $_SESSION['NOTES_visibility'];
-    } else {
-        $in_visibility = 'public';
+# Set the visibility filter
+$visibility_filter = '';
+foreach ($valid_visibility as $vvis => $vdesc) {
+    if (isset(${"in_visibility_$vvis"})) {
+        $visibility_filter .= "(whmurlvisibility=$vvis)";
     }
 }
-
-$_SESSION['NOTES_visibility'] = $in_visibility;
-$visibility_filter = '(whmurlvisibility=$in_visibility)';
+if ( !isset($visbility_filter) ) {
+    if (isset($_SESSION['NOTES_visibility_filter'])) {
+        $visibility_filter = $_SESSION['NOTES_visibility_filter'];
+    } else {
+        $visibility_filter = '(whmurlvisibility=public)';
+    }
+}
+$_SESSION['NOTES_visibility_filter'] = $visibility_filter;
 
 # set session information
 foreach ($form as $formName => $ldapName) {
@@ -120,15 +125,11 @@ require('inc_header.php');
     <td> 
 <?php 
         foreach ($valid_visibility as $vval => $vdesc) {
-            print '<input type="radio"';
+            print '<input type="checkbox"';
             if ($vval == $in_visibility) {print ' CHECKED';}
-            print ' name="in_visibility">';
+            print ' name="in_visibility">.$vval';
             print "&nbsp;&nbsp;&nbsp;\n";
         }
-        print '<input type="radio"';
-        if ($in_visibility == 'ALL') {print ' CHECKED';}
-        print ' name="in_visibility">';
-        print "\n";
 ?>
     </td>
   </tr>
@@ -199,7 +200,7 @@ if ($ret_cnt) {
         echo ' <td align="center">'
             .$info[$i]["whmurlvisibility"][0]."&nbsp;</td>\n";
         echo " <td>".$info[$i]["linkuid"][0]."&nbsp;</td>\n";
-        echo " <td>".$info[$i]["pridecredential"][0]."&nbsp;</td>\n";
+        echo " <td>".$info[$i]["whmcredential"][0]."&nbsp;</td>\n";
         echo "</tr>\n";
     }
     echo "</table>\n";
