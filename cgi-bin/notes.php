@@ -176,7 +176,7 @@ $return_attr = array('cn',
                      'whmEntryVisibility',
                      'whmUrl',
                      'whmUrlVisibility' );
-$_SESSION['msg'] .= "filter:$filter<br>\n";
+$msg = "filter:$filter<br>\n";
 $sr = ldap_search($macdirDS, $note_base_dn, $filter, $return_attr);  
 ldap_sort($macdirDS, $sr, 'description');
 $info = ldap_get_entries($macdirDS, $sr);
@@ -220,6 +220,13 @@ if ($ret_cnt) {
     echo "<font face=\"Arial, Helvetica, sans-serif\"\n";
     echo "      size=\"+1\"\n";
     echo "      color=\"#FF0000\">No entries found.</font>\n";
+    echo "</div>\n";
+}
+if (isset($msg)) {
+    echo "<p>\n";
+    echo "<div align=\"center\">\n";
+    echo "<font face=\"Arial, Helvetica, sans-serif\"\n";
+    echo "      size=\"+1\">$msg</font>\n";
     echo "</div>\n";
 }
 ?>

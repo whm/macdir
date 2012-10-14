@@ -1,5 +1,7 @@
 <?php
 
+session_start();
+
 // Get LDAP directory properties
 $macdirPROPS = '/etc/whm/macdir.'.$_SERVER['HTTP_HOST'].'.conf';
 $fh = fopen($macdirPROPS, 'r');
