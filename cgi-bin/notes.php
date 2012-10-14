@@ -32,6 +32,11 @@ if ( !isset($visbility_filter) ) {
         $visibility_filter = '(whmurlvisibility=public)';
     }
 }
+if (!preg_match('/\(\|/')) {
+    if (preg_match_all('/\(/', $visibility_filter)>1) {
+        $visibility_filter = '(|'.$visibility_filter.')';
+    }
+}
 $_SESSION['NOTES_visibility_filter'] = $visibility_filter;
 
 # set session information
@@ -139,12 +144,13 @@ require('inc_header.php');
       <input type="submit" value="Search Directory" name="btn_search">
       </td>
   </tr>
-<?php if (isset($msg)) { ?>
-  <tr><td align="center" colspan="2">
-      <?php echo $msg;?>
-      </td>
-  </tr>
-<?php } ?>
+<?php 
+if (isset($_SESSION['msg'])) { 
+    print "  <tr>\n";
+    print '    <td align="center" colspan="2">'.$_SESSION['msg']."</td>\n";
+    print "\n";
+}
+?>
 </table>
 </form>
 
@@ -154,9 +160,8 @@ require('inc_header.php');
 
 $note_base_dn = 'uid='.$_SERVER['WEBAUTH_USER']
             .','.$macdirPROPS['ldap_user_base_dn'];
-$base_filter .= $visibility_filter;
 $filter = '(&(objectclass=whmPersonalNote)';
-$filter .= $base_filter;
+$filter .= $visibility_filter;
 $filter .= '(objectclass=whmPersonalNote)';
 $filter .= ")";
 $return_attr = array('cn',
@@ -166,7 +171,7 @@ $return_attr = array('cn',
                      'whmEntryVisibility',
                      'whmUrl',
                      'whmUrlVisibility' );
-
+$_SESSION['msg'] .= "filter:$filter<br>\n";
 $sr = ldap_search($macdirDS, $note_base_dn, $filter, $return_attr);  
 ldap_sort($macdirDS, $sr, 'description');
 $info = ldap_get_entries($macdirDS, $sr);
