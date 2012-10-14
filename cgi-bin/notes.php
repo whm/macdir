@@ -60,8 +60,8 @@ if (strlen($base_filter)==0) {
     // is no input data
     foreach ($form as $formName => $ldapName) {
         $sessName = "NOTES_$formName";
-        $a_val = $_SESSION[$sessName];
-        if (strlen($a_val) > 0) {
+        if (isset($_SESSION[$sessName])) {
+            $a_val = $_SESSION[$sessName];
             $base_filter .= "($ldapName=*$a_val*)";
         }
     }
@@ -127,7 +127,7 @@ require('inc_header.php');
         foreach ($valid_visibility as $vval => $vdesc) {
             print '<input type="checkbox"';
             if ($vval == $in_visibility) {print ' CHECKED';}
-            print ' name="in_visibility">.$vval';
+            print ' name="in_visibility">'.$vval;
             print "&nbsp;&nbsp;&nbsp;\n";
         }
 ?>
