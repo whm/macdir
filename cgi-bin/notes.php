@@ -32,7 +32,7 @@ if ( !isset($visbility_filter) ) {
         $visibility_filter = '(whmurlvisibility=public)';
     }
 }
-if (!preg_match('/\(\|/')) {
+if (!preg_match('/\(\|/'),$visibility_filter) {
     if (preg_match_all('/\(/', $visibility_filter)>1) {
         $visibility_filter = '(|'.$visibility_filter.')';
     }
@@ -150,6 +150,7 @@ if (isset($_SESSION['msg'])) {
     print '    <td align="center" colspan="2">'.$_SESSION['msg']."</td>\n";
     print "\n";
 }
+$_SESSION['msg'] = '';
 ?>
 </table>
 </form>
