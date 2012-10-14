@@ -33,7 +33,7 @@ if ( !isset($visbility_filter) ) {
     }
 }
 if (!preg_match('/\(\|/',$visibility_filter)) {
-    if (preg_match_all('/\(/', $visibility_filter)>1) {
+    if (preg_match_all('/\(/', $visibility_filter, $matches)>1) {
         $visibility_filter = '(|'.$visibility_filter.')';
     }
 }
@@ -44,7 +44,11 @@ foreach ($form as $formName => $ldapName) {
     $name = "in_$formName"; 
     $sessName = "NOTES_$formName";
     if (isset($btn_search)) {
-        $_SESSION[$sessName] = $$name;
+        if (isset($$name)) {
+            $_SESSION[$sessName] = $$name;
+        } else {
+            $_SESSION[$sessName] = '';
+        }
     } else {
         $_SESSION[$sessName] = '';
     }
