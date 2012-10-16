@@ -21,7 +21,8 @@ $valid_visibility['public']    = 'Public';
 # Set the visibility filter
 $visibility_filter = '';
 foreach ($valid_visibility as $vvis => $vdesc) {
-    if (isset(${"in_visibility_$vvis"})) {
+    $thisName = 'in_visibility_'.$vvis;
+    if (isset($REQUEST[$thisName])) {
         $visibility_filter .= "(whmurlvisibility=$vvis)";
     }
 }
@@ -134,10 +135,11 @@ require('inc_header.php');
     <td> 
 <?php 
         foreach ($valid_visibility as $vval => $vdesc) {
-            print '<input type="checkbox"';
-            $thisVis = ${in_visibility_$vval};
-            if ($vval == $thisVis) {print ' CHECKED';}
-            print ' name="in_visibility_'.$vval.'">'.$vdesc;
+            $thisName = 'in_visibility_'.$vval;
+            $checked = '';
+            if (isset($_REQUEST[$thisName])) { $checked = ' CHECKED';
+            print '<input type="checkbox"'.$checked;
+            print ' name=".$thisName.'">'.$vdesc;
             print "&nbsp;&nbsp;&nbsp;\n";
         }
 ?>
