@@ -136,7 +136,7 @@ require('inc_header.php');
         foreach ($valid_visibility as $vval => $vdesc) {
             print '<input type="checkbox"';
             if ($vval == $in_visibility) {print ' CHECKED';}
-            print ' name="in_visibility">'.$vval;
+            print ' name="in_visibility_'.$vval.'">'.$vdesc;
             print "&nbsp;&nbsp;&nbsp;\n";
         }
 ?>
