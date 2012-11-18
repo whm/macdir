@@ -24,13 +24,14 @@ require('inc_groups.php');
 $msg = '';
 $entry_found = 0;
 $add_delete_flag = 1;
-$thisUID = $thisDN = $ldap_filter = '';
+$inUID = $thisUID = $thisDN = $ldap_filter = '';
 
-if (!isset($in_uid)) {$in_uid = '';}
-if (strlen($in_uid)>0) {
-  $ldap_filter = "uid=$in_uid";
+if (isset($_REQUEST['in_uid'])) {
+  $inUID = $_REQUEST['in_uid'];
+  $ldap_filter = "(&(objectclass=person)(uid=$inUID))";
 }
-if (strlen($ldap_filter)>0) {
+
+if (isset($ldap_filter)) {
 
   $return_attr = array();
   $old_err = error_reporting(E_ERROR | E_PARSE);
@@ -42,16 +43,17 @@ if (strlen($ldap_filter)>0) {
      $entry_found = 1;
      $in_uid = $info[0]["uid"][0];
   } elseif ($ret_cnt > 1) {
-     $msg .= "More than on entry found for $ldap_filter search.\n";
+    $msg .= macdir_msg('error',
+		       "More than on entry found for $ldap_filter search.\n");
   } else {
-     $msg .= "No entry found.\n";
+    $msg .= macdir_msg('error',"No entry found.\n");
   }
 
   // Now see if there is a uid and if they are in any posix or pam groups
   if ($entry_found) {
 
     $thisDN = $info[0]["dn"];
-    $thisUID = $in_uid = $info[0]["uid"][0];
+    $thisUID = $inUID = $info[0]["uid"][0];
 
     // posix groups for this user
     $posixFilter = "(&(objectclass=posixGroup)(memberUid=$thisUID))";
@@ -129,7 +131,7 @@ if (strlen($ldap_filter)>0) {
   <td align="right" width="50%">UID:</td>
   <td width="50%"><input type="text"
              name="in_uid"
-             value="<?php print $in_uid;?>">
+             value="<?php print $inUID;?>">
   </td>
 </tr>
 <tr>
@@ -359,7 +361,7 @@ function checkIt() {
             if ( isset($info[0][$krb_attr][0]) ) {
               $z = ' ('.$info[0][$krb_attr][0].')';
             }
-            print $thisUID.$z;
+            print $inUID.$z;
             ?> 
           </td>
           <td align="right"><a href="<?php echo $pwd_href;?>">

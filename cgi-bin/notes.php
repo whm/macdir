@@ -18,15 +18,17 @@ $valid_visibility['private']   = 'Private';
 $valid_visibility['ca-zephyr'] = 'CA Zephyr';
 $valid_visibility['public']    = 'Public';
 
+$thisMsg = '';
+
 # Set the visibility filter
 $visibility_filter = '';
 foreach ($valid_visibility as $vvis => $vdesc) {
     $thisName = 'in_visibility_'.$vvis;
-    if (isset($REQUEST[$thisName])) {
+    if (isset($_REQUEST[$thisName])) {
         $visibility_filter .= "(whmurlvisibility=$vvis)";
     }
 }
-if ( !isset($visbility_filter) ) {
+if ( !isset($visibility_filter) ) {
     if (isset($_SESSION['NOTES_visibility_filter'])) {
         $visibility_filter = $_SESSION['NOTES_visibility_filter'];
     } else {
@@ -137,9 +139,9 @@ require('inc_header.php');
         foreach ($valid_visibility as $vval => $vdesc) {
             $thisName = 'in_visibility_'.$vval;
             $checked = '';
-            if (isset($_REQUEST[$thisName])) { $checked = ' CHECKED';
+            if (isset($_REQUEST[$thisName])) { $checked = ' CHECKED'; }
             print '<input type="checkbox"'.$checked;
-            print ' name=".$thisName.'">'.$vdesc;
+            print ' name="'.$thisName.'" value="Y">'.$vdesc;
             print "&nbsp;&nbsp;&nbsp;\n";
         }
 ?>
@@ -178,7 +180,7 @@ $return_attr = array('cn',
                      'whmEntryVisibility',
                      'whmUrl',
                      'whmUrlVisibility' );
-$thisMsg = "filter:$filter<br>\n";
+$thisMsg .= "filter:$filter<br>\n";
 $sr = ldap_search($macdirDS, $note_base_dn, $filter, $return_attr);  
 ldap_sort($macdirDS, $sr, 'description');
 $info = ldap_get_entries($macdirDS, $sr);
@@ -195,24 +197,42 @@ if ($ret_cnt) {
     echo "</tr>\n";
     for ($i=0; $i<$info["count"]; $i++) {
         $a_cn = $info[$i]["cn"][0];
+
         $a_cn_url = urlencode($a_cn);
-        
-        $a_maint_link = '<a href="notes_maint.php'
+        $maintLink = '<a href="notes_maint.php'
             .'?in_cn=' . $a_cn_url
             .'"><img src="/macdir-images/icon-edit.png" border="0"></a>';
-        $a_href_url = '<a href="'
+
+	$dDesc = '';
+	if ( isset($info[$i]["description"][0]) ) {
+	    $dDesc = $info[$i]["description"][0];
+	}
+	$dVisibility = '';
+	if ( isset($info[$i]["whmurlvisibility"][0]) ) {
+	  $dVisibility = $info[$i]["whmurlvisibility"][0];
+	}
+	$dLinkuid = '';
+	if ( isset($info[$i]["linkuid"][0]) ) {
+	  $dLinkuid = $info[$i]["linkuid"][0];
+	}
+	$dCred = '';
+	if ( isset($info[$i]["whmcredential"][0]) ) {
+	  $dCred = $info[$i]["whmcredential"][0];
+	}
+	$urlLink = '';
+	if ( isset($info[$i]["whmurl"][0]) ) {
+	  $urlLink = '<a href="'
             .htmlentities($info[$i]["whmurl"][0])
             .'" target="_BLANK">'
             .$info[$i]["whmurl"][0].'</a>';
-        
+	}
+
         echo "<tr>\n";
-        echo ' <td valign="center">'.$a_maint_link
-            .$info[$i]["description"][0]."&nbsp;</td>\n";
-        echo " <td>$a_href_url &nbsp;</td>\n";
-        echo ' <td align="center">'
-            .$info[$i]["whmurlvisibility"][0]."&nbsp;</td>\n";
-        echo " <td>".$info[$i]["linkuid"][0]."&nbsp;</td>\n";
-        echo " <td>".$info[$i]["whmcredential"][0]."&nbsp;</td>\n";
+        echo ' <td valign="center">'.$maintLink.$dDesc."&nbsp;</td>\n";
+        echo " <td>$dLinkuid&nbsp;</td>\n";
+        echo ' <td align="center">'.$dVisibility."&nbsp;</td>\n";
+        echo " <td>$dLinkuid&nbsp;</td>\n";
+        echo " <td>$dCred&nbsp;</td>\n";
         echo "</tr>\n";
     }
     echo "</table>\n";

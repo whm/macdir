@@ -1,5 +1,28 @@
 <?php
 
+// =======================================================================
+// Utility routines
+// =======================================================================
+
+// --------------------------------------------------
+// Format error messages
+
+function macdir_msg($level, $msg) {
+  $msg_display = $msg;
+  if ($level == 'error') {
+    $msg_display = '<span class="msgError">'.$msg.'</span>';
+  } elseif ($level == 'warning') {
+    $msg_display = '<span class="msgWarning">'.$msg.'</span>';
+  } elseif ($level == 'okay') {
+    $msg_display = '<span class="msgOkay">'.$msg.'</span>';
+  }
+  return $msg_display."<br>\n";
+}
+
+// =======================================================================
+// Initialization
+// =======================================================================
+
 session_start();
 
 // Get LDAP directory properties
