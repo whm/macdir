@@ -5,6 +5,8 @@
 // -------------------------------------------------------------
 // main routine
 
+session_start();
+
 $_SESSION['in_msg'] = '';
 $warn = '<font color="#cc0000">';
 $ok = '<font color="#00cc00">';
@@ -96,7 +98,7 @@ if (isset($btn_add)) {
     // Update an LDAP Entry
     // -----------------------------------------------------
 
-    if (strlen($in_cn) == 0) {
+    if (!isset($in_cn)) {
         $_SESSION['in_msg'] .= "$warn No entry to update$ef";
         $ret_cnt = 0;
     } else {

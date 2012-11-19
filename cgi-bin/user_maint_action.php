@@ -2,7 +2,9 @@
 // file: user_maint_action.php
 // author: Bill MacAllister
 
+session_start();
 require('inc_config.php');
+require ('/etc/whm/macdir_auth.php');
 
 // --------------------------------------------------------------
 // Find a unique UID for use Linux
@@ -477,7 +479,6 @@ array_push ($fld_list, 'uid');
 array_push ($fld_list, 'uidnumber');
 array_push ($fld_list, 'workphone');
 
-require ('/etc/whm/macdir_auth.php');
 $ds = ldap_connect($ldap_server);
 if (!$ds) {
     $_SESSION['in_msg'] .= "Problem connecting to the $ldap_server server";

@@ -9,9 +9,9 @@ $ldap_admin = $phone_admin = 0;
 $this_user = '';
 if ( isset($_SERVER['WEBAUTH_USER']) ) {
     $this_user = $_SERVER['WEBAUTH_USER'];
+    $menuLoggedIn = 1;
 }
-$menuLoggedIn = (strlen($this_user) > 0);
-if ($menuLoggedIn>0) {
+if ($menuLoggedIn) {
     // Just set this to admin for now.  In the future there will be 
     // multiple levels of access to the directory.
     $ldap_admin = 1; 

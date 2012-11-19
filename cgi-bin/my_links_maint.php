@@ -2,6 +2,8 @@
 # file: my_links_maint.php
 # author: Bill MacAllister
 
+session_start();
+
 $title = 'Link Maintenance';
 $heading = 'Link Maintenance';
 

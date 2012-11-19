@@ -6,9 +6,7 @@
 //              listed in the LDAP Directory.
 
 // Open a session and check for authorization
-require('whm_php_sessions.inc');
-require('whm_php_auth.inc');
-whm_auth("ldapadmin");
+session_start();
 
 require('inc_config.php');
 
@@ -35,7 +33,7 @@ if (!isset($in_uid)) {$in_uid = '';}
 if (strlen($in_uid)>0) {
   $ldap_filter = "uid=$in_uid";
 }
-if (strlen($ldap_filter)>0) {
+if (isset($ldap_filter)) {
 
   $return_attr = array();
   $r=ldap_bind($ds,$ldap_manager,$ldap_password);

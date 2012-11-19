@@ -3,6 +3,8 @@
 # file: my_list.php
 # author: Bill MacAllister
 
+session_start();
+
 $title = "Search My Links";
 $heading = "Search My Links";
 require('inc_header.php');
@@ -14,7 +16,7 @@ $form["description"] = "description";
 $form["password"]    = "pridecredential";
 $form["url"]         = "prideurl";
 
-if (strlen($in_private) == 0 && $_SESSION['MY_private']>0) {
+if (!isset($in_private) && $_SESSION['MY_private']>0) {
     $in_private = $_SESSION['MY_private'];
 }
 $_SESSION['MY_private'] = $in_private;

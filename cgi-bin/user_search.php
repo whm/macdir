@@ -5,6 +5,8 @@
 // author: Bill MacAllister
 // date: 14-Oct-2002
 
+session_start();
+
 $title = 'Search for a Person';
 $heading = 'MacAllister Directory';
 require('inc_header.php');
