@@ -7,8 +7,8 @@ if (substr($page_root,0,1)=='/') {$page_root = substr($page_root,1);}
 // figure out the access level
 $ldap_admin = $phone_admin = 0;
 $this_user = '';
-if ( isset($_SERVER['WEBAUTH_USER']) ) {
-    $this_user = $_SERVER['WEBAUTH_USER'];
+if ( isset($_SERVER['REMOTE_USER']) ) {
+    $this_user = $_SERVER['REMOTE_USER'];
     $menuLoggedIn = 1;
 }
 if ($menuLoggedIn) {

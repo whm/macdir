@@ -10,14 +10,12 @@ $heading = 'Link Maintenance';
 require ('inc_header.php');
 require('/etc/whm/macdir_auth.php');
 $ds = ldap_connect($ldap_server);
-$r  = ldap_bind($ds,
-                $_SESSION['whm_directory_user_dn'],
-                $_SESSION['whm_credential']);
+$r  = ldap_bind($ds, $ldap_manager, $ldap_password);
 
 if (strlen($in_cn)>0) {
     
     $return_attr = array();
-    $link_base = $_SESSION['whm_directory_user_dn'];
+    $link_base = 'uid='.$_SERVER['REMOTE_USER'].','.$ldap_user_base;
     $link_filter = "(&(objectclass=pridelistobject)(cn=$in_cn))";
     $sr = @ldap_search ($ds, $link_base, $link_filter, $return_attr);
     $info = @ldap_get_entries($ds, $sr);

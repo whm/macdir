@@ -20,10 +20,7 @@ $ldap_password = '';
 $msg = '';
 
 // set default for amount of search details to display
-if ($menuLoggedIn == 0) {
-  $more_search = 'no';
-}
-if (isset ($more_search) == 0) {
+if ( !isset($more_search) ) {
   if ( isset($_SESSION['s_more_search']) ) {
     $more_search = $_SESSION['s_more_search'];
   } else {
@@ -250,8 +247,7 @@ for the first name will return matches for Bill and William.
 <p>
 
 <?php
-
-if ( isset($base_filter) ) {
+if ( isset($base_filter) && strlen($base_filter)>0) {
   $filter = '(&(objectclass=person)'.$base_filter.')';
   $base_dn = $ldap_base;
   $return_attr = array('cn',
@@ -296,7 +292,7 @@ if ( isset($base_filter) ) {
                       . '"><img src="/macdir-images/icon-edit.png" border="0"></a>';
       }
       $detail_link = '';
-      if ($menuLoggedIn>0) {
+      if (isset($menuLoggedIn)) {
         $detail_link = "<a href=\"user_details.php?dn=$a_dn_url\">"
              . '<img src="/macdir-images/icon-view-details.png" border="0"</a>';
       }
@@ -321,7 +317,7 @@ if ( isset($base_filter) ) {
 ?>
 <p>
 <?php 
-if ($menuLoggedIn>0) {
+if (isset($_SERVER['REMOTE_USER'])) {
   if ($more_search == 'yes') { ?>
  <a href="<?php echo "$PHP_SELF?more_search=no";?>"> 
  Display Less Search Criteria</a>

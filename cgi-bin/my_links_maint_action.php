@@ -29,12 +29,10 @@ if (!$ds) {
     $btn_update = '';
     $btn_delete = '';
 } else {
-    $r  = ldap_bind($ds,
-                    $_SESSION['whm_directory_user_dn'],
-                    $_SESSION['whm_credential']);
+  $r  = ldap_bind($ds, $ldap_manager, $ldap_password);
 }
 
-$link_base = $_SESSION['whm_directory_user_dn'];
+$link_base = 'uid='.$_SERVER['REMOTE_USER'].',',$ldap_user_base;
 $link_filter = "(&(objectclass=pridelistobject)(cn=$in_cn))";
 
 if (isset($btn_add)) {

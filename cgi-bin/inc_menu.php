@@ -3,17 +3,11 @@
 # Generate navigation menu
 
 $menuLoggedIn = 0;
-if ( isset($_SESSION['WEBAUTH_USER']) ) { $menuLoggedIn = 1; }
+if ( isset($_SERVER['REMOTE_USER']) ) { $menuLoggedIn = 1; }
 
 $menuItem['user_search'] = array('Title' => 'Search',
                                   'login' => '');
-$menuItem['login'] = array('inTitle'      => 'Logout',
-                            'outTitle'    => 'Login',
-                            'login'       => 'user',
-                            'inloginURL'  => 'user_search?in_action=logout',
-                            'outloginURL' => 'user_search?in_action=login',
-                            );
-$menuItem['change_password'] = array('inTitle'  => 'Change Password',
+$menuItem['change_password'] = array('inTitle'  => 'Password',
                                       'outTitle' => '',
                                       'login'    => 'user');
 $menuItem['user_maint'] = array('inTitle'  => 'User Maint',

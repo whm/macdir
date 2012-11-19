@@ -68,8 +68,8 @@ if (strlen($base_filter)==0) {
 }
 
 $this_user = '';
-if ( isset($_SESSION['WEBAUTH_USER']) ) { 
-    $this_user = $_SESSION['WEBAUTH_USER']; 
+if ( isset($_SERVER['REMOTE_USER']) ) { 
+    $this_user = $_SERVER['REMOTE_USER']; 
 }
 ?>
 
@@ -158,20 +158,18 @@ if ( isset($_SESSION['WEBAUTH_USER']) ) {
 
 <?php
 
-$my_base_dn = 'uid='.$_SESSION['whm_directory_user']
+$link_base = 'uid='.$_SERVER['REMOTE_USER']
        .','.$ldap_user_base;
 $base_filter .= $private_filter;
 $ds = ldap_connect($ldap_server);
-$r  = ldap_bind($ds,
-                $_SESSION['whm_directory_user_dn'],
-                $_SESSION['whm_credential']);
+$r  = ldap_bind($ds, $ldap_manager, $ldap_password);
 $filter = '(&(objectclass=pridelistobject)'.$base_filter.')';
 $thisFilter = "(&";
 $thisFilter .= "(objectclass=person)";
 $thisFilter .= "(uid=".$this_uid.")";
 $thisFilter .= ")";
 $returnAttr = array('cn');
-$sr = ldap_search($ds, $my_base_dn, $thisFilter, $returnAttr);  
+$sr = ldap_search($ds, $link_base, $thisFilter, $returnAttr);  
 $r = ldap_get_entries($ds, $sr);
 if ($r["count"]) {
     $base_db = $r['dn'];
@@ -183,7 +181,7 @@ $return_attr = array('cn',
                      'linkuid',
                      'pridecredential',
                      'prideurlprivate');
-$sr = ldap_search($ds, $my_base_dn, $filter, $return_attr);  
+$sr = ldap_search($ds, $link_base, $filter, $return_attr);  
 ldap_sort($ds, $sr, 'description');
 $info = ldap_get_entries($ds, $sr);
 $ret_cnt = $info["count"];
