@@ -47,8 +47,8 @@ $form["maildistributionid"] = "maildistributionid";
 $base_filter = '';
 foreach ($form as $formName => $ldapName) {
   $name = "in_$formName"; 
-  if (isset($$name)) {
-    $a_val = $$name;
+  if (isset($_REQUEST[$name])) {
+    $a_val = $_REQUEST[$name];
     if (strlen($a_val)>0) {$base_filter .= "($ldapName=*$a_val*)";}
   }
 }
@@ -237,7 +237,7 @@ for the first name will return matches for Bill and William.
   </tr>
 <?php if ( isset($msg) ) { ?>
   <tr><td align="center" colspan="2">
-      <?php echo $msg;?>
+      <?php echo $msg; $msg = '';?>
       </td>
   </tr>
 <?php } ?>

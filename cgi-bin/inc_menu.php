@@ -5,57 +5,45 @@
 $menuLoggedIn = 0;
 if ( isset($_SERVER['REMOTE_USER']) ) { $menuLoggedIn = 1; }
 
-$menuItem['user_search'] = array('Title' => 'Search',
-                                  'login' => '');
-$menuItem['change_password'] = array('inTitle'  => 'Password',
-                                      'outTitle' => '',
-                                      'login'    => 'user');
-$menuItem['user_maint'] = array('inTitle'  => 'User Maint',
-                                 'outTitle' => '',
-                                 'login'    => 'admin');
+$menuItem['user_search'] = array('title' => 'Search',
+                                 'login' => '');
 
-$menuItem['my_links'] = array('inTitle'  => 'My Links',
-                              'outTitle' => '',
-                              'login'    => 'user');
+$menuItem['change_password'] = array('title' => 'Password',
+				     'login' => 'user');
 
-$menuItem['my_links_maint'] = array('inTitle' => 'Links Maint',
-                                    'outTitle' => '',
-                                    'login'    => 'user');
+$menuItem['user_maint'] = array('title' => 'User Maint',
+				'login' => 'admin');
 
-$menuItem['apps'] = array ('inTitle'  => 'Apps',
-                            'outTitle' => '',
-                            'login'    => 'admin');
-$menuItem['app_access_maint'] = array('inTitle'  => 'App Access',
-                                       'outTitle' => '',
-                                       'login'    => 'admin');
+$menuItem['my_links'] = array('title' => 'My Links',
+                              'login' => 'user');
+
+$menuItem['my_links_maint'] = array('title' => 'Links Maint',
+                                    'login' => 'user');
+
+$menuItem['apps'] = array ('title' => 'Apps',
+			   'login' => 'admin');
+
+$menuItem['app_access_maint'] = array('title' => 'App Access',
+				      'login' => 'admin');
 
 $itemList = '';
-foreach ($menuItem as $id => $items) {
-    if ($items['login'] == '') {
-        $itemList .= '<li>';
-        $itemList .= '<a href="'.$id.'">'.$items['Title']."</a>";
-        $itemList .= "</li>\n";
-    } elseif (($items['login'] == 'admin' && $ldap_admin) 
-              || ($items['login'] == 'user')) {
-        $title = $items['outTitle'];
-        if ($menuLoggedIn) {$title = $items['inTitle'];}
-        $url = $id;
-        if ( isset($items['outloginURL']) ) {
-            if ($menuLoggedIn) {
-                $url = $items['inloginURL'];
-            } else {
-                $url = $items['outloginURL'];
-            }
-        } else {
-            if (!$menuLoggedIn) {$url = '';}
-        }
-        if ( isset($url) ) {
-            $itemList .= '<li>';
-            $itemList .= '<a href="'.$url.'">'.$title."</a>";
-            $itemList .= "</li>\n";
-        }
+
+if ($menuLoggedIn>0) {
+  foreach ($menuItem as $id => $items) {
+    if (($items['login'] == 'admin' && $ldap_admin) || ($items['login'] == 'user')) {
+      $title = $items['title'];
+      $url = $id;
+      $itemList .= '<li>';
+      $itemList .= '<a href="'.$url.'">'.$title."</a>";
+      $itemList .= "</li>\n";
     }
+  }
+} else {
+  $itemList .= '<li>';
+  $itemList .= '<a href="auth/user_search.php">Login</a>';
+  $itemList .= "</li>\n";
 }
+
 ?>
 <!-- Navigation -->
 
