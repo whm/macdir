@@ -1,3 +1,10 @@
+macdir (2.3) unstable; urgency=low
+
+  * Use full file names in URLs.
+  * Remove dependency on register_globals.
+
+ -- Bill MacAllister <mac@ca-zephyr.org>  Tue, 31 Dec 2013 12:25:09 -0800
+
 macdir (2.2) unstable; urgency=low
 
   * Move to using webauth for access control to the application.
