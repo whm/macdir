@@ -126,7 +126,7 @@ if ($info_cnt>0) {
   $cnt = 0;
   foreach ($infoSort as $uid => $idx) {
       $uid_encode = urlencode("$uid");
-      $cm_href = '<a href="computer_maint?in_uid='.$uid_encode.'" '
+      $cm_href = '<a href="computer_maint.php?in_uid='.$uid_encode.'" '
            . 'target="_blank">';
       echo " <tr>\n";
       echo "  <td align=\"center\">$cm_href<img ";

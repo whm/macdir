@@ -305,8 +305,8 @@ if (strlen($btn_add)>0) {
   $subj = "Alias delettion for obsolete application requested";
   $msg = $subj . "\n"; 
   mail ($pride_command_processor,
-	$subj,
-	$msg);
+        $subj,
+        $msg);
   $_SESSION['in_msg'] .= "$ok Mail Server Update Requested$ef";
 
 } else {

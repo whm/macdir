@@ -234,7 +234,7 @@ if (f.in_pass1.value != f.in_pass2.value) {
 <table border="1" cellpadding="2">
 
 <?php 
-$pwd_href = 'set_password?in_uid='.$thisUID;
+$pwd_href = 'set_password.php?in_uid='.$thisUID;
 
 // -------------------------------------------
 // Non employee maintenance

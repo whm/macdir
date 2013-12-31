@@ -357,7 +357,7 @@ function checkIt() {
 <table border="1" cellpadding="2">
 <?php
   if ($entry_found) {
-    $pwd_href = 'set_password?in_uid='.$thisUID;
+    $pwd_href = 'set_password.php?in_uid='.$thisUID;
 ?>
 <tr>
   <td align="right">Computer UID:</td>

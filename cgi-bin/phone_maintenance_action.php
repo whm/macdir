@@ -312,7 +312,6 @@ header ("REFRESH: 0; URL=/phone_maintenance.php?in_uid=$in_uid");
 <title>LDAP Directory Maintenance</title>
 </head>
 <body>
-<a href="http://www.macallister.grass-valley.ca.us">
-www.macallister.grass-valley.ca.us</a>
+<a href="http://www.ca-zephyr.org">www.ca-zephyr.org</a>
 </body>
 </html>

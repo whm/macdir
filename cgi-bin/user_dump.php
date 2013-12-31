@@ -20,7 +20,7 @@ require ('/etc/whm/macdir_auth.php');
 
 <!-- Main body of document -->
 <div align="center">
-<a href="user_details">Return to User Display</a>
+<a href="user_details.php">Return to User Display</a>
 </div>
 <?php
 
