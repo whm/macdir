@@ -1,4 +1,14 @@
 <?php 
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_sambadomainname  = $_REQUEST['in_sambadomainname'];
+$in_userpassword  = $_REQUEST['in_userpassword'];
+$in_uid  = $_REQUEST['in_uid'];
+$in_cn  = $_REQUEST['in_cn'];
+// ----------------------------------------------------------
+//
 // file: computer_maint_action.php
 // author: Bill MacAllister
 

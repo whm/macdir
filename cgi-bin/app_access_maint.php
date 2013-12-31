@@ -1,4 +1,12 @@
 <?php
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_employeenumber  = $_REQUEST['in_employeenumber'];
+$in_uid  = $_REQUEST['in_uid'];
+// ----------------------------------------------------------
+//
 // file: app_access_maint.php
 // author: Bill MacAllister
 // date: 18-Jan-2003

@@ -1,4 +1,11 @@
 <?php
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_localmailbox  = $_REQUEST['in_localmailbox'];
+// ----------------------------------------------------------
+//
 // file: maillist_maint.php
 // author: Bill MacAllister
 // date: 18-Jan-2003

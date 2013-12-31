@@ -1,4 +1,11 @@
 <?php 
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_uid  = $_REQUEST['in_uid'];
+// ----------------------------------------------------------
+//
 // file: phone_maintenance.php
 // author: Bill MacAllister
 // date: 2-Jan-2004

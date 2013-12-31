@@ -1,4 +1,22 @@
 <?php 
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_mailservauthlist_search  = $_REQUEST['in_mailservauthlist_search'];
+$in_mailservauthlist_base  = $_REQUEST['in_mailservauthlist_base'];
+$in_new_mailfilter_search  = $_REQUEST['in_new_mailfilter_search'];
+$in_mailservauthlist_filter  = $_REQUEST['in_mailservauthlist_filter'];
+$in_localmailbox  = $_REQUEST['in_localmailbox'];
+$in_dn  = $_REQUEST['in_dn'];
+$in_new_mailfilter  = $_REQUEST['in_new_mailfilter'];
+$in_new_mailfilter_base  = $_REQUEST['in_new_mailfilter_base'];
+$in_mailservmoderatorlist_search  = $_REQUEST['in_mailservmoderatorlist_search'];
+$in_mailservmoderatorlist_filter  = $_REQUEST['in_mailservmoderatorlist_filter'];
+$in_mailservmoderatorlist_base  = $_REQUEST['in_mailservmoderatorlist_base'];
+$in_description  = $_REQUEST['in_description'];
+// ----------------------------------------------------------
+//
 // file: maillist_maint_action.php
 // author: Bill MacAllister
 

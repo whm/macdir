@@ -1,4 +1,11 @@
 <?php
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_cn  = $_REQUEST['in_cn'];
+// ----------------------------------------------------------
+//
 // file: app_define.php
 // author: Bill MacAllister
 // date: 18-Jan-2003

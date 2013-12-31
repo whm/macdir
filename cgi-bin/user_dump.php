@@ -1,4 +1,11 @@
 <?php 
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_uid  = $_REQUEST['in_uid'];
+// ----------------------------------------------------------
+//
 
 $title = 'MacAllister Directory Search Details';
 $heading = 'MacAllister Directory';

@@ -1,4 +1,11 @@
 <?php
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_uid  = $_REQUEST['in_uid'];
+// ----------------------------------------------------------
+//
 // file: user_maint.php
 // author: Bill MacAllister
 // date: 18-Jan-2003

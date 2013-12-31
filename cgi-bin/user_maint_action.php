@@ -1,4 +1,23 @@
 <?php 
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_uidnumber  = $_REQUEST['in_uidnumber'];
+$in_posix_new  = $_REQUEST['in_posix_new'];
+$in_dn  = $_REQUEST['in_dn'];
+$in_gidnumber  = $_REQUEST['in_gidnumber'];
+$in_cn_list  = $_REQUEST['in_cn_list'];
+$in_cn  = $_REQUEST['in_cn'];
+$in_cn_cnt  = $_REQUEST['in_cn_cnt'];
+$in_mailalias_cnt  = $_REQUEST['in_mailalias_cnt'];
+$in_new_cn  = $_REQUEST['in_new_cn'];
+$in_xml_data  = $_REQUEST['in_xml_data'];
+$in_new_mailalias  = $_REQUEST['in_new_mailalias'];
+$in_uid  = $_REQUEST['in_uid'];
+$in_linux_add  = $_REQUEST['in_linux_add'];
+// ----------------------------------------------------------
+//
 // file: user_maint_action.php
 // author: Bill MacAllister
 

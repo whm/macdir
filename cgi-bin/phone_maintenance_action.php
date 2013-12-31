@@ -1,4 +1,14 @@
 <?php 
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_cn_cnt  = $_REQUEST['in_cn_cnt'];
+$in_new_cn  = $_REQUEST['in_new_cn'];
+$in_dn  = $_REQUEST['in_dn'];
+$in_uid  = $_REQUEST['in_uid'];
+// ----------------------------------------------------------
+//
 // file: phone_maintenance_action.php
 // author: Bill MacAllister
 // date:  2-Jan-2004

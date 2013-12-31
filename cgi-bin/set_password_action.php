@@ -1,4 +1,13 @@
 <?php
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_date_last_maint  = $_REQUEST['in_date_last_maint'];
+$in_new_password  = $_REQUEST['in_new_password'];
+$in_uid  = $_REQUEST['in_uid'];
+// ----------------------------------------------------------
+//
 
 // File: set_password_action.php
 // Author: Bill MacAllister
