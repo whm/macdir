@@ -13,16 +13,16 @@ $in_uid  = $_REQUEST['in_uid'];
 // description: This form is granting users access to PRIDE Web Files Services
 
 // Open a session and check for authorization
-require('whm_php_sessions.inc');
-require('whm_php_auth.inc');
-whm_auth("user");
+session_start();
 
-$title = 'PRIDE Application Access Maintenance';
-$heading = 'PRIDE Application Access Maintenance';
+require('inc_config.php');
+
+$title = 'Application Access Maintenance';
+$heading = 'Application Access Maintenance';
 
 require ('inc_header.php');
 require('/etc/whm/macdir_auth.php');
-$ds = ldap_connect("ldap.whm.com");
+$ds = ldap_connect($ldap_server);
 
 // -----------------------------------------------------
 // get a list of application groups to be managed
