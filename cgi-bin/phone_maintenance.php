@@ -21,8 +21,7 @@ $heading = 'Contact Maintenance';
 require('/etc/whm/macdir_auth.php');
 require('inc_header.php');
 
-if (!session_is_registered('in_msg')) {
-  session_register('in_msg');
+if (!isset($_SESSION['in_msg'])) {
   $_SESSION['in_msg'] = '';
 }
 

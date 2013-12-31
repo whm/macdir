@@ -98,9 +98,6 @@ require('/etc/whm/macdir_auth.php');
 $in_uid = ereg_replace (" ","",$in_uid);
 
 // set update message area
-if (!session_is_registered('s_msg')) {
-  session_register('s_msg');
-}
 $_SESSION['s_msg'] = '';
 $ok = 'color="#009900"';
 $warn = 'color="#990000"';

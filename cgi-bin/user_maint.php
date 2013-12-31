@@ -155,13 +155,11 @@ if (isset($msg)) {
   echo "</tr>\n";
   $msg = '';
 }
-if (session_is_registered('in_msg')) {
-  if (strlen($_SESSION['in_msg']) > 0) {
+if (isset($_SESSION['in_msg'])) {
     echo "<tr>\n";
     echo "  <td colspan=\"2\" align=\"center\">".$_SESSION['in_msg']."</td>\n";
     echo "</tr>\n";
     $_SESSION['in_msg'] = '';
-  }
 }
 ?>
 </table>

@@ -76,9 +76,6 @@ function common_name_check ($a_dn, $a_flag, $a_cn) {
 // -------------------------------------------------------------
 // main routine
 
-if (!session_is_registered('in_msg')) {
-  session_register('in_msg');
-}
 $_SESSION['in_msg'] = '';
 $warn = '<font color="#cc0000">';
 $ok = '<font color="#00cc00">';

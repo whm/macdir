@@ -89,14 +89,12 @@ function check_password () {
  </td>
 </tr>
 <?php
-  if (session_is_registered('s_msg')) {
-    if (strlen ($_SESSION['s_msg']) > 0) {
-      echo "<tr><td colspan=\"2\" align=\"center\">\n";
-      echo $_SESSION['s_msg']."\n";
-      echo "</td></tr>\n";
-      $_SESSION['s_msg'] = '';
+    if (isset($_SESSION['s_msg'])) {
+        echo "<tr><td colspan=\"2\" align=\"center\">\n";
+        echo $_SESSION['s_msg']."\n";
+        echo "</td></tr>\n";
+        $_SESSION['s_msg'] = '';
     }
-  }
 ?>
 </table>
 </form>

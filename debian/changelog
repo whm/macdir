@@ -2,6 +2,7 @@ macdir (2.3) unstable; urgency=low
 
   * Use full file names in URLs.
   * Remove dependency on register_globals.
+  * Remove obsolete session function references.
 
  -- Bill MacAllister <mac@ca-zephyr.org>  Tue, 31 Dec 2013 12:25:09 -0800
 
