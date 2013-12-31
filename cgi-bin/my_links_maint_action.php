@@ -1,4 +1,12 @@
 <?php 
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_dn  = $_REQUEST['in_dn'];
+$in_cn  = $_REQUEST['in_cn'];
+// ----------------------------------------------------------
+//
 // file: my_links_maint_action.php
 // author: Bill MacAllister
 

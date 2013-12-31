@@ -1,4 +1,11 @@
 <?php
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_cn  = $_REQUEST['in_cn'];
+// ----------------------------------------------------------
+//
 # file: my_links_maint.php
 # author: Bill MacAllister
 
@@ -105,7 +112,7 @@ if (session_is_registered('in_msg')) {
 
 <form name="maint"
       method="post"
-      action="my_links_maint_action"
+      action="my_links_maint_action.php"
       onsubmit="return checkIt()">
 
 <table border="1" cellpadding="2" align="center">
