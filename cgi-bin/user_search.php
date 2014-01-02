@@ -20,14 +20,16 @@ $ldap_password = '';
 $msg = '';
 
 // set default for amount of search details to display
-if ( !isset($more_search) ) {
-  if ( isset($_SESSION['s_more_search']) ) {
-    $more_search = $_SESSION['s_more_search'];
-  } else {
-    $more_search = 'no';
-  }
+if ( isset($_REQUEST['in_more_search']) ) {
+    $in_more_search = $_REQUEST['in_more_search'];
+} else {
+    if ( isset($_SESSION['s_more_search']) ) {
+        $in_more_search = $_SESSION['s_more_search'];
+    } else {
+        $in_more_search = 'no';
+    }
 }
-$_SESSION['s_more_search'] = $more_search;
+$_SESSION['s_more_search'] = $in_more_search;
 
 // create a form to attribute mapping
 $form["firstname"]          = "givenname";
@@ -117,7 +119,7 @@ for the first name will return matches for Bill and William.
              size="32">
     </td>
   </tr>
-<? if ($more_search == 'yes') { ?>
+<? if ($in_more_search == 'yes') { ?>
   <tr> 
     <td> 
       <div align="right">Title:</div>
@@ -141,7 +143,7 @@ for the first name will return matches for Bill and William.
              size="32">
     </td>
   </tr>
-<? if ($more_search == 'yes') { ?>
+<? if ($in_more_search == 'yes') { ?>
   <tr> 
     <td> 
       <div align="right">Postal Address:</div>
@@ -318,11 +320,11 @@ if ( isset($base_filter) && strlen($base_filter)>0) {
 <p>
 <?php 
 if (isset($_SERVER['REMOTE_USER'])) {
-    if ($more_search == 'yes') { 
-        print '<a href="' . $_SERVER['PHP_SELF'] . '?more_search=no">';
+    if ($in_more_search == 'yes') { 
+        print '<a href="' . $_SERVER['PHP_SELF'] . '?in_more_search=no">';
         print "Display Less Search Criteria</a>\n";
     } else {
-        print '<a href="' . $_SERVER['PHP_SELF'] . '?more_search=yes">';
+        print '<a href="' . $_SERVER['PHP_SELF'] . '?in_more_search=yes">';
         print "Display More Search Criteria</a>\n";
     } 
 }
