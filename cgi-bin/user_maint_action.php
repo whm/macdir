@@ -586,7 +586,7 @@ if (isset($in_button_add)) {
             if (strlen($in_linux_add)>0) {$posix_entry = 1;}
 
             foreach ($fld_list as $fld) {
-                $name = "in_$fld"; $val = stripslashes(trim($$name));
+                $val = stripslashes(trim($_REQUEST["in_$fld"]));
                 if (strlen($val)>0) {
                     $_SESSION['in_msg'] .= "$ok adding $fld = $val$ef";
                     $ldap_entry[$fld][0] = $val;
@@ -744,9 +744,9 @@ if (isset($in_button_add)) {
         // Check mailalias
         if ($in_mailalias_cnt>0) {
             for ($i=0; $i<$in_mailalias_cnt; $i++) {
-                $flag_name = "in_mailalias_$i";
-                $list_name = "in_mailalias_list_$i";
-                mail_alias_check ($in_dn, $$flag_name, $$list_name);
+                mail_alias_check ($in_dn, 
+                                  $_REQUEST["in_mailalias_$i"],
+                                  $_REQUEST["in_mailalias_list_$i"]);
             }
         }
         if (strlen($in_new_mailalias)>0) {
@@ -803,8 +803,10 @@ if (isset($in_button_add)) {
             if ($fld == 'objectclass')     { continue; }
 
             $val_in = '';
-            $tmp = 'in_' . $fld;
-            if (isset($$tmp)) {$val_in  = stripslashes(trim($$tmp));}
+            $tmp = $_REQUEST["in_$fld"];
+            if (isset($tmp)) {
+                $val_in  = stripslashes(trim($tmp));
+            }
 
             $val_ldap = '';
             if (isset($info[0]["$fld"][0])) {
@@ -920,7 +922,9 @@ if (isset($in_button_add)) {
             for ($i=0; $i<$in_mailalias_cnt; $i++) {
                 $flag_name = "in_mailalias_$i";
                 $list_name = "in_mailalias_list_$i";
-                mail_alias_check ($in_dn, $$flag_name, $$list_name);
+                mail_alias_check ($in_dn,
+                                  $_REQUEST["in_mailalias_$i"],
+                                  $_REQUEST["in_mailalias_list_$i"]);
             }
         }
         if (strlen($in_new_mailalias)>0) {

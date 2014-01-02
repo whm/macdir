@@ -307,7 +307,7 @@ if (strlen($in_button_add)>0) {
             $_SESSION['in_msg']
                 .= "$ok adding localMailBox = $in_localmailbox$ef";
             foreach ($fld_list as $fld) {
-                $name = "in_$fld"; $val = $$name;
+                $val = $_REQUEST["in_$fld"];
                 if (strlen($val)>0) {
                     $_SESSION['in_msg'] .= "$ok adding $fld = $val$ef";
                     $ldap_entry[$fld][0] = $val;
@@ -321,21 +321,21 @@ if (strlen($in_button_add)>0) {
                                'manageruid');
             foreach ($ml_groups as $id) {
                 $list = array();
-                $name = "in_new_$id"; $new = trim($$name);
+                $new = trim($_REQUEST["in_new_$id"]);
 
                 // checked values from a copy operation
-                $name = 'in_'.$id.'_cnt'; $id_cnt = $$name;
+                $id_cnt = $_REQUEST["in_${id}_cnt"];
                 for ($i=0; $i<$id_cnt; $i++) {
-                    $name = 'in_'.$id.'_'.$i;       $val  = $$name;
-                    $name = 'in_'.$id.'_flag_'.$i; $flag = $$name;
+                    $val  = $_REQUEST["in_${id}_${i}"];
+                    $flag = $_REQUEST["in_${id}_flag_${i}"];
                     if ($flag == 'Y') {$list["$val"]++;}
                 }
 
                 // values from the text input field
                 if ($id == 'mailfilter') {
                     if (strlen($new)>0) {
-                        $name = "in_new_${id}_base"; $new_base = $$name;
-                        $name = "in_new_${id}_search"; $new_search = $$name;
+                        $new_base   = $_REQUEST["in_new_${id}_base"];
+                        $new_search = $_REQUEST["in_new_${id}_search"];
                         $tmp = 'ldap:///';
                         if ($new_base == 'both') {
                             $tmp .= $ldap_base;
@@ -470,7 +470,7 @@ if (strlen($in_button_add)>0) {
 
         foreach ($fld_list as $fld) {
 
-            $tmp = 'in_' . $fld;  $val_in   = trim($$tmp) . '';
+            $val_in   = trim($_REQUEST["in_$fld"]);
             $val_ldap = trim($info[0]["$fld"][0]);
 
             if ( $val_in != $val_ldap ) {
@@ -508,12 +508,12 @@ if (strlen($in_button_add)>0) {
                             'mailservmoderatorlist');
 
         foreach ($ml_filters as $id) {
-            $name = 'in_'.$id; $old_filter = $$name;
+            $old_filter = $_REQUEST["in_$id"];
 
             // check to see if we delete the old filter
             if (strlen($old_filter)>0) {
-                $name = 'in_'.$id.'_flag'; $flag     = $$name;
-                $name = 'in_'.$id;         $val_ldap = $$name;
+                $flag     = $_REQUEST["in_${id}_flag"];
+                $val_ldap = $_REQUEST["in_$id"];
                 if (strlen ($flag)==0) {
                     $del_cnt++;
                     $del_data["$id"] = $val_ldap;
@@ -523,9 +523,9 @@ if (strlen($in_button_add)>0) {
             } else {
 
                 // add a new filter if we have one
-                $name = 'in_'.$id.'_base';   $ml_base = $$name;
-                $name = 'in_'.$id.'_search'; $ml_search = $$name;
-                $name = 'in_'.$id.'_filter'; $ml_filter = $$name;
+                $ml_base   = $_REQUEST["in_${id}_base"];
+                $ml_search = $_REQUEST["in_${id}_search"];
+                $ml_filter = $_REQUEST["in_${id}_filter"];
                 if (strlen($ml_filter)>0) {
                     $val_in = 'ldap:///';
                     if ($ml_base == 'both') {
@@ -555,7 +555,7 @@ if (strlen($in_button_add)>0) {
             $list = array();
 
             // check for new values
-            $name = "in_new_$id"; $new = trim($$name);
+            $new = trim($_REQUEST["in_new_$id"]);
             if ($id == 'mailfilter') {
                 if (strlen($new)>0) {
                     $tmp = 'ldap:///';
@@ -582,10 +582,10 @@ if (strlen($in_button_add)>0) {
             }
 
             // tot up the old values from the form
-            $name = 'in_'.$id.'_cnt'; $id_cnt = $$name;
+            $id_cnt = $_REQUEST["in_${id}_cnt"];
             for ($i=0; $i<$id_cnt; $i++) {
-                $name = 'in_'.$id.'_'.$i;       $val  = $$name;
-                $name = 'in_'.$id.'_flag_'.$i; $flag = $$name;
+                $val  = $_REQUEST["in_${id}_${i}"];
+                $flag = $_REQUEST["in_${id}_flag_${i}"];
                 if ($flag == 'Y') {
                     $list["$val"]++;
                 } else {

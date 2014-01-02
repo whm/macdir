@@ -74,7 +74,7 @@ if (isset($in_button_add)) {
             $ldap_entry["cn"][] = $in_cn;
             $_SESSION['in_msg'] .= "$ok adding cn = $in_cn$ef";
             foreach ($fld_list as $fld) {
-                $name = "in_$fld"; $val = $$name;
+                $val = $_REQUEST["in_$fld"];
                 if (isset($val)) {
                     $_SESSION['in_msg'] .= "$ok adding $fld = $val$ef";
                     $ldap_entry[$fld][0] = $val;
@@ -154,7 +154,7 @@ if (isset($in_button_add)) {
         foreach ($fld_list as $fld) {
             if ($fld == 'objectclass') { continue; }
             if ($fld == 'cn')          { continue; }
-            $tmp = 'in_' . $fld;  $val_in   = trim($$tmp) . '';
+            $val_in   = trim($_REQUEST["in_$fld"]);
             $val_ldap = trim($info[0]["$fld"][0]);
 
             if ( $val_in != $val_ldap ) {
@@ -207,8 +207,8 @@ if (isset($in_button_add)) {
         // Check member lists
         if ($inMemberUIDCnt>0) {
             for ($i=0; $i<$inMemberUIDCnt; $i++) {
-                $name = "inMemberUIDList_$i"; $n = $$name;
-                $name = "inMemberUID_$i"; $m = $$name;
+                $n = $_REQUEST["inMemberUIDList_$i"];
+                $m = $_REQUEST["inMemberUID_$i"];
                 if (isset($m)) {
                     if ($mems[$m] > 0) {
                         // add the value
@@ -244,8 +244,8 @@ if (isset($in_button_add)) {
         // Check manager lists
         if ($inManagerUIDCnt>0) {
             for ($i=0; $i<$inManagerUIDCnt; $i++) {
-                $name = "inManagerUIDList_$i"; $n = $$name;
-                $name = "inManagerUID_$i"; $m = $$name;
+                $n = $_REQUEST["inManagerUIDList_$i"];
+                $m = $_REQUEST["inManagerUID_$i"];
                 if (isset($m)) {
                     if ($mgrs[$m] > 0) {
                         // delete the value

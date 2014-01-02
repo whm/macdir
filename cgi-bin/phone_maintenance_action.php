@@ -142,7 +142,7 @@ if (isset($in_button_add)) {
             $ldap_entry["objectclass"][1] = "person";
             $_SESSION['in_msg'] .= "$ok adding objectClass person$ef";
             foreach ($fld_list as $fld) {
-                $name = "in_$fld"; $val = $$name;
+                $val = $_REQUEST["in_$fld"];
                 if (isset($val)) {
                     $_SESSION['in_msg'] .= "$ok adding $fld = $val$ef";
                     $ldap_entry[$fld][0] = $val;
@@ -195,7 +195,7 @@ if (isset($in_button_add)) {
         foreach ($fld_list as $fld) {
             if ($fld == 'objectclass') { continue; }
             if ($fld == 'rightslist') { continue; }
-            $tmp = 'in_' . $fld;  $val_in   = trim($$tmp) . '';
+            $val_in   = trim($_REQUEST["in_$fld"]);
             $val_ldap = trim($info[0]["$fld"][0]);
 
             if ( $val_in != $val_ldap ) {

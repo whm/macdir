@@ -349,7 +349,7 @@ if (isset($in_button_add)) {
             $_SESSION['in_msg'] .= "$ok adding objectClass = person$ef";
             $posix_entry = 0;
             foreach ($fld_list as $fld) {
-                $name = "in_$fld"; $val = $$name;
+                $val = $_REQUEST["in_$fld"];
                 if (isset($val)) {
                     $_SESSION['in_msg'] .= "$ok adding $fld = $val$ef";
                     $ldap_entry[$fld][0] = $val;
@@ -388,8 +388,8 @@ if (isset($in_button_add)) {
             // Check application groups
 
             for ($i=0; $i<$in_pwfs_cnt; $i++) {
-                $name = "in_pwfs_select_$i";  $selectApp = $$name;
-                $name = "in_pwfs_$i";         $thisApp = $$name;
+                $selectApp = $_REQUEST["in_pwfs_select_$i"];
+                $thisApp   = $_REQUEST["in_pwfs_$i"];
                 if ($selectApp > 0) {
                     mgr_group_check ($in_uid, "ADD", $thisApp);
                 } else {
@@ -436,7 +436,7 @@ if (isset($in_button_add)) {
 
         foreach ($fld_list as $fld) {
             if ($fld == 'objectclass') { continue; }
-            $tmp = 'in_' . $fld;  $val_in   = trim($$tmp) . '';
+            $val_in   = trim($_REQUEST["in_$fld"]);
             $val_ldap = trim($info[0]["$fld"][0]);
 
             if ( $val_in != $val_ldap ) {
@@ -498,9 +498,9 @@ if (isset($in_button_add)) {
         // Check mail lists
         if ($inMailIDCnt>0) {
             for ($i=0; $i<$inMailIDCnt; $i++) {
-                $flag_name = "inMailID_$i";
-                $list_name = "inMailIDList_$i";
-                mail_group_check ($in_dn, $$flag_name, $$list_name);
+                mail_group_check ($in_dn,
+                                  $_REQUEST["inMailID_$i"],
+                                  $_REQUEST["inMailIDList_$i"]);
             }
         }
         if (isset($inMailIDNew)) {
@@ -528,8 +528,8 @@ if (isset($in_button_add)) {
         // Check application groups
 
         for ($i=0; $i<$in_pwfs_cnt; $i++) {
-            $name = "in_pwfs_select_$i";  $selectApp = $$name;
-            $name = "in_pwfs_$i";         $thisApp = $$name;
+            $selectApp = $_REQUEST["in_pwfs_select_$i"];
+            $thisApp   = $_REQUEST["in_pwfs_$i"];
             if ($selectApp > 0) {
                 mgr_group_check ($in_uid, "ADD", $thisApp);
             } else {

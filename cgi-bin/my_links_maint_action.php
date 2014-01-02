@@ -80,7 +80,7 @@ if (isset($in_button_add)) {
             $_SESSION['in_msg'] .= "$ok adding cn = $in_cn$ef";
 
             foreach ($fld_list as $fld) {
-                $name = "in_$fld"; $val = stripslashes(trim($$name));
+                $val = stripslashes(trim($_REQUEST["in_$fld"]));
                 if (strlen($val)>0) {
                     $_SESSION['in_msg'] .= "$ok adding $fld = $val$ef";
                     $ldap_entry[$fld][0] = $val;
@@ -129,8 +129,10 @@ if (isset($in_button_add)) {
             if ($fld == 'cn')          { continue; }
 
             $val_in = '';
-            $tmp = 'in_' . $fld;
-            if (isset($$tmp)) {$val_in  = stripslashes(trim($$tmp));}
+            $tmp = $_REQUEST["in_$fld"];
+            if (isset($tmp)) {
+                $val_in  = stripslashes(trim($tmp));
+            }
 
             $val_ldap = '';
             if (isset($info[0]["$fld"][0])) {
