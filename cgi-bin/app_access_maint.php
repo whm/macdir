@@ -222,7 +222,7 @@ if (f.in_pass1.value != f.in_pass2.value) {
 <p>
 <form name="app_access_maint"
       method="post"
-      action="app_access_maint_action"
+      action="app_access_maint_action.php"
       onsubmit="return checkIt()">
 
 <input type="hidden" name="in_uid"

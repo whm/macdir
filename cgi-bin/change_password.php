@@ -54,7 +54,7 @@ function check_password () {
 <p> 
 
 <form name="setpw" 
-      action="change_password_action" 
+      action="change_password_action.php" 
       onsubmit="return check_password()"
       method="post">
 <table border="1">

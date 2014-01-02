@@ -152,7 +152,7 @@ function checkIt() {
 <p>
 <form name="app_define"
       method="post"
-      action="app_define_action"
+      action="app_define_action.php"
       onsubmit="return checkIt()">
 
 <input type="hidden" name="in_dn"

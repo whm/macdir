@@ -345,7 +345,7 @@ function checkIt() {
 <p>
 <form name="user_maint"
       method="post"
-      action="user_maint_action"
+      action="user_maint_action.php"
       onsubmit="return checkIt()">
 
 <input type="hidden" name="in_uid"

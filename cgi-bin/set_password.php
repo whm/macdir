@@ -57,7 +57,7 @@ function check_password () {
 <p> 
 
 <form name="setpw" 
-      action="set_password_action" 
+      action="set_password_action.php" 
       onsubmit="return check_password()"
       method="post">
 <input type="hidden" name="in_uid" value="<?php print $in_uid; ?>">

@@ -144,7 +144,7 @@ if (strlen($_SESSION['in_msg'])>0) {
 <p>
 <form name="phone_maintenance"
       method="post"
-      action="phone_maintenance_action"
+      action="phone_maintenance_action.php"
       onsubmit="return checkIt()">
 <input type="hidden" name="in_dn"  value="<?php print $thisDN;?>">
 <table border="1" cellpadding="2" cellspacing="2">

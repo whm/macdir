@@ -237,7 +237,7 @@ if ( isset($_SESSION['in_msg']) ) {
 
 <form name="maillist_maint"
       method="post"
-      action="maillist_maint_action"
+      action="maillist_maint_action.php"
       onsubmit="return checkIt()">
 
 <input type="hidden" name="in_dn" value="<?php print $thisDN;?>">
