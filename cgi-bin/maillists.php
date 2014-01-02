@@ -24,7 +24,7 @@ require ('inc_maillist_auth.php');
 
 <form name="maillist_find"
       method="post"
-      action="<?php print $PHP_SELF; ?>">
+      action="<?php print $_SERVER['PHP_SELF']; ?>">
 <table border="0">
 <tr>
   <th align="right">Mail List or Alias:</th>

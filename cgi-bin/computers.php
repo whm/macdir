@@ -77,7 +77,7 @@ if ( strlen($_SESSION['COMPUTER_filter'])>0 ) {
     }
 }
 ?>
-<form method="post" action="<?php print $PHP_SELF;?>">
+<form method="post" action="<?php print $_SERVER['PHP_SELF'];?>">
 
 <div align="center">
 <table>

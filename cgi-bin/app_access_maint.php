@@ -107,7 +107,7 @@ if (strlen($ldap_filter)>0) {
 
   <form name="app_access_maint_find"
         method="post"
-        action="<?php print $PHP_SELF; ?>">
+        action="<?php print $_SERVER['PHP_SELF']; ?>">
   <table border="0" width="100%">
   <tr>
     <td align="right">Employee Number:</td>
@@ -210,7 +210,7 @@ if (f.in_pass1.value != f.in_pass2.value) {
 
 <form name="reset"
       method="post"
-      action="<?php print $PHP_SELF; ?>">
+      action="<?php print $_SERVER['PHP_SELF']; ?>">
 <input type="hidden" name="in_uid" value="">
 <input type="submit" name="reset" value="Reset">
 </form>

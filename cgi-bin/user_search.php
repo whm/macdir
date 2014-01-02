@@ -318,14 +318,13 @@ if ( isset($base_filter) && strlen($base_filter)>0) {
 <p>
 <?php 
 if (isset($_SERVER['REMOTE_USER'])) {
-  if ($more_search == 'yes') { ?>
- <a href="<?php echo "$PHP_SELF?more_search=no";?>"> 
- Display Less Search Criteria</a>
-<?php } else { ?>
- <a href="<?php echo "$PHP_SELF?more_search=yes";?>"> 
- Display More Search Criteria</a>
-<?php 
-  } 
+    if ($more_search == 'yes') { 
+        print '<a href="' . $_SERVER['PHP_SELF'] . '?more_search=no">';
+        print "Display Less Search Criteria</a>\n";
+    } else {
+        print '<a href="' . $_SERVER['PHP_SELF'] . '?more_search=yes">';
+        print "Display More Search Criteria</a>\n";
+    } 
 }
 ?>
 <p>

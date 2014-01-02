@@ -179,7 +179,7 @@ function checkIt() {
   <td align="center" width="90%">
     <form name="maillist_maint_find"
           method="post"
-          action="<?php print $PHP_SELF; ?>">
+          action="<?php print $_SERVER['PHP_SELF']; ?>">
     <table border="0" width="100%">
     <tr>
       <th align="right">Mail List:</th>
@@ -224,7 +224,7 @@ if ( isset($_SESSION['in_msg']) ) {
   <td align="center" width="10%">
     <form name="reset"
           method="post"
-          action="<?php print $PHP_SELF; ?>">
+          action="<?php print $_SERVER['PHP_SELF']; ?>">
     <input type="hidden" name="in_localmailbox" value="">
     <input type="submit" name="reset" value="Reset">
     </form>

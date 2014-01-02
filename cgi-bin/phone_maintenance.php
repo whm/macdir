@@ -105,7 +105,7 @@ function checkIt() {
  <td align="center">
   <form name="phone_maint_lookup"
         method="post"
-        action="<?php print $PHP_SELF; ?>">
+        action="<?php print $_SERVER['PHP_SELF']; ?>">
   <table border="0">
   <tr>
     <td align="right">UID:</td>
@@ -133,7 +133,7 @@ if (strlen($_SESSION['in_msg'])>0) {
  <td>
     <form name="reset"
           method="post"
-          action="<?php print $PHP_SELF; ?>">
+          action="<?php print $_SERVER['PHP_SELF']; ?>">
     <input type="hidden" name="in_uid" value="">
     <input type="submit" name="reset" value="Reset">
     </form>

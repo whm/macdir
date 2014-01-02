@@ -142,7 +142,7 @@ if ($ret_cnt) {
 <div align="center">
 
 <form name="refresh"
-      action="<?php echo $PHP_SELF;?>"
+      action="<?php echo $_SERVER['PHP_SELF'];?>"
       method="post">
 
 <table border="0" cellpadding="20">

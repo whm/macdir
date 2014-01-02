@@ -77,7 +77,7 @@ function checkIt() {
 
 <form name="maint_find"
       method="post"
-      action="<?php print $PHP_SELF; ?>">
+      action="<?php print $_SERVER['PHP_SELF']; ?>">
 <table border="0" width="100%">
 <tr>
   <td align="right" width="50%">Common Name:</td>
@@ -117,7 +117,7 @@ if (isset($_SESSION['in_msg'])) {
 
 <tr>
   <td colspan="2" align="right">
-    <a href="<?php echo $PHP_SELF;?>">Reset</a>
+    <a href="<?php echo $_SERVER['PHP_SELF'];?>">Reset</a>
   </td>
 </tr>
 

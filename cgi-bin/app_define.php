@@ -68,7 +68,7 @@ if (strlen($ldap_filter)>0) {
 
   <form name="app_define_find"
         method="post"
-        action="<?php print $PHP_SELF; ?>">
+        action="<?php print $_SERVER['PHP_SELF']; ?>">
   <table border="0" width="100%">
   <tr>
     <td align="right">Common Name:</td>
@@ -140,7 +140,7 @@ function checkIt() {
 
 <form name="reset"
       method="post"
-      action="<?php print $PHP_SELF; ?>">
+      action="<?php print $_SERVER['PHP_SELF']; ?>">
 <input type="hidden" name="in_uid" value="">
 <input type="submit" name="reset" value="Reset">
 </form>

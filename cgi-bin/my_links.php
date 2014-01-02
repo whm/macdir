@@ -82,7 +82,7 @@ if ( isset($_SERVER['REMOTE_USER']) ) {
 
 <p>
 <div align="center">
-<form action="<?php echo $PHP_SELF;?>" method="POST">
+<form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST">
 <table border="0">
 
   <tr> 

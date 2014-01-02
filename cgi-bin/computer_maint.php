@@ -205,7 +205,7 @@ function verifyInput() {
 </script>
 
 <div align="center">
-<form name="find_user" action="<?php print $PHP_SELF;?>" method="post">
+<form name="find_user" action="<?php print $_SERVER['PHP_SELF'];?>" method="post">
 <table border="1">
 <tr>
   <td align="right">Computer UID:</td>
