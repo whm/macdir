@@ -148,7 +148,7 @@ if ($ret_cnt) {
 <table border="0" cellpadding="20">
  <tr>
   <td>
-     <input type="submit" name="btn_refresh" value="Refresh">
+     <input type="submit" name="in_button_refresh" value="Refresh">
   </td>
   <td>
 

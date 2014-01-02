@@ -19,7 +19,7 @@ require('/etc/whm/macdir_auth.php');
 $ds = ldap_connect($ldap_server);
 $r  = ldap_bind($ds, $ldap_manager, $ldap_password);
 
-if (strlen($in_cn)>0) {
+if (isset($in_cn)) {
     
     $return_attr = array();
     $link_base = 'uid='.$_SERVER['REMOTE_USER'].','.$ldap_user_base;
@@ -88,7 +88,7 @@ function checkIt() {
 </tr>
 <tr>
   <td colspan="2" align="center">
-    <input type="submit" name="btn_find" value="Lookup">
+    <input type="submit" name="in_button_find" value="Lookup">
   </td>
 </tr>
 <?php
@@ -131,7 +131,7 @@ if (isset($_SESSION['in_msg'])) {
 <tr>
   <td align="right">Common Name:</td>
   <td>
-<?php if (strlen($info[0]['cn'][0]) > 0) { ?>
+<?php if ( isset($info[0]['cn'][0]) ) { ?>
  <input type="hidden" name="in_cn" value="<?php echo $info[0]['cn'][0];?>">
  <?php echo $info[0]['cn'][0];?>
 <?php } else { ?>
@@ -183,19 +183,19 @@ if (isset($_SESSION['in_msg'])) {
  <table border="0" width="100%">
  <tr>
 
- <?php if (strlen($info[0]['cn'][0]) > 0) {?>
+ <?php if ( isset($info[0]['cn'][0]) ) {?>
 
  <td width="50%">
-  <input type="submit" name="btn_update" value="Update">
+  <input type="submit" name="in_button_update" value="Update">
  </td>
  <td width="50%" align="right">
-  <input type="submit" name="btn_delete" value="Delete">
+  <input type="submit" name="in_button_delete" value="Delete">
  </td>
 
 <?php } else { ?>
 
  <td align="center">
-  <input type="submit" name="btn_add" value="Add">
+  <input type="submit" name="in_button_add" value="Add">
  </td>
 
 <?php } ?>

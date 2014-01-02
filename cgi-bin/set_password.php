@@ -82,7 +82,7 @@ function check_password () {
 </tr>
 <tr>
  <td colspan="2" align="center">
-   <input type="submit" name="btn_update" value='Update'>
+   <input type="submit" name="in_button_update" value='Update'>
  </td>
 </tr>
 <?php

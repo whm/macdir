@@ -35,7 +35,7 @@ require ('inc_maillist_auth.php');
 </tr>
 <tr>
   <td colspan="2" align="center">
-    <input type="submit" name="btn_find" value="Lookup">
+    <input type="submit" name="in_button_find" value="Lookup">
   </td>
 </tr>
 </table>

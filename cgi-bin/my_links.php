@@ -4,6 +4,7 @@
 // Register Global Fix
 //
 $in_private  = $_REQUEST['in_private'];
+$in_button_search = $_REQUEST['in_button_search'];
 // ----------------------------------------------------------
 //
 # --------------------------------------------
@@ -43,7 +44,7 @@ if ($in_private == 'Y') {
 foreach ($form as $formName => $ldapName) {
     $name = "in_$formName"; 
     $sessName = "MY_$formName";
-    if (strlen($btn_search)>0) {
+    if (strlen($in_button_search)>0) {
         $_SESSION[$sessName] = $$name;
     } else {
         $_SESSION[$sessName] = '';
@@ -149,7 +150,7 @@ if ( isset($_SERVER['REMOTE_USER']) ) {
 
 
   <tr><td align="center" colspan="2">
-      <input type="submit" value="Search Directory" name="btn_search">
+      <input type="submit" value="Search Directory" name="in_button_search">
       </td>
   </tr>
 <?php if (strlen($msg)>0) { ?>

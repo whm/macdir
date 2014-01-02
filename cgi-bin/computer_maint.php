@@ -216,7 +216,7 @@ function verifyInput() {
 </tr>
 <tr>
   <td align="center" colspan="2">
-  <input type="submit" name="btn_find" value="Find">
+  <input type="submit" name="in_button_find" value="Find">
   </td>
 </tr>
 <?php 
@@ -381,20 +381,20 @@ foreach ($samba_domains as $d => $d_sid) {
 <?php 
   if ($add_flag > 0) { ?>
     <td colspan="2" align="center">
-      <input type="submit" name="btn_add" value="Add">
+      <input type="submit" name="in_button_add" value="Add">
     </td>
 <?php 
   } elseif ($acct_cnt>0) { ?>
     <td colspan="2" align="center">
-      <input type="submit" name="btn_update" value="Update">
+      <input type="submit" name="in_button_update" value="Update">
     </td>
 <?php
   } else { ?>
     <td>
-      <input type="submit" name="btn_update" value="Update">
+      <input type="submit" name="in_button_update" value="Update">
     </td>
     <td align="right">
-      <input type="submit" name="btn_delete" value="Delete">
+      <input type="submit" name="in_button_delete" value="Delete">
     </td>
 <?php } ?>
   </tr>

@@ -190,7 +190,7 @@ function checkIt() {
     </tr>
     <tr>
       <td colspan="2" align="center">
-        <input type="submit" name="btn_find" value="Lookup">
+        <input type="submit" name="in_button_find" value="Lookup">
       </td>
     </tr>
 <?php
@@ -683,7 +683,7 @@ foreach ($ml_list as $id => $id_title) {
 
  <?php if ($entry_found>0) { ?>
  <td width="33%">
-  <input type="submit" name="btn_update" value="Update">
+  <input type="submit" name="in_button_update" value="Update">
  </td>
  <?php } else { ?>
    <td>&nbsp;</td>
@@ -691,7 +691,7 @@ foreach ($ml_list as $id => $id_title) {
 
  <?php if ($add_delete_flag>0 && $entry_found>0 && $admin_user>0) { ?>
  <td width="33%" align="center">
-  <input type="submit" name="btn_delete" value="Delete">
+  <input type="submit" name="in_button_delete" value="Delete">
  </td>
  <?php } else { ?>
    <td>&nbsp;</td>
@@ -699,7 +699,7 @@ foreach ($ml_list as $id => $id_title) {
 
  <?php if ($admin_user>0) { ?>
  <td width="33%" align="right">
-  <input type="submit" name="btn_add" value="Add">
+  <input type="submit" name="in_button_add" value="Add">
  </td>
  <?php } else { ?>
    <td>&nbsp;</td>
