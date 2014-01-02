@@ -3,8 +3,12 @@
 // ----------------------------------------------------------
 // Register Global Fix
 //
-$in_private  = $_REQUEST['in_private'];
+$in_private = $_REQUEST['in_private'];
 $in_button_search = $_REQUEST['in_button_search'];
+$in_commonname = $_REQUEST['in_commonname'];
+$in_description = $_REQUEST['in_description'];
+$in_password = $_REQUEST['in_password'];
+$in_url = $_REQUEST['in_url'];
 // ----------------------------------------------------------
 //
 # --------------------------------------------
@@ -24,7 +28,7 @@ $form["description"] = "description";
 $form["password"]    = "pridecredential";
 $form["url"]         = "prideurl";
 
-if (!isset($in_private) && $_SESSION['MY_private']>0) {
+if (!isset($in_private) && isset($_SESSION['MY_private'])) {
     $in_private = $_SESSION['MY_private'];
 }
 $_SESSION['MY_private'] = $in_private;
@@ -42,43 +46,34 @@ if ($in_private == 'Y') {
 
 # set session information
 foreach ($form as $formName => $ldapName) {
-    $name = "in_$formName"; 
-    $sessName = "MY_$formName";
-    if (strlen($in_button_search)>0) {
-        $_SESSION[$sessName] = $$name;
+    if (isset($in_button_search)) {
+        $_SESSION["MY_$formName"] = $_REQUEST["in_$formName"];
     } else {
-        $_SESSION[$sessName] = '';
+        $_SESSION["MY_$formName"] = '';
     }
 }
 
 # construct the filter from input data
 $base_filter = '';
 foreach ($form as $formName => $ldapName) {
-    $name = "in_$formName"; 
-    if (isset($$name)) {
-        $a_val = $$name;
-        if (strlen($a_val)>0) {$base_filter .= "($ldapName=*$a_val*)";}
+    $a_val = $_REQUEST["in_$formName"];
+    if (isset($a_val) && strlen($a_val)>0) {
+        $base_filter .= "($ldapName=*$a_val*)";
     }
 }
 
-if (strlen($base_filter)==0) {
-
-    // construct a filter from session information if there
-    // is no input data
+// Construct a filter from session information if there
+// is no input data.
+if (!isset($base_filter)) {
     foreach ($form as $formName => $ldapName) {
-        $sessName = "MY_$formName";
-        $a_val = $_SESSION[$sessName];
-        if (strlen($a_val) > 0) {
+        $a_val = $_SESSION["MY_$formName"];
+        if (isset($a_val) && strlen($a_val)>0) {
             $base_filter .= "($ldapName=*$a_val*)";
         }
     }
-    
 }
 
-$this_user = '';
-if ( isset($_SERVER['REMOTE_USER']) ) { 
-    $this_user = $_SERVER['REMOTE_USER']; 
-}
+$this_uid = $_SERVER['REMOTE_USER'];
 ?>
 
 <p>
@@ -86,64 +81,64 @@ if ( isset($_SERVER['REMOTE_USER']) ) {
 <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST">
 <table border="0">
 
-  <tr> 
-    <td> 
+  <tr>
+    <td>
       <div align="right">Username:</div>
     </td>
-    <td><?php echo $this_user;?></td>
+    <td><?php echo $this_uid;?></td>
   </tr>
 
-  <tr> 
-    <td> 
+  <tr>
+    <td>
       <div align="right">Common Name:</div>
     </td>
-    <td> 
-      <input type="text" 
-             name="in_commonname" 
+    <td>
+      <input type="text"
+             name="in_commonname"
              value="<?php print $_SESSION['MY_commonname'];?>"
              size="32">
     </td>
   </tr>
 
-  <tr> 
-    <td> 
+  <tr>
+    <td>
       <div align="right">Description:</div>
     </td>
-    <td> 
-      <input type="text" 
-             name="in_description" 
+    <td>
+      <input type="text"
+             name="in_description"
              value="<?php print $_SESSION['MY_description'];?>"
              size="32">
     </td>
   </tr>
 
-  <tr> 
-    <td> 
+  <tr>
+    <td>
       <div align="right">URL:</div>
     </td>
-    <td> 
-      <input type="text" 
-             name="in_url" 
+    <td>
+      <input type="text"
+             name="in_url"
              value="<?php print $_SESSION['MY_url'];?>"
              size="32">
     </td>
   </tr>
 
-  <tr> 
-    <td> 
+  <tr>
+    <td>
       <div align="right">Private:</div>
     </td>
-    <td> 
-      <input type="radio" 
-            <?php echo $chk_private_n;?> name="in_private" 
+    <td>
+      <input type="radio"
+            <?php echo $chk_private_n;?> name="in_private"
              value="N">Only Public
       &nbsp;&nbsp;&nbsp;
-      <input type="radio" 
-            <?php echo $chk_private_y;?> name="in_private" 
+      <input type="radio"
+            <?php echo $chk_private_y;?> name="in_private"
              value="Y">Only Private
       &nbsp;&nbsp;&nbsp;
-      <input type="radio" 
-            <?php echo $chk_private_all;?>  name="in_private" 
+      <input type="radio"
+            <?php echo $chk_private_all;?>  name="in_private"
              value="ALL">All
     </td>
   </tr>
@@ -153,7 +148,7 @@ if ( isset($_SERVER['REMOTE_USER']) ) {
       <input type="submit" value="Search Directory" name="in_button_search">
       </td>
   </tr>
-<?php if (strlen($msg)>0) { ?>
+<?php if (isset($msg)) { ?>
   <tr><td align="center" colspan="2">
       <?php echo $msg;?>
       </td>
@@ -166,22 +161,16 @@ if ( isset($_SERVER['REMOTE_USER']) ) {
 
 <?php
 
-$link_base = 'uid='.$_SERVER['REMOTE_USER']
-       .','.$ldap_user_base;
+$link_base = "uid=${this_uid},${ldap_user_base}";
 $base_filter .= $private_filter;
 $ds = ldap_connect($ldap_server);
 $r  = ldap_bind($ds, $ldap_manager, $ldap_password);
-$filter = '(&(objectclass=pridelistobject)'.$base_filter.')';
-$thisFilter = "(&";
 $thisFilter .= "(objectclass=person)";
 $thisFilter .= "(uid=".$this_uid.")";
 $thisFilter .= ")";
 $returnAttr = array('cn');
-$sr = ldap_search($ds, $link_base, $thisFilter, $returnAttr);  
+$sr = ldap_search($ds, $link_base, $thisFilter, $returnAttr);
 $r = ldap_get_entries($ds, $sr);
-if ($r["count"]) {
-    $base_db = $r['dn'];
-}
 
 $return_attr = array('cn',
                      'description',
@@ -189,7 +178,9 @@ $return_attr = array('cn',
                      'linkuid',
                      'pridecredential',
                      'prideurlprivate');
-$sr = ldap_search($ds, $link_base, $filter, $return_attr);  
+$thisFilter = "(&";
+$filter = '(&(objectclass=pridelistobject)'.$base_filter.')';
+$sr = ldap_search($ds, $link_base, $filter, $return_attr);
 ldap_sort($ds, $sr, 'description');
 $info = ldap_get_entries($ds, $sr);
 $ret_cnt = $info["count"];
@@ -205,7 +196,7 @@ if ($ret_cnt) {
     for ($i=0; $i<$info["count"]; $i++) {
         $a_cn = $info[$i]["cn"][0];
         $a_cn_url = urlencode($a_cn);
-        
+
         $a_maint_link = '<a href="my_links_maint.php'
             .'?in_cn=' . $a_cn_url
             .'"><img src="/macdir-images/icon-edit.png" border="0"></a>';
@@ -213,7 +204,7 @@ if ($ret_cnt) {
             .htmlentities($info[$i]["prideurl"][0])
             .'" target="_BLANK">'
             .$info[$i]["prideurl"][0].'</a>';
-        
+
         echo "<tr>\n";
         echo ' <td valign="center">'.$a_maint_link
             .$info[$i]["description"][0]."&nbsp;</td>\n";
@@ -239,4 +230,3 @@ if ($ret_cnt) {
 </div>
 
 <?php require('inc_footer.php');?>
-

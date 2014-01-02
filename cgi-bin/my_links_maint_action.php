@@ -81,7 +81,7 @@ if (isset($in_button_add)) {
 
             foreach ($fld_list as $fld) {
                 $val = stripslashes(trim($_REQUEST["in_$fld"]));
-                if (strlen($val)>0) {
+                if (isset($val)) {
                     $_SESSION['in_msg'] .= "$ok adding $fld = $val$ef";
                     $ldap_entry[$fld][0] = $val;
                 }
@@ -140,8 +140,8 @@ if (isset($in_button_add)) {
             }
 
             if ( $val_in != $val_ldap ) {
-                if (strlen($val_in)==0) {
-                    if (strlen($val_ldap)>0) {
+                if (!isset($val_in)) {
+                    if (isset($val_ldap)) {
 
                         // delete the attribute
                         $new_data["$fld"] = $val_ldap;
