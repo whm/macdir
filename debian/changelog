@@ -1,3 +1,9 @@
+macdir (2.4) unstable; urgency=low
+
+  * Bug fixes for more register globals dependencies.
+
+ -- Bill MacAllister <mac@ca-zephyr.org>  Thu, 02 Jan 2014 02:57:11 -0800
+
 macdir (2.3) unstable; urgency=low
 
   * Use full file names in URLs.
