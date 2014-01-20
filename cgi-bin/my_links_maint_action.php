@@ -43,7 +43,7 @@ if (!$ds) {
   $r  = ldap_bind($ds, $ldap_manager, $ldap_password);
 }
 
-$link_base = 'uid='.$_SERVER['REMOTE_USER'].',',$ldap_user_base;
+$link_base = 'uid=' . $_SERVER['REMOTE_USER'] . ',' . $ldap_user_base;
 $link_filter = "(&(objectclass=pridelistobject)(cn=$in_cn))";
 
 if (isset($in_button_add)) {
