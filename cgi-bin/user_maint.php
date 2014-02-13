@@ -211,7 +211,7 @@ function checkIt() {
   var f;
   var i;
   var outData = "";
-  
+
   EmptyField = "";
   f = document.user_maint;
 
@@ -272,7 +272,7 @@ function checkIt() {
       return false;
     }
   }
-  
+
   /* pam group checks */
   var pam_cnt = 0;
   if (f.in_pam.length > 1) {
@@ -370,7 +370,7 @@ function checkIt() {
               $z = ' ('.$info[0][$krb_attr][0].')';
             }
             print $thisUID.$z;
-            ?> 
+            ?>
           </td>
           <td align="right"><a href="<?php echo $pwd_href;?>">
               Set Password</a>
@@ -380,14 +380,14 @@ function checkIt() {
   </td>
 </tr>
 <?php
-  } else { 
+  } else {
 ?>
 <tr>
   <td align="right">Computer UID:</td>
   <td colspan="5"><input type="text" name="in_uid"></td>
 </tr>
-<?php 
-  } 
+<?php
+  }
 ?>
 <tr>
  <td align="right">Given Name:</td>
@@ -541,7 +541,7 @@ function checkIt() {
      $z = '';
      if (isset($info[0]["postalcode"][0])) {$z = $info[0]["postalcode"][0];}
    ?>
- <td><input type="text" size="10" name="in_postalcode" 
+ <td><input type="text" size="10" name="in_postalcode"
             value="<?php print $z;?>"></td>
 </tr>
 <tr>
@@ -834,7 +834,7 @@ if ($CONF_use_samba) {
 <tr>
  <td align="right">Samba Home Path:</td>
  <td colspan="5">
- <input type="text" 
+ <input type="text"
         name="in_sambahomepath"
         value="<?php print $info[0]["sambahomepath"][0];?>">
   A UNC name, e.g. \\%N\
@@ -906,7 +906,7 @@ foreach ($samba_acct_flags['desc'] as $f_id => $f_desc) {
  </td>
 </tr>
 
-<?php 
+<?php
 # End Samba
 # ------------------------------------------------------------------
 } ?>

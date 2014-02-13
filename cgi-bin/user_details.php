@@ -3,17 +3,21 @@
 // ----------------------------------------------------------
 // Register Global Fix
 //
-$in_uid  = $_REQUEST['in_uid'];
+$in_dn  = $_REQUEST['in_dn'];
+$in_uid = $_REQUEST['in_uid'];
 // ----------------------------------------------------------
 //
 # ------------------------------------------
 # file: user_details.php
 # author: Bill MacAllister
 
+session_start();
+require('inc_config.php');
+require('/etc/whm/macdir_auth.php');
+
 $title = 'MacAllister Directory Search Details';
 $heading = "A Person's Details";
 require ('inc_header.php');
-require ('/etc/whm/macdir_auth.php');
 
 # -- print a row if there is something to print
 
@@ -31,28 +35,30 @@ function prt_row($t, $v) {
 
 // -- disable admin access without authentication
 $ds = ldap_connect($ldap_server);
-$r  = ldap_bind($ds,
-                $_SESSION['whm_directory_user_dn'],
-                $_SESSION['whm_credential']);
+$r  = ldap_bind($ds, $ldap_manager, $ldap_password);
 
 $label_font = '<font face="Arial, Helvetica, sans-serif">';
 $data_font = '<font face="Times New Roman, Times, serif">';
 
-if (strlen($dn) > 0 || strlen($in_uid)>0) {
+if (strlen($in_dn) > 0 || strlen($in_uid)>0) {
     $_SESSION['s_dn'] = $_SESSION['s_uid'] = '';
 }
-if (strlen($dn) == 0)     {$dn     = $_SESSION['s_dn'];}
-if (strlen($in_uid) == 0) {$in_uid = $_SESSION['s_uid'];}
-if (strlen($dn) == 0 && strlen($in_uid)>0) {
+if (!isset($in_dn))
+    {$in_dn = $_SESSION['s_dn'];
+}
+if (!isset($in_uid)) {
+    $in_uid = $_SESSION['s_uid'];
+}
+if (!isset($in_dn) && isset($in_uid)) {
     $return_attr = array('cn');
     $filter = "(&(objectclass=person)(uid=$in_uid))";
     $sr = @ldap_search($ds, $ldap_base, $filter, $return_attr);
     $info = @ldap_get_entries($ds, $sr);
     $ret_cnt = $info["count"];
     if ($ret_cnt>0) {
-        $dn = $info[0]["dn"];
+        $in_dn = $info[0]["dn"];
     }
-} elseif (strlen($dn) == 0) {
+} elseif (!isset($in_dn)) {
     header ("REFRESH: 0; URL=user_search");
     echo "<html>\n";
     echo "<header><title>MacAllister Directory</title></head>\n";
@@ -63,11 +69,11 @@ if (strlen($dn) == 0 && strlen($in_uid)>0) {
     exit;
 }
 
-$_SESSION['s_dn']  = $dn;
+$_SESSION['s_dn']  = $in_dn;
 $_SESSION['s_uid'] = $in_uid;
 
-$dump_url = 'user_dump.php?dn=' . urlencode($dn);
-$user_dn  = $dn;
+$dump_url = 'user_dump.php?dn=' . urlencode($in_dn);
+$user_dn  = $in_dn;
 $filter   = '(objectclass=person)';
 
 $sr = ldap_read($ds, $user_dn, $filter);  

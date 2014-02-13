@@ -1,3 +1,9 @@
+macdir (2.7) unstable; urgency=low
+
+  * WebAuth bug fixes.
+
+ -- Bill MacAllister <mac@spowl.ca-zephyr.org>  Thu, 13 Feb 2014 00:10:07 -0800
+
 macdir (2.6) unstable; urgency=low
 
   * Register global bug fixes.

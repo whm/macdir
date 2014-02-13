@@ -4,15 +4,16 @@
 // Register Global Fix
 //
 $in_date_last_maint  = $_REQUEST['in_date_last_maint'];
-$in_new_password  = $_REQUEST['in_new_password'];
-$in_uid  = $_REQUEST['in_uid'];
-$in_button_update = $_REQUEST['in_button_update'];
+$in_new_password     = $_REQUEST['in_new_password'];
+$in_uid              = $_REQUEST['in_uid'];
+$in_button_update    = $_REQUEST['in_button_update'];
 // ----------------------------------------------------------
 //
 
 // File: set_password_action.php
 // Author: Bill MacAllister
 // Date: 22-Oct-2001
+session_start();
 
 // bind to the ldap directory
 require('/etc/whm/macdir_auth.php');
@@ -68,7 +69,7 @@ function ldap_set_password ($uid, $pwField, $newPw) {
             }
         }
 
-        if (isset$newPw) {
+        if (isset($newPw)) {
             // Add the new password to the directory
             $attrs = array();
             $attrs[$pwField] = $newPw;

@@ -295,7 +295,7 @@ if ( isset($base_filter) && strlen($base_filter)>0) {
       }
       $detail_link = '';
       if (isset($menuLoggedIn)) {
-        $detail_link = "<a href=\"user_details.php?dn=$a_dn_url\">"
+        $detail_link = "<a href=\"user_details.php?in_dn=$a_dn_url\">"
              . '<img src="/macdir-images/icon-view-details.png" border="0"</a>';
       }
       echo "<tr>\n";
