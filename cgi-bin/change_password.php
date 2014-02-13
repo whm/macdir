@@ -3,8 +3,7 @@
 // ----------------------------------------------------------
 // Register Global Fix
 //
-$in_uid  = $_REQUEST['in_uid'];
-$in_emp  = $_REQUEST['in_emp'];
+$in_uid  = $_SERVER['REMOTE_USER'];
 // ----------------------------------------------------------
 //
 // -------------------------------------------------------------
@@ -60,9 +59,7 @@ function check_password () {
 <table border="1">
 <tr>
  <td align="right">Username:</td>
- <td> <input type="text" name="in_uid"
-             value="<?php print $in_uid; ?>">
- </td>
+ <td> <?php print $in_uid; ?></td>
 </tr>
 <tr>
  <td align="right">Old Password:</td>
@@ -84,7 +81,6 @@ function check_password () {
 </tr>
 <tr>
  <td colspan="2" align="center">
-   <input type="hidden" name="in_emp" value="<?php print $in_emp;?>">
    <input type="submit" name="in_button_update" value='Update'>
  </td>
 </tr>

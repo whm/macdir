@@ -429,6 +429,87 @@ function mail_alias_check ($a_dn, $a_flag, $a_alias) {
     }
 }
 
+// -------------------------------
+// find out if a kerberos principal exists
+
+function find_kp ($uid) {
+
+    global $k5start;
+    global $kdcmaster;
+
+    $kp = '';
+
+    // check to see if there is a kerberos principal
+    $kcmd = "$k5start -- /usr/bin/remctl $kdcmaster kadmin examine $uid";
+    $return_text = array();
+    $ret_last = exec($kcmd, $return_text, $return_status);
+    $pat = '/^Principal:\s+(.*)/';
+    foreach ($return_text as $t) {
+        if (preg_match($pat, $t, $mats)) {
+            $kp = $mats[1];
+            break;
+        }
+    }
+
+    return $kp;
+
+}
+
+// -------------------------------
+// Add a kerberos principal is there is not one
+
+function kp_add ($uid) {
+
+    global $k5start;
+    global $kdcmaster;
+    global $ok;
+    global $warn;
+
+    $kp = find_kp($uid);
+    if (strlen($kp)==0) {
+        // add the kerberos principal
+        $tmppass = uniqid('usermaint');
+        $kcmd = "$k5start -- /usr/bin/remctl $kdcmaster kadmin create $uid $tmppass enabled";
+        $ret_last = exec($kcmd, $return_text, $return_status);
+        if ($return_status) {
+            $_SESSION['in_msg'] .= "$warn remctl error: ";
+            foreach ($return_text as $t) {
+                $_SESSION['in_msg'] .= $t.'<br>';
+            }
+            $_SESSION['in_msg'] .= '</font>';
+        } else {
+            $_SESSION['in_msg'] .= "$ok Added Kerberos principal $kp</font><br>";
+        }
+    }
+    return;
+}
+
+// -------------------------------
+// Add a kerberos principal is there is not one
+
+function kp_delete ($uid) {
+
+    global $k5start;
+    global $kdcmaster;
+    global $ok;
+    global $warn;
+
+    $kp = find_kp($uid);
+    if (strlen($kp)>0) {
+        $_SESSION['in_msg'] .= "$ok Deleting Kerberos principal</font><br>";
+        $kcmd = "$k5start -- /usr/bin/remctl $kdcmaster kadmin delete $uid";
+        $ret_last = exec($kcmd, $return_text, $return_status);
+        if ($return_status) {
+            $_SESSION['in_msg'] .= "$warn krb error: ";
+            foreach ($return_text as $t) {
+                $_SESSION['in_msg'] .= $t.'<br>';
+            }
+            $_SESSION['in_msg'] .= '</font>';
+        }
+    }
+    return;
+}
+
 // --------------------------------------------------------------
 // Check user groups with entries not part of a persons base entry
 
@@ -738,13 +819,17 @@ if (isset($in_button_add)) {
 
 
         }
+
+        // add the kerberos principal
+        kp_add($in_uid);
+
         // create a mailbox if necessary
         mailbox_check ($in_uid, $in_maildelivery, $CONF_mailbox_domain);
 
         // Check mailalias
         if ($in_mailalias_cnt>0) {
             for ($i=0; $i<$in_mailalias_cnt; $i++) {
-                mail_alias_check ($in_dn, 
+                mail_alias_check ($in_dn,
                                   $_REQUEST["in_mailalias_$i"],
                                   $_REQUEST["in_mailalias_list_$i"]);
             }
@@ -878,6 +963,9 @@ if (isset($in_button_add)) {
             $_SESSION['in_msg'] .= "$ok $krb_attr = $thisPrincipal added.$ef";
             $add_cnt++;
         }
+
+        // add the kerberos principal
+        kp_add($in_uid);
 
         // -- add attributes
         if ($add_cnt>0) {
@@ -1100,6 +1188,9 @@ if (isset($in_button_add)) {
     }
 
     mailbox_check ($in_uid, "", $CONF_mailbox_domain);
+
+    // delete the kerberos principal
+    kp_delete($in_uid);
 
 } else {
     $_SESSION['in_msg'] .= "$warn invalid action$ef";

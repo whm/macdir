@@ -4,16 +4,72 @@
 // Register Global Fix
 //
 $in_date_last_maint  = $_REQUEST['in_date_last_maint'];
-$in_new_password  = $_REQUEST['in_new_password'];
-$in_old_password  = $_REQUEST['in_old_password'];
-$in_uid  = $_REQUEST['in_uid'];
-$in_button_update = $_REQUEST['in_button_update'];
+$in_new_password     = $_REQUEST['in_new_password'];
+$in_old_password     = $_REQUEST['in_old_password'];
+$in_uid              = $_SERVER['REMOTE_USER'];
+$in_button_update    = $_REQUEST['in_button_update'];
 // ----------------------------------------------------------
 //
 
 // File: change_password_action.php
 // Author: Bill MacAllister
 // Date: December 2002
+
+// -------------------------------
+// find out if a kerberos principal exists
+
+function find_kp ($uid) {
+
+    global $k5start;
+    global $kdcmaster;
+
+    $kp = '';
+
+    // check to see if there is a kerberos principal
+    $kcmd = "$k5start -- /usr/bin/remctl $kdcmaster kadmin examine $uid";
+    $return_text = array();
+    $ret_last = exec($kcmd, $return_text, $return_status);
+    $pat = '/^Principal:\s+(.*)/';
+    foreach ($return_text as $t) {
+        if (preg_match($pat, $t, $mats)) {
+            $kp = $mats[1];
+            break;
+        }
+    }
+
+    return $kp;
+
+}
+
+// -------------------------------
+// Set a kerberos password
+
+function kp_pw ($uid, $pw) {
+
+    global $k5start;
+    global $kdcmaster;
+    global $ok;
+    global $warn;
+
+    $kp = find_kp($uid);
+    if (strlen($kp)>0) {
+        // add the kerberos principal
+        $kcmd = "$k5start -- /usr/bin/remctl $kdcmaster "
+            . "kadmin reset_passwd $uid $pw";
+        $ret_last = exec($kcmd, $return_text, $return_status);
+        if ($return_status) {
+            $_SESSION['s_msg'] .= "<font $warn> remctl error: ";
+            foreach ($return_text as $t) {
+                $_SESSION['s_msg'] .= $t.'<br>';
+            }
+            $_SESSION['s_msg'] .= '</font>';
+        } else {
+            $_SESSION['s_msg'] 
+                .= "<font $ok> Kerberos password updated</font><br>";
+        }
+    }
+    return;
+}
 
 // -------------------------------
 // update the passwords stored in the ldap directory
@@ -96,9 +152,6 @@ $in_date_last_maint = $now;
 // initial directory connection and ldap base dn
 require('/etc/whm/macdir_auth.php');
 
-// No spaces allowed in the identifier
-$in_uid = ereg_replace (" ","",$in_uid);
-
 // set update message area
 $ok = 'color="#009900"';
 $warn = 'color="#990000"';
@@ -145,10 +198,11 @@ if ( strlen($in_button_update)>0 ) {
                     $lmPwd = strtok($nt_lm_passwords,":");
                     $ntPwd = substr(strtok(":"),0,32);
                     # -- no LM passwords 
-                        # ldap_set_password ($in_uid, 'lmpassword', $lmPwd);
+                    # ldap_set_password ($in_uid, 'lmpassword', $lmPwd);
                     ldap_set_password ($in_uid, 'ntpassword', $ntPwd);
                     ldap_set_password ($in_uid, 'sambantpassword', $ntPwd);
                 }
+                kp_pd($in_uid, $in_new_password);
             }
         }
     }

@@ -1,6 +1,8 @@
 macdir (2.7) unstable; urgency=low
 
   * WebAuth bug fixes.
+  * Add and delete kerberos principals.
+  * Add setting of kerberos passwords.
 
  -- Bill MacAllister <mac@spowl.ca-zephyr.org>  Thu, 13 Feb 2014 00:10:07 -0800
 
