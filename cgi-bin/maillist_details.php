@@ -1,4 +1,11 @@
 <?php
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_localmailbox  = $_REQUEST['in_localmailbox'];
+// ----------------------------------------------------------
+//
 
 // --------------------------------------------
 // file: maillist_details.php
@@ -45,8 +52,8 @@ if ($ret_cnt) {
   $filter = "(&(objectclass=person)(maildistributionid=$in_localmailbox))";
   $base_dn = $ldap_base;
   $return_attr = array('cn',
-		       'mail',
-		       'uid');
+                       'mail',
+                       'uid');
   $sr = ldap_search($ds, $base_dn, $filter, $return_attr);  
   $info = ldap_get_entries($ds, $sr);
   $ret_cnt = $info["count"];
@@ -56,7 +63,7 @@ if ($ret_cnt) {
       $a_cn   = $info[$i]["cn"][0];
       $a_mail = $info[$i]["mail"][0];
       $a_userlink = '<a href="user_details.php?in_uid='.$a_uid.'">'
-	 .$a_cn.'</a>';
+          .$a_cn.'</a>';
       $ml_cn[$a_uid]   = $a_cn;
       $ml_mail[$a_uid] = $a_mail;
       $ml_link[$a_uid] = $a_userlink;
@@ -97,14 +104,14 @@ if ($ret_cnt) {
     $ret_cnt = $info["count"];
     if ($ret_cnt) {
       for ($i=0; $i<$ret_cnt; $i++) {
-	$a_uid  = $info[$i]["uid"][0];
-	$a_cn   = $info[$i]["cn"][0];
-	$a_mail = $info[$i]["mail"][0];
-	$a_userlink = '<a href="user_details.php?in_uid='.$a_uid.'">'
-	   .$a_cn.'</a>';
-	$ml_cn[$a_uid]   = $a_cn;
-	$ml_mail[$a_uid] = $a_mail;
-	$ml_link[$a_uid] = $a_userlink;
+          $a_uid  = $info[$i]["uid"][0];
+          $a_cn   = $info[$i]["cn"][0];
+          $a_mail = $info[$i]["mail"][0];
+          $a_userlink = '<a href="user_details.php?in_uid='.$a_uid.'">'
+              .$a_cn.'</a>';
+          $ml_cn[$a_uid]   = $a_cn;
+          $ml_mail[$a_uid] = $a_mail;
+          $ml_link[$a_uid] = $a_userlink;
       }
     }
   }

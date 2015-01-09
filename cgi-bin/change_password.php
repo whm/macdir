@@ -1,4 +1,11 @@
 <?PHP
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_uid  = $_SERVER['REMOTE_USER'];
+// ----------------------------------------------------------
+//
 // -------------------------------------------------------------
 // change_password.php
 // author: Bill MacAllister
@@ -46,15 +53,13 @@ function check_password () {
 <p> 
 
 <form name="setpw" 
-      action="change_password_action" 
+      action="change_password_action.php" 
       onsubmit="return check_password()"
       method="post">
 <table border="1">
 <tr>
  <td align="right">Username:</td>
- <td> <input type="text" name="in_uid"
-             value="<?php print $in_uid; ?>">
- </td>
+ <td> <?php print $in_uid; ?></td>
 </tr>
 <tr>
  <td align="right">Old Password:</td>
@@ -76,19 +81,16 @@ function check_password () {
 </tr>
 <tr>
  <td colspan="2" align="center">
-   <input type="hidden" name="in_emp" value="<?php print $in_emp;?>">
-   <input type="submit" name="btn_update" value='Update'>
+   <input type="submit" name="in_button_update" value='Update'>
  </td>
 </tr>
 <?php
-  if (session_is_registered('s_msg')) {
-    if (strlen ($_SESSION['s_msg']) > 0) {
-      echo "<tr><td colspan=\"2\" align=\"center\">\n";
-      echo $_SESSION['s_msg']."\n";
-      echo "</td></tr>\n";
-      $_SESSION['s_msg'] = '';
+    if (isset($_SESSION['s_msg'])) {
+        echo "<tr><td colspan=\"2\" align=\"center\">\n";
+        echo $_SESSION['s_msg']."\n";
+        echo "</td></tr>\n";
+        $_SESSION['s_msg'] = '';
     }
-  }
 ?>
 </table>
 </form>

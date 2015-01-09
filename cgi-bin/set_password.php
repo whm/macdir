@@ -1,22 +1,24 @@
 <?PHP
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_uid  = $_REQUEST['in_uid'];
+// ----------------------------------------------------------
+//
 // -------------------------------------------------------------
 // set_password.php
 // author: Bill MacAllister
 // date: October 2002
 //
-
-// Open a session 
-require('whm_php_sessions.inc');
-// Enforce authentication
-require('whm_php_auth.inc');
-whm_auth("ldapadmin");
+session_start();
 
 // -- Print a space or the field
 function prt ($fld) {
   $str = trim ($fld);
   if (strlen($str) == 0) {
     $str = "&nbsp;";
-  } 
+  }
   return $str;
 }
 
@@ -47,10 +49,10 @@ function check_password () {
 </script>
 
 <div align="center">
-<p> 
+<p>
 
-<form name="setpw" 
-      action="set_password_action" 
+<form name="setpw"
+      action="set_password_action.php"
       onsubmit="return check_password()"
       method="post">
 <input type="hidden" name="in_uid" value="<?php print $in_uid; ?>">
@@ -63,19 +65,19 @@ function check_password () {
 </tr>
 <tr>
  <td align="right">New Password:</td>
- <td> <input type="password" 
-             name="in_new_password"> 
+ <td> <input type="password"
+             name="in_new_password">
  </td>
 </tr>
 <tr>
  <td align="right">Verify New Password:</td>
- <td> <input type="password" 
-             name="in_verify_password"> 
+ <td> <input type="password"
+             name="in_verify_password">
  </td>
 </tr>
 <tr>
  <td colspan="2" align="center">
-   <input type="submit" name="btn_update" value='Update'>
+   <input type="submit" name="in_button_update" value='Update'>
  </td>
 </tr>
 <?php
@@ -95,5 +97,5 @@ Back to User Maintenance</a>
 
 <?php
  ldap_close($ds);
- require ('inc_footer.php'); 
+ require ('inc_footer.php');
 ?>

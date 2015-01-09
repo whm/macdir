@@ -69,7 +69,7 @@ foreach ($select_list as $a_uid => $a_cn) {
 }
 ?>
 </select>
-<input type="submit" name="btn_submit" value="Set Mail Delivery">
+<input type="submit" name="in_button_submit" value="Set Mail Delivery">
 </form>
 
 </body>

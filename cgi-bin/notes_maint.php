@@ -1,6 +1,15 @@
 <?php
-# file: notes_maint.php
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_cn  = $_REQUEST['in_cn'];
+// ----------------------------------------------------------
+//
+# file: my_links_maint.php
 # author: Bill MacAllister
+
+session_start();
 
 $title = 'Link Maintenance';
 $heading = 'Link Maintenance';
@@ -8,15 +17,13 @@ $heading = 'Link Maintenance';
 require ('inc_header.php');
 require('/etc/whm/macdir_auth.php');
 $ds = ldap_connect($ldap_server);
-$r  = ldap_bind($ds,
-                $_SESSION['whm_directory_user_dn'],
-                $_SESSION['whm_credential']);
+$r  = ldap_bind($ds, $ldap_manager, $ldap_password);
 
-if (strlen($in_cn)>0) {
+if (isset($in_cn)) {
     
     $return_attr = array();
-    $link_base = $_SESSION['whm_directory_user_dn'];
-    $link_filter = "(&(objectclass=whmPersonalNote)(cn=$in_cn))";
+    $link_base = 'uid='.$_SERVER['REMOTE_USER'].','.$ldap_user_base;
+    $link_filter = "(&(objectclass=pridelistobject)(cn=$in_cn))";
     $sr = @ldap_search ($ds, $link_base, $link_filter, $return_attr);
     $info = @ldap_get_entries($ds, $sr);
     $ret_cnt = $info["count"];
@@ -68,7 +75,7 @@ function checkIt() {
 
 <form name="maint_find"
       method="post"
-      action="<?php print $PHP_SELF; ?>">
+      action="<?php print $_SERVER['PHP_SELF']; ?>">
 <table border="0" width="100%">
 <tr>
   <td align="right" width="50%">Common Name:</td>
@@ -79,7 +86,7 @@ function checkIt() {
 </tr>
 <tr>
   <td colspan="2" align="center">
-    <input type="submit" name="btn_find" value="Lookup">
+    <input type="submit" name="in_button_find" value="Lookup">
   </td>
 </tr>
 <?php
@@ -89,13 +96,11 @@ if (isset($msg)) {
   echo "</tr>\n";
   $msg = '';
 }
-if (session_is_registered('in_msg')) {
-  if (strlen($_SESSION['in_msg']) > 0) {
+if (isset($_SESSION['in_msg'])) {
     echo "<tr>\n";
     echo "  <td colspan=\"2\" align=\"center\">".$_SESSION['in_msg']."</td>\n";
     echo "</tr>\n";
     $_SESSION['in_msg'] = '';
-  }
 }
 ?>
 </table>
@@ -103,14 +108,14 @@ if (session_is_registered('in_msg')) {
 
 <form name="maint"
       method="post"
-      action="notes_maint_action"
+      action="my_links_maint_action.php"
       onsubmit="return checkIt()">
 
 <table border="1" cellpadding="2" align="center">
 
 <tr>
   <td colspan="2" align="right">
-    <a href="<?php echo $PHP_SELF;?>">Reset</a>
+    <a href="<?php echo $_SERVER['PHP_SELF'];?>">Reset</a>
   </td>
 </tr>
 
@@ -124,7 +129,7 @@ if (session_is_registered('in_msg')) {
 <tr>
   <td align="right">Common Name:</td>
   <td>
-<?php if (strlen($info[0]['cn'][0]) > 0) { ?>
+<?php if ( isset($info[0]['cn'][0]) ) { ?>
  <input type="hidden" name="in_cn" value="<?php echo $info[0]['cn'][0];?>">
  <?php echo $info[0]['cn'][0];?>
 <?php } else { ?>
@@ -168,19 +173,19 @@ if (session_is_registered('in_msg')) {
  <table border="0" width="100%">
  <tr>
 
- <?php if (strlen($info[0]['cn'][0]) > 0) {?>
+ <?php if ( isset($info[0]['cn'][0]) ) {?>
 
  <td width="50%">
-  <input type="submit" name="btn_update" value="Update">
+  <input type="submit" name="in_button_update" value="Update">
  </td>
  <td width="50%" align="right">
-  <input type="submit" name="btn_delete" value="Delete">
+  <input type="submit" name="in_button_delete" value="Delete">
  </td>
 
 <?php } else { ?>
 
  <td align="center">
-  <input type="submit" name="btn_add" value="Add">
+  <input type="submit" name="in_button_add" value="Add">
  </td>
 
 <?php } ?>

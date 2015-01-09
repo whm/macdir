@@ -1,9 +1,20 @@
 <?php
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_uid  = $_REQUEST['in_uid'];
+$in_button_find = $_REQUEST['in_button_find'];
+// ----------------------------------------------------------
+//
 // file: user_maint.php
 // author: Bill MacAllister
 // date: 18-Jan-2003
 // description: This form is for updating phone information for people
 //              listed in the LDAP Directory.
+
+// Open a session and check for authorization
+session_start();
 
 require('inc_config.php');
 require('inc_macdir.php');
@@ -30,7 +41,6 @@ if (isset($_REQUEST['in_uid'])) {
   $inUID = $_REQUEST['in_uid'];
   $ldap_filter = "(&(objectclass=person)(uid=$inUID))";
 }
-
 if (isset($ldap_filter)) {
 
   $return_attr = array();
@@ -125,7 +135,7 @@ if (isset($ldap_filter)) {
 
 <form name="user_maint_find"
       method="post"
-      action="<?php print $PHP_SELF; ?>">
+      action="<?php print $_SERVER['PHP_SELF']; ?>">
 <table border="0" width="100%">
 <tr>
   <td align="right" width="50%">UID:</td>
@@ -136,7 +146,7 @@ if (isset($ldap_filter)) {
 </tr>
 <tr>
   <td colspan="2" align="center">
-    <input type="submit" name="btn_find" value="Lookup">
+    <input type="submit" name="in_button_find" value="Lookup">
   </td>
 </tr>
 <?php
@@ -146,13 +156,11 @@ if (isset($msg)) {
   echo "</tr>\n";
   $msg = '';
 }
-if (session_is_registered('in_msg')) {
-  if (strlen($_SESSION['in_msg']) > 0) {
+if (isset($_SESSION['in_msg'])) {
     echo "<tr>\n";
     echo "  <td colspan=\"2\" align=\"center\">".$_SESSION['in_msg']."</td>\n";
     echo "</tr>\n";
     $_SESSION['in_msg'] = '';
-  }
 }
 ?>
 </table>
@@ -203,7 +211,7 @@ function checkIt() {
   var f;
   var i;
   var outData = "";
-  
+
   EmptyField = "";
   f = document.user_maint;
 
@@ -264,7 +272,7 @@ function checkIt() {
       return false;
     }
   }
-  
+
   /* pam group checks */
   var pam_cnt = 0;
   if (f.in_pam.length > 1) {
@@ -326,7 +334,7 @@ function checkIt() {
 
 <form name="reset"
       method="post"
-      action="<?php print $PHP_SELF; ?>">
+      action="<?php print $_SERVER['PHP_SELF']; ?>">
 <input type="hidden" name="in_uid" value="">
 <input type="submit" name="reset" value="Reset">
 </form>
@@ -338,7 +346,7 @@ function checkIt() {
 <p>
 <form name="user_maint"
       method="post"
-      action="user_maint_action"
+      action="user_maint_action.php"
       onsubmit="return checkIt()">
 
 <input type="hidden" name="in_uid"
@@ -348,7 +356,7 @@ function checkIt() {
 <table border="1" cellpadding="2">
 <?php
   if ($entry_found) {
-    $pwd_href = 'set_password?in_uid='.$thisUID;
+    $pwd_href = 'set_password.php?in_uid='.$thisUID;
 ?>
 <tr>
   <td align="right">Computer UID:</td>
@@ -361,8 +369,8 @@ function checkIt() {
             if ( isset($info[0][$krb_attr][0]) ) {
               $z = ' ('.$info[0][$krb_attr][0].')';
             }
-            print $inUID.$z;
-            ?> 
+            print $thisUID.$z;
+            ?>
           </td>
           <td align="right"><a href="<?php echo $pwd_href;?>">
               Set Password</a>
@@ -372,14 +380,14 @@ function checkIt() {
   </td>
 </tr>
 <?php
-  } else { 
+  } else {
 ?>
 <tr>
   <td align="right">Computer UID:</td>
   <td colspan="5"><input type="text" name="in_uid"></td>
 </tr>
-<?php 
-  } 
+<?php
+  }
 ?>
 <tr>
  <td align="right">Given Name:</td>
@@ -522,7 +530,7 @@ function checkIt() {
      $z = '';
      if (isset($info[0]["postalcode"][0])) {$z = $info[0]["postalcode"][0];}
    ?>
- <td><input type="text" size="10" name="in_postalcode" 
+ <td><input type="text" size="10" name="in_postalcode"
             value="<?php print $z;?>"></td>
 </tr>
 <tr>
@@ -818,7 +826,7 @@ if ($CONF_use_samba) {
 <tr>
  <td align="right">Samba Home Path:</td>
  <td colspan="5">
- <input type="text" 
+ <input type="text"
         name="in_sambahomepath"
         value="<?php print $info[0]["sambahomepath"][0];?>">
   A UNC name, e.g. \\%N\
@@ -890,7 +898,7 @@ foreach ($samba_acct_flags['desc'] as $f_id => $f_desc) {
  </td>
 </tr>
 
-<?php 
+<?php
 # End Samba
 # ------------------------------------------------------------------
 } ?>
@@ -902,7 +910,7 @@ foreach ($samba_acct_flags['desc'] as $f_id => $f_desc) {
 
  <?php if ($entry_found>0) { ?>
  <td width="33%">
-  <input type="submit" name="btn_update" value="Update">
+  <input type="submit" name="in_button_update" value="Update">
  </td>
  <?php } else { ?>
    <td>&nbsp;</td>
@@ -910,7 +918,7 @@ foreach ($samba_acct_flags['desc'] as $f_id => $f_desc) {
 
  <?php if ($add_delete_flag>0 && $entry_found>0) { ?>
  <td width="33%" align="center">
-  <input type="submit" name="btn_delete" value="Delete">
+  <input type="submit" name="in_button_delete" value="Delete">
  </td>
  <?php } else { ?>
    <td>&nbsp;</td>
@@ -918,7 +926,7 @@ foreach ($samba_acct_flags['desc'] as $f_id => $f_desc) {
 
  <?php if ($add_delete_flag>0 && $entry_found==0) { ?>
  <td width="33%" align="right">
-  <input type="submit" name="btn_add" value="Add">
+  <input type="submit" name="in_button_add" value="Add">
  </td>
  <?php } else { ?>
    <td>&nbsp;</td>

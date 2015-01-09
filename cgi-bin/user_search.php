@@ -5,6 +5,8 @@
 // author: Bill MacAllister
 // date: 14-Oct-2002
 
+session_start();
+
 $title = 'Search for a Person';
 $heading = 'MacAllister Directory';
 require('inc_macdir.php');
@@ -14,17 +16,16 @@ require('inc_header.php');
 $msg = '';
 
 // set default for amount of search details to display
-if ($menuLoggedIn == 0) {
-  $more_search = 'no';
+if ( isset($_REQUEST['in_more_search']) ) {
+    $in_more_search = $_REQUEST['in_more_search'];
+} else {
+    if ( isset($_SESSION['s_more_search']) ) {
+        $in_more_search = $_SESSION['s_more_search'];
+    } else {
+        $in_more_search = 'no';
+    }
 }
-if (isset ($more_search) == 0) {
-  if ( isset($_SESSION['s_more_search']) ) {
-    $more_search = $_SESSION['s_more_search'];
-  } else {
-    $more_search = 'no';
-  }
-}
-$_SESSION['s_more_search'] = $more_search;
+$_SESSION['s_more_search'] = $in_more_search;
 
 // create a form to attribute mapping
 $form["firstname"]          = "givenname";
@@ -43,8 +44,8 @@ $form["maildistributionid"] = "maildistributionid";
 $base_filter = '';
 foreach ($form as $formName => $ldapName) {
   $name = "in_$formName"; 
-  if (isset($$name)) {
-    $a_val = $$name;
+  if (isset($_REQUEST[$name])) {
+    $a_val = $_REQUEST[$name];
     if (strlen($a_val)>0) {$base_filter .= "($ldapName=*$a_val*)";}
   }
 }
@@ -113,7 +114,7 @@ for the first name will return matches for Bill and William.
              size="32">
     </td>
   </tr>
-<? if ($more_search == 'yes') { ?>
+<? if ($in_more_search == 'yes') { ?>
   <tr> 
     <td> 
       <div align="right">Title:</div>
@@ -137,7 +138,7 @@ for the first name will return matches for Bill and William.
              size="32">
     </td>
   </tr>
-<? if ($more_search == 'yes') { ?>
+<? if ($in_more_search == 'yes') { ?>
   <tr> 
     <td> 
       <div align="right">Postal Address:</div>
@@ -220,14 +221,19 @@ for the first name will return matches for Bill and William.
       <input type="submit" value="Search Directory" name="button">
       </td>
   </tr>
+<?php if ( isset($msg) ) { ?>
+  <tr><td align="center" colspan="2">
+      <?php echo $msg; $msg = '';?>
+      </td>
+  </tr>
+<?php } ?>
 </table>
 </form>
 
 <p>
 
 <?php
-
-if ( isset($base_filter) ) {
+if ( isset($base_filter) && strlen($base_filter)>0) {
   $filter = '(&(objectclass=person)'.$base_filter.')';
   $base_dn = $macdirPROPS['ldap_base_dn'];
   $return_attr = array('cn',
@@ -275,8 +281,8 @@ if ( isset($base_filter) ) {
                       . '"><img src="/macdir-images/icon-edit.png" border="0"></a>';
       }
       $detail_link = '';
-      if ($menuLoggedIn>0) {
-        $detail_link = "<a href=\"user_details.php?dn=$a_dn_url\">"
+      if (isset($menuLoggedIn)) {
+        $detail_link = "<a href=\"user_details.php?in_dn=$a_dn_url\">"
              . '<img src="/macdir-images/icon-view-details.png" border="0"</a>';
       }
       echo "<tr>\n";
@@ -309,15 +315,14 @@ if (strlen($msg)>0) {
 ?>
 <p>
 <?php 
-if ($menuLoggedIn>0) {
-  if ($more_search == 'yes') { ?>
- <a href="<?php echo "$PHP_SELF?more_search=no";?>"> 
- Display Less Search Criteria</a>
-<?php } else { ?>
- <a href="<?php echo "$PHP_SELF?more_search=yes";?>"> 
- Display More Search Criteria</a>
-<?php 
-  } 
+if (isset($_SERVER['REMOTE_USER'])) {
+    if ($in_more_search == 'yes') { 
+        print '<a href="' . $_SERVER['PHP_SELF'] . '?in_more_search=no">';
+        print "Display Less Search Criteria</a>\n";
+    } else {
+        print '<a href="' . $_SERVER['PHP_SELF'] . '?in_more_search=yes">';
+        print "Display More Search Criteria</a>\n";
+    } 
 }
 ?>
 <p>

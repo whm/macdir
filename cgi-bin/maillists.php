@@ -1,4 +1,11 @@
 <?php
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_listid  = $_REQUEST['in_listid'];
+// ----------------------------------------------------------
+//
 
 // --------------------------------------------
 // file: maillists.php
@@ -17,7 +24,7 @@ require ('inc_maillist_auth.php');
 
 <form name="maillist_find"
       method="post"
-      action="<?php print $PHP_SELF; ?>">
+      action="<?php print $_SERVER['PHP_SELF']; ?>">
 <table border="0">
 <tr>
   <th align="right">Mail List or Alias:</th>
@@ -28,7 +35,7 @@ require ('inc_maillist_auth.php');
 </tr>
 <tr>
   <td colspan="2" align="center">
-    <input type="submit" name="btn_find" value="Lookup">
+    <input type="submit" name="in_button_find" value="Lookup">
   </td>
 </tr>
 </table>
@@ -102,7 +109,7 @@ if ($ret_cnt) {
 ?>
 <tr>
    <td><?php echo $thisMaint;?>
-       <a href="maillist_details?in_localmailbox=<?php echo $thisList;?>"><img
+       <a href="maillist_details.php?in_localmailbox=<?php echo $thisList;?>"><img
               src="/macdir-images/icon-view-details.png" border="0"></a>
        <?php echo $thisID;?></a></td>
    <td><?php echo $thisDescription;?> &nbsp;</td>

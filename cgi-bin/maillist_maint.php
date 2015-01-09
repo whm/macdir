@@ -1,4 +1,11 @@
 <?php
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_localmailbox  = $_REQUEST['in_localmailbox'];
+// ----------------------------------------------------------
+//
 // file: maillist_maint.php
 // author: Bill MacAllister
 // date: 18-Jan-2003
@@ -172,7 +179,7 @@ function checkIt() {
   <td align="center" width="90%">
     <form name="maillist_maint_find"
           method="post"
-          action="<?php print $PHP_SELF; ?>">
+          action="<?php print $_SERVER['PHP_SELF']; ?>">
     <table border="0" width="100%">
     <tr>
       <th align="right">Mail List:</th>
@@ -183,7 +190,7 @@ function checkIt() {
     </tr>
     <tr>
       <td colspan="2" align="center">
-        <input type="submit" name="btn_find" value="Lookup">
+        <input type="submit" name="in_button_find" value="Lookup">
       </td>
     </tr>
 <?php
@@ -217,7 +224,7 @@ if ( isset($_SESSION['in_msg']) ) {
   <td align="center" width="10%">
     <form name="reset"
           method="post"
-          action="<?php print $PHP_SELF; ?>">
+          action="<?php print $_SERVER['PHP_SELF']; ?>">
     <input type="hidden" name="in_localmailbox" value="">
     <input type="submit" name="reset" value="Reset">
     </form>
@@ -230,7 +237,7 @@ if ( isset($_SESSION['in_msg']) ) {
 
 <form name="maillist_maint"
       method="post"
-      action="maillist_maint_action"
+      action="maillist_maint_action.php"
       onsubmit="return checkIt()">
 
 <input type="hidden" name="in_dn" value="<?php print $thisDN;?>">
@@ -676,7 +683,7 @@ foreach ($ml_list as $id => $id_title) {
 
  <?php if ($entry_found>0) { ?>
  <td width="33%">
-  <input type="submit" name="btn_update" value="Update">
+  <input type="submit" name="in_button_update" value="Update">
  </td>
  <?php } else { ?>
    <td>&nbsp;</td>
@@ -684,7 +691,7 @@ foreach ($ml_list as $id => $id_title) {
 
  <?php if ($add_delete_flag>0 && $entry_found>0 && $admin_user>0) { ?>
  <td width="33%" align="center">
-  <input type="submit" name="btn_delete" value="Delete">
+  <input type="submit" name="in_button_delete" value="Delete">
  </td>
  <?php } else { ?>
    <td>&nbsp;</td>
@@ -692,7 +699,7 @@ foreach ($ml_list as $id => $id_title) {
 
  <?php if ($admin_user>0) { ?>
  <td width="33%" align="right">
-  <input type="submit" name="btn_add" value="Add">
+  <input type="submit" name="in_button_add" value="Add">
  </td>
  <?php } else { ?>
    <td>&nbsp;</td>

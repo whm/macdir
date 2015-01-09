@@ -1,4 +1,11 @@
 <?php
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_cn  = $_REQUEST['in_cn'];
+// ----------------------------------------------------------
+//
 // file: app_define.php
 // author: Bill MacAllister
 // date: 18-Jan-2003
@@ -61,7 +68,7 @@ if (strlen($ldap_filter)>0) {
 
   <form name="app_define_find"
         method="post"
-        action="<?php print $PHP_SELF; ?>">
+        action="<?php print $_SERVER['PHP_SELF']; ?>">
   <table border="0" width="100%">
   <tr>
     <td align="right">Common Name:</td>
@@ -72,7 +79,7 @@ if (strlen($ldap_filter)>0) {
   </tr>
   <tr>
     <td align="center" colspan="2">
-      <input type="submit" name="btn_find" value="Lookup">
+      <input type="submit" name="in_button_find" value="Lookup">
     </td>
   </tr>
   <?php
@@ -133,7 +140,7 @@ function checkIt() {
 
 <form name="reset"
       method="post"
-      action="<?php print $PHP_SELF; ?>">
+      action="<?php print $_SERVER['PHP_SELF']; ?>">
 <input type="hidden" name="in_uid" value="">
 <input type="submit" name="reset" value="Reset">
 </form>
@@ -145,7 +152,7 @@ function checkIt() {
 <p>
 <form name="app_define"
       method="post"
-      action="app_define_action"
+      action="app_define_action.php"
       onsubmit="return checkIt()">
 
 <input type="hidden" name="in_dn"
@@ -269,7 +276,7 @@ function checkIt() {
 
  <?php if ($entry_found>0) { ?>
  <td width="33%">
-  <input type="submit" name="btn_update" value="Update">
+  <input type="submit" name="in_button_update" value="Update">
  </td>
  <?php } else { ?>
    <td>&nbsp;</td>
@@ -277,7 +284,7 @@ function checkIt() {
 
  <?php if ($entry_found>0) { ?>
  <td width="33%" align="center">
-  <input type="submit" name="btn_delete" value="Delete">
+  <input type="submit" name="in_button_delete" value="Delete">
  </td>
  <?php } else { ?>
    <td>&nbsp;</td>
@@ -285,7 +292,7 @@ function checkIt() {
 
  <?php if ($entry_found==0) { ?>
  <td width="33%" align="right">
-  <input type="submit" name="btn_add" value="Add">
+  <input type="submit" name="in_button_add" value="Add">
  </td>
  <?php } else { ?>
    <td>&nbsp;</td>

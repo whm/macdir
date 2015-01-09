@@ -1,20 +1,28 @@
 <?php
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_employeenumber  = $_REQUEST['in_employeenumber'];
+$in_uid  = $_REQUEST['in_uid'];
+// ----------------------------------------------------------
+//
 // file: app_access_maint.php
 // author: Bill MacAllister
 // date: 18-Jan-2003
 // description: This form is granting users access to PRIDE Web Files Services
 
 // Open a session and check for authorization
-require('whm_php_sessions.inc');
-require('whm_php_auth.inc');
-whm_auth("user");
+session_start();
 
-$title = 'PRIDE Application Access Maintenance';
-$heading = 'PRIDE Application Access Maintenance';
+require('inc_config.php');
+
+$title = 'Application Access Maintenance';
+$heading = 'Application Access Maintenance';
 
 require ('inc_header.php');
 require('/etc/whm/macdir_auth.php');
-$ds = ldap_connect("ldap.whm.com");
+$ds = ldap_connect($ldap_server);
 
 // -----------------------------------------------------
 // get a list of application groups to be managed
@@ -99,7 +107,7 @@ if (strlen($ldap_filter)>0) {
 
   <form name="app_access_maint_find"
         method="post"
-        action="<?php print $PHP_SELF; ?>">
+        action="<?php print $_SERVER['PHP_SELF']; ?>">
   <table border="0" width="100%">
   <tr>
     <td align="right">Employee Number:</td>
@@ -118,7 +126,7 @@ if (strlen($ldap_filter)>0) {
   </tr>
   <tr>
     <td align="center" colspan="2">
-      <input type="submit" name="btn_find" value="Lookup">
+      <input type="submit" name="in_button_find" value="Lookup">
     </td>
   </tr>
   <?php
@@ -202,7 +210,7 @@ if (f.in_pass1.value != f.in_pass2.value) {
 
 <form name="reset"
       method="post"
-      action="<?php print $PHP_SELF; ?>">
+      action="<?php print $_SERVER['PHP_SELF']; ?>">
 <input type="hidden" name="in_uid" value="">
 <input type="submit" name="reset" value="Reset">
 </form>
@@ -214,7 +222,7 @@ if (f.in_pass1.value != f.in_pass2.value) {
 <p>
 <form name="app_access_maint"
       method="post"
-      action="app_access_maint_action"
+      action="app_access_maint_action.php"
       onsubmit="return checkIt()">
 
 <input type="hidden" name="in_uid"
@@ -226,7 +234,7 @@ if (f.in_pass1.value != f.in_pass2.value) {
 <table border="1" cellpadding="2">
 
 <?php 
-$pwd_href = 'set_password?in_uid='.$thisUID;
+$pwd_href = 'set_password.php?in_uid='.$thisUID;
 
 // -------------------------------------------
 // Non employee maintenance
@@ -471,7 +479,7 @@ echo "           value=\"$pwfs_cnt\">\n";
 
  <?php if ($entry_found>0) { ?>
  <td width="33%">
-  <input type="submit" name="btn_update" value="Update">
+  <input type="submit" name="in_button_update" value="Update">
  </td>
  <?php } else { ?>
    <td>&nbsp;</td>
@@ -479,7 +487,7 @@ echo "           value=\"$pwfs_cnt\">\n";
 
  <?php if ($add_delete_flag>0 && $entry_found>0 && strlen($thisEmp)==0) { ?>
  <td width="33%" align="center">
-  <input type="submit" name="btn_delete" value="Delete">
+  <input type="submit" name="in_button_delete" value="Delete">
  </td>
  <?php } else { ?>
    <td>&nbsp;</td>
@@ -487,7 +495,7 @@ echo "           value=\"$pwfs_cnt\">\n";
 
  <?php if ($add_delete_flag>0 && $entry_found==0) { ?>
  <td width="33%" align="right">
-  <input type="submit" name="btn_add" value="Add">
+  <input type="submit" name="in_button_add" value="Add">
  </td>
  <?php } else { ?>
    <td>&nbsp;</td>

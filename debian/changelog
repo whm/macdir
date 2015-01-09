@@ -1,3 +1,38 @@
+macdir (2.7) unstable; urgency=low
+
+  * WebAuth bug fixes.
+  * Add and delete kerberos principals.
+  * Add setting of kerberos passwords.
+
+ -- Bill MacAllister <mac@spowl.ca-zephyr.org>  Thu, 13 Feb 2014 00:10:07 -0800
+
+macdir (2.6) unstable; urgency=low
+
+  * Register global bug fixes.
+
+ -- Bill MacAllister <mac@spowl.ca-zephyr.org>  Thu, 02 Jan 2014 10:21:26 -0800
+
+macdir (2.5) unstable; urgency=low
+
+  * Cleanup menu so that the search selection appears.
+  * Allow the selection of additional search criteria.
+
+ -- Bill MacAllister <mac@spowl.ca-zephyr.org>  Thu, 02 Jan 2014 03:10:03 -0800
+
+macdir (2.4) unstable; urgency=low
+
+  * Bug fixes for more register globals dependencies.
+
+ -- Bill MacAllister <mac@ca-zephyr.org>  Thu, 02 Jan 2014 02:57:11 -0800
+
+macdir (2.3) unstable; urgency=low
+
+  * Use full file names in URLs.
+  * Remove dependency on register_globals.
+  * Remove obsolete session function references.
+
+ -- Bill MacAllister <mac@ca-zephyr.org>  Tue, 31 Dec 2013 12:25:09 -0800
+
 macdir (2.2) unstable; urgency=low
 
   * Move to using webauth for access control to the application.

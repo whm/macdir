@@ -1,4 +1,11 @@
 <?php 
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_uid  = $_REQUEST['in_uid'];
+// ----------------------------------------------------------
+//
 
 $title = 'MacAllister Directory Search Details';
 $heading = 'MacAllister Directory';
@@ -9,7 +16,7 @@ require ('inc_header.php');
 
 <!-- Main body of document -->
 <div align="center">
-<a href="user_details">Return to User Display</a>
+<a href="user_details.php">Return to User Display</a>
 </div>
 <?php
 

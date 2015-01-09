@@ -1,9 +1,22 @@
-<?php 
-// file: notes_maint_action.php
+<?php
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_dn  = $_REQUEST['in_dn'];
+$in_cn  = $_REQUEST['in_cn'];
+$in_button_add = $_REQUEST['in_button_add'];
+$in_button_update = $_REQUEST['in_button_update'];
+$in_button_delete = $_REQUEST['in_button_delete'];
+// ----------------------------------------------------------
+//
+// file: my_links_maint_action.php
 // author: Bill MacAllister
 
 // -------------------------------------------------------------
 // main routine
+
+session_start();
 
 $_SESSION['in_msg'] = '';
 $warn = '<font color="#cc0000">';
@@ -23,24 +36,22 @@ require ('/etc/whm/macdir_auth.php');
 $ds = ldap_connect($ldap_server);
 if (!$ds) {
     $_SESSION['in_msg'] .= "Problem connecting to the $ldap_server server";
-    $btn_add = '';
-    $btn_update = '';
-    $btn_delete = '';
+    $in_button_add = '';
+    $in_button_update = '';
+    $in_button_delete = '';
 } else {
-    $r  = ldap_bind($ds,
-                    $_SESSION['whm_directory_user_dn'],
-                    $_SESSION['whm_credential']);
+  $r  = ldap_bind($ds, $ldap_manager, $ldap_password);
 }
 
-$link_base = $_SESSION['whm_directory_user_dn'];
-$link_filter = "(&(objectclass=whmPersonalNote)(cn=$in_cn))";
+$link_base = 'uid=' . $_SERVER['REMOTE_USER'] . ',' . $ldap_user_base;
+$link_filter = "(&(objectclass=pridelistobject)(cn=$in_cn))";
 
-if (isset($btn_add)) {
+if (isset($in_button_add)) {
 
     // -----------------------------------------------------
     // Add an LDAP Entry
     // -----------------------------------------------------
-    
+
     if (!isset($in_cn)) {
         $_SESSION['in_msg'] .= "$warn Common Name is required.$ef";
     } else {
@@ -49,7 +60,7 @@ if (isset($btn_add)) {
 
         $filter = "(cn=$in_cn)";
         $attrs = array ('cn');
-        $sr = @ldap_search ($ds, $link_base, $link_filter, $attrs);  
+        $sr = @ldap_search ($ds, $link_base, $link_filter, $attrs);
         $entries = @ldap_get_entries($ds, $sr);
         $cn_cnt = $entries["count"];
         if ($cn_cnt>0) {
@@ -69,8 +80,8 @@ if (isset($btn_add)) {
             $_SESSION['in_msg'] .= "$ok adding cn = $in_cn$ef";
 
             foreach ($fld_list as $fld) {
-                $name = "in_$fld"; $val = stripslashes(trim($$name));
-                if (strlen($val)>0) {
+                $val = stripslashes(trim($_REQUEST["in_$fld"]));
+                if (isset($val)) {
                     $_SESSION['in_msg'] .= "$ok adding $fld = $val$ef";
                     $ldap_entry[$fld][0] = $val;
                 }
@@ -90,18 +101,18 @@ if (isset($btn_add)) {
         }
     }
 
-} elseif (isset($btn_update)) {
+} elseif (isset($in_button_update)) {
 
     // -----------------------------------------------------
     // Update an LDAP Entry
     // -----------------------------------------------------
 
-    if (strlen($in_cn) == 0) {
+    if (!isset($in_cn)) {
         $_SESSION['in_msg'] .= "$warn No entry to update$ef";
         $ret_cnt = 0;
     } else {
 
-        $sr = @ldap_read ($ds, $in_dn, $link_filter, $fld_list);  
+        $sr = @ldap_read ($ds, $in_dn, $link_filter, $fld_list);
         $info = @ldap_get_entries($ds, $sr);
         $err = ldap_errno ($ds);
         if ($err) {
@@ -118,8 +129,10 @@ if (isset($btn_add)) {
             if ($fld == 'cn')          { continue; }
 
             $val_in = '';
-            $tmp = 'in_' . $fld;  
-            if (isset($$tmp)) {$val_in  = stripslashes(trim($$tmp));}
+            $tmp = $_REQUEST["in_$fld"];
+            if (isset($tmp)) {
+                $val_in  = stripslashes(trim($tmp));
+            }
 
             $val_ldap = '';
             if (isset($info[0]["$fld"][0])) {
@@ -127,8 +140,8 @@ if (isset($btn_add)) {
             }
 
             if ( $val_in != $val_ldap ) {
-                if (strlen($val_in)==0) {
-                    if (strlen($val_ldap)>0) {
+                if (!isset($val_in)) {
+                    if (isset($val_ldap)) {
 
                         // delete the attribute
                         $new_data["$fld"] = $val_ldap;
@@ -147,7 +160,7 @@ if (isset($btn_add)) {
                 } else {
 
                     $new_data["$fld"] = $val_in;
-                    
+
                     // try and replace it, if that fails try and add it
 
                     // replace
@@ -181,7 +194,7 @@ if (isset($btn_add)) {
         }
     }
 
-} elseif (isset($btn_delete)) {
+} elseif (isset($in_button_delete)) {
 
     // -----------------------------------------------------
     // Delete an LDAP Entry

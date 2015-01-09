@@ -1,4 +1,17 @@
 <?php 
+//
+// ----------------------------------------------------------
+// Register Global Fix
+//
+$in_sambadomainname  = $_REQUEST['in_sambadomainname'];
+$in_userpassword  = $_REQUEST['in_userpassword'];
+$in_uid  = $_REQUEST['in_uid'];
+$in_cn  = $_REQUEST['in_cn'];
+$in_button_add = $_REQUEST['in_button_add'];
+$in_button_update = $_REQUEST['in_button_update'];
+$in_button_delete = $_REQUEST['in_button_delete'];
+// ----------------------------------------------------------
+//
 // file: computer_maint_action.php
 // author: Bill MacAllister
 
@@ -26,7 +39,7 @@ function posix_group_check ($a_uid, $a_flag, $a_group) {
     $posix = @ldap_get_entries($ds, $sr);
     $posix_cnt = $posix["count"];
     
-    if (strlen($a_flag)==0) {
+    if (isset($a_flag)) {
         
         // delete it if we find it
         if ($posix_cnt>0) {
@@ -74,7 +87,7 @@ function check_groups ($a_dn,
     global $ldap_groupbase;
     global $ldap_base;
     
-    if (strlen(trim($a_uidnumber))>0) {
+    if (isset(trim($a_uidnumber))) {
         
         // posix group for this user
         $posixFilter = "(&(objectclass=posixGroup)";
@@ -130,9 +143,9 @@ function check_groups ($a_dn,
                 posix_group_check ($a_uid, $flag, $thisPosix);
             }
         }
-        if (strlen($a_PosixNew)>0) {
+        if (isset($a_PosixNew)) {
             $thisGroup = trim(strtok($a_PosixNew, ','));
-            while (strlen($thisGroup)>0) {
+            while (isset($thisGroup)) {
                 posix_group_check ($a_uid, $thisGroup, $thisGroup);
                 $thisGroup = trim(strtok(','));
             }
@@ -209,9 +222,9 @@ array_push ($fld_list, 'iphostnumber');
 $ds = ldap_connect($ldap_server);
 if (!$ds) {
     $_SESSION['s_msg'] .= "Problem connecting to the $ldap_server server";
-    $btn_add = '';
-    $btn_update = '';
-    $btn_delete = '';
+    $in_button_add = '';
+    $in_button_update = '';
+    $in_button_delete = '';
 } else {
     $ldapReturn = ldap_bind($ds, $ldap_manager, $ldap_password);
 }
@@ -222,10 +235,10 @@ require ('inc_groups.php');
 $in_uid = strtolower($in_uid);
 $thisDN = "uid=$in_uid,$ldap_computerbase";
 
-if (strlen($btn_add)>0) {
-    if (strlen($in_uid)==0) {
+if (isset($in_button_add)) {
+    if (!isset($in_uid)) {
         $_SESSION['s_msg'] .= "$warn UID is required. $ef";
-    } elseif (strlen($in_cn)==0) {
+    } elseif (!isset($in_cn)) {
         $_SESSION['s_msg'] .= "$warn Common Name is required.$ef";
     } else {
         
@@ -247,8 +260,8 @@ if (strlen($btn_add)>0) {
         
         // now add the data
         foreach ($fld_list as $fld) {
-            $name = "in_$fld"; $val = $$name;
-            if (strlen($val)>0) {
+            $val = $_REQUEST["in_$fld"];
+            if (isset($val)) {
                 $_SESSION['s_msg'] .= "$ok adding $fld = $val</font><br>";
                 $ldap_entry[$fld][] = $val;
             }
@@ -272,22 +285,22 @@ if (strlen($btn_add)>0) {
                      $inPosixGroupList,
                      $inPosixNew);
         
-        if (strlen($in_sambadomainname) > 0) {
+        if (isset($in_sambadomainname)) {
             sleep(1);
             request_pdc_update ($thisDN, $in_uid, $in_sambadomainname); 
         }
 
-        if (strlen($in_userpassword) > 0) {
+        if (isset($in_userpassword)) {
             ldap_set_password ($in_uid,'userpassword',$in_userpassword,'');
             ldap_set_password ($in_uid,'pridecredential',$in_userpassword,'');
         }
     }
     
-} elseif (strlen($btn_update)>0) {
+} elseif (isset($in_button_update)) {
     
     $ldap_filter = 'objectclass=*';
     
-    if (strlen($in_uid) == 0) {
+    if (!isset($in_uid)) {
         $_SESSION['s_msg'] .= "$warn No entry to update$ef";
         $ret_cnt = 0;
     } else {
@@ -336,12 +349,12 @@ if (strlen($btn_add)>0) {
         foreach ($fld_list as $fld) {
             if ($fld == 'objectclass') { continue; }
             
-            $tmp = 'in_' . $fld;  $val_in   = trim($$tmp) . '';
+            $val_in   = trim($_REQUEST["in_$fld"]);
             $val_ldap = trim($info[0]["$fld"][0]);
             if ( $val_in != $val_ldap ) {
                 
-                if (strlen($val_in)==0) {
-                    if (strlen($val_ldap)>0) {
+                if (!isset($val_in)) {
+                    if (isset($val_ldap)) {
                         // delete the attribute
                         $new_data["$fld"] = $val_ldap;
                         $r = @ldap_mod_del($ds, $thisDN, $new_data);
@@ -396,16 +409,16 @@ if (strlen($btn_add)>0) {
                  $inPosixGroupList,
                  $inPosixNew);
     
-    if (strlen($in_sambadomainname) > 0) {
+    if (isset($in_sambadomainname)) {
         request_pdc_update ($thisDN, $in_uid, $in_sambadomainname); 
     }
 
-    if (strlen($in_userpassword) > 0) {
+    if (isset($in_userpassword)) {
         ldap_set_password ($in_uid,'userpassword',$in_userpassword,'');
         ldap_set_password ($in_uid,'pridecredential',$in_userpassword,'');
     }
     
-} elseif (strlen($btn_delete)>0) {
+} elseif (isset($in_button_delete)) {
     
     // delete their posix group if they have one
     $del_dn = "cn=$in_uid,$ldap_groupbase";
