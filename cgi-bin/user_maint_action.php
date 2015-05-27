@@ -3,22 +3,26 @@
 // ----------------------------------------------------------
 // Register Global Fix
 //
-$in_uidnumber  = $_REQUEST['in_uidnumber'];
-$in_posix_new  = $_REQUEST['in_posix_new'];
-$in_dn  = $_REQUEST['in_dn'];
-$in_gidnumber  = $_REQUEST['in_gidnumber'];
-$in_cn_list  = $_REQUEST['in_cn_list'];
-$in_cn  = $_REQUEST['in_cn'];
-$in_cn_cnt  = $_REQUEST['in_cn_cnt'];
-$in_mailalias_cnt  = $_REQUEST['in_mailalias_cnt'];
-$in_new_cn  = $_REQUEST['in_new_cn'];
-$in_xml_data  = $_REQUEST['in_xml_data'];
-$in_new_mailalias  = $_REQUEST['in_new_mailalias'];
-$in_uid  = $_REQUEST['in_uid'];
-$in_linux_add  = $_REQUEST['in_linux_add'];
-$in_button_add = $_REQUEST['in_button_add'];
-$in_button_update = $_REQUEST['in_button_update'];
-$in_button_delete = $_REQUEST['in_button_delete'];
+$in_button_add        = $_REQUEST['in_button_add'];
+$in_button_update     = $_REQUEST['in_button_update'];
+$in_button_delete     = $_REQUEST['in_button_delete'];
+$in_posix_new         = $_REQUEST['in_posix_new'];
+$in_cn                = $_REQUEST['in_cn'];
+$in_cn_cnt            = $_REQUEST['in_cn_cnt'];
+$in_cn_list           = $_REQUEST['in_cn_list'];
+$in_dn                = $_REQUEST['in_dn'];
+$in_gidnumber         = $_REQUEST['in_gidnumber'];
+$in_linux_add         = $_REQUEST['in_linux_add'];
+$in_mailalias_cnt     = $_REQUEST['in_mailalias_cnt'];
+$in_maildelivery      = $_REQUEST['in_maildelivery'];
+$in_maildelivery_cnt  = $_REQUEST['in_maildelivery_cnt'];
+$in_maildelivery_list = $_REQUEST['in_maildelivery_list'];
+$in_new_cn            = $_REQUEST['in_new_cn'];
+$in_new_mailalias     = $_REQUEST['in_new_mailalias'];
+$in_new_maildelivery  = $_REQUEST['in_new_maildelivery'];
+$in_uid               = $_REQUEST['in_uid'];
+$in_uidnumber         = $_REQUEST['in_uidnumber'];
+$in_xml_data          = $_REQUEST['in_xml_data'];
 // ----------------------------------------------------------
 //
 // file: user_maint_action.php
@@ -204,6 +208,60 @@ function common_name_check ($a_dn, $a_flag, $a_cn) {
             } else {
                 $_SESSION['in_msg']
                     .= "$ok Common Name $a_cn added to $a_dn.$ef";
+            }
+        }
+    }
+}
+
+// --------------------------------------------------------------
+// Update mailDelivery as required
+
+function maildelivery_check ($a_dn, $a_flag, $a_maildelivery) {
+
+    global $ds, $ok, $warn, $ef;
+
+    $maildelivery_attr['maildelivery'] = $a_maildelivery;
+
+    // search for it
+    $aFilter = "(&(objectclass=person)(maildelivery=".$a_maildelivery."))";
+    $aReturn = array ('maildelivery');
+    $sr = @ldap_read ($ds, $a_dn, $aFilter, $aReturn);
+    $maildeliveryEntry = ldap_get_entries($ds, $sr);
+    $maildelivery_cnt = $maildeliveryEntry["count"];
+
+    if (strlen($a_flag)==0) {
+
+        $_SESSION['in_msg'] .= "maildelivery_cnt $maildelivery_cnt<br>\n";
+
+        // delete it if we find it
+        if ($maildelivery_cnt>0) {
+            $r = @ldap_mod_del($ds, $a_dn, $maildelivery_attr);
+            $err = ldap_errno ($ds);
+            $err_msg = ldap_error ($ds);
+            if ($err>0) {
+                $_SESSION['in_msg']
+                    .= "$warn ldap error removing $a_maildelivery "
+                    . "from $a_dn: $err - $err_msg.$ef";
+            } else {
+                $_SESSION['in_msg']
+                    .= "$ok Common Name $a_maildelivery removed "
+                    . "from $a_dn.$ef";
+            }
+        }
+
+    } else {
+        // add it if we don't have it
+        if ($maildelivery_cnt==0) {
+            $r = @ldap_mod_add($ds, $a_dn, $maildelivery_attr);
+            $err = ldap_errno ($ds);
+            $err_msg = ldap_error ($ds);
+            if ($err != 0) {
+                $_SESSION['in_msg']
+                    .= "$warn ldap error adding $a_maildelivery to $a_dn: "
+                    . "$err - $err_msg.$ef";
+            } else {
+                $_SESSION['in_msg']
+                    .= "$ok Common Name $a_maildelivery added to $a_dn.$ef";
             }
         }
     }
@@ -569,7 +627,6 @@ array_push ($fld_list, 'homedirectory');
 array_push ($fld_list, 'l');
 array_push ($fld_list, 'loginshell');
 array_push ($fld_list, 'mail');
-array_push ($fld_list, 'maildelivery');
 array_push ($fld_list, 'maildepartment');
 array_push ($fld_list, 'mobile');
 array_push ($fld_list, 'nickname');
@@ -692,13 +749,13 @@ if (isset($in_button_add)) {
                 $a_cn = strtok(',');
             }
 
-            // create mail distribution entries
-            $a_ml = strtok($inMailIDNew,',');
-            while (strlen($a_ml)>0) {
+            // create mailDelivery entries
+            $a_maildelivery = strtok($in_new_maildelivery,',');
+            while (strlen($a_maildelivery)>0) {
                 $_SESSION['in_msg']
-                    .="$ok adding mailDistributionID = $a_ml$ef";
-                $ldap_entry["maildistributionid"][] = $a_ml;
-                $a_ml = strtok(',');
+                    .="$ok adding mailDelivery = $a_maildelivery$ef";
+                $ldap_entry["mailDelivery"][] = $a_maildelivery;
+                $a_maildelivery = strtok(',');
             }
 
             // see if we need posix objectclasses
@@ -1036,6 +1093,23 @@ if (isset($in_button_add)) {
                 common_name_check ($in_dn,
                                    stripslashes($in_cn[$i]),
                                    stripslashes($in_cn_list[$i]));
+            }
+        }
+
+        // Check mailDelivery
+        if (isset($in_new_maildelivery)) {
+            $a_maildelivery
+                = stripslashes(trim(strtok($in_new_maildelivery, ',')));
+            while (strlen($a_maildelivery)>0) {
+                maildelivery_check ($in_dn, $a_maildelivery, $a_maildelivery);
+                $a_maildelivery = stripslashes(trim(strtok(',')));
+            }
+        }
+        if ($in_maildelivery_cnt>0) {
+            for ($i=0; $i<$in_maildelivery_cnt; $i++) {
+                maildelivery_check($in_dn,
+                                   stripslashes($in_maildelivery[$i]),
+                                   stripslashes($in_maildelivery_list[$i]));
             }
         }
 

@@ -1,13 +1,16 @@
-Source: macdir
+Source: macdir-simple
 Section: web
 Priority: optional
 Maintainer: Bill MacAllister <bill@ca-zephyr.org>
 Build-Depends: debhelper (>= 8)
-Standards-Version: 3.9.1
+Standards-Version: 3.9.4
 
-Package: macdir
+Package: macdir-simple
 Architecture: all
 Depends: apache2, apache2-mpm-prefork, libapache2-mod-php5
+Provides: macdir
+Conflicts: macdir
+Replaces: macdir
 Description: Directory Maintenance Web Application
  This web application is a set of scripts that are used to maintain the 
  data in a directory server that uses the MacAllister data policies.
