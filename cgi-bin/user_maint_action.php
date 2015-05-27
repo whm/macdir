@@ -3,22 +3,26 @@
 // ----------------------------------------------------------
 // Register Global Fix
 //
-$in_uidnumber  = $_REQUEST['in_uidnumber'];
-$in_posix_new  = $_REQUEST['in_posix_new'];
-$in_dn  = $_REQUEST['in_dn'];
-$in_gidnumber  = $_REQUEST['in_gidnumber'];
-$in_cn_list  = $_REQUEST['in_cn_list'];
-$in_cn  = $_REQUEST['in_cn'];
-$in_cn_cnt  = $_REQUEST['in_cn_cnt'];
-$in_mailalias_cnt  = $_REQUEST['in_mailalias_cnt'];
-$in_new_cn  = $_REQUEST['in_new_cn'];
-$in_xml_data  = $_REQUEST['in_xml_data'];
-$in_new_mailalias  = $_REQUEST['in_new_mailalias'];
-$in_uid  = $_REQUEST['in_uid'];
-$in_linux_add  = $_REQUEST['in_linux_add'];
-$in_button_add = $_REQUEST['in_button_add'];
-$in_button_update = $_REQUEST['in_button_update'];
-$in_button_delete = $_REQUEST['in_button_delete'];
+$in_button_add        = $_REQUEST['in_button_add'];
+$in_button_delete     = $_REQUEST['in_button_delete'];
+$in_button_update     = $_REQUEST['in_button_update'];
+$in_dn                = $_REQUEST['in_dn'];
+$in_cn                = $_REQUEST['in_cn'];
+$in_cn_cnt            = $_REQUEST['in_cn_cnt'];
+$in_cn_list           = $_REQUEST['in_cn_list'];
+$in_gidnumber         = $_REQUEST['in_gidnumber'];
+$in_linux_add         = $_REQUEST['in_linux_add'];
+$in_mailalias_cnt     = $_REQUEST['in_mailalias_cnt'];
+$in_maildelivery_cnt  = $_REQUEST['in_new_maildelivery_cnt'];
+$in_maildelivery_list = $_REQUEST['in_new_maildelivery_list'];
+$in_new_cn            = $_REQUEST['in_new_cn'];
+$in_new_mailalias     = $_REQUEST['in_new_mailalias'];
+$in_new_maildelivery  = $_REQUEST['in_new_maildelivery'];
+$in_posix_new         = $_REQUEST['in_posix_new'];
+$in_uid               = $_REQUEST['in_uid'];
+$in_uidnumber         = $_REQUEST['in_uidnumber'];
+$in_xml_data          = $_REQUEST['in_xml_data'];
+
 // ----------------------------------------------------------
 //
 // file: user_maint_action.php
@@ -52,66 +56,6 @@ function make_UID ($seed) {
 
     return $this_uid;
 
-}
-
-// --------------------------------------------------------------
-// mailbox_check
-
-function mailbox_check ($in_uid, $addr, $local_domain) {
-
-    global $ok;
-    global $warn;
-    global $CONF_imap_host;
-    global $imap_muser;
-    global $imap_mpass;
-
-    // Don't check a mailbox if there is none
-    if (strlen($impa_host) == 0) {return;}
-
-    $CONF_imap_host_perl = '{'.$CONF_imap_host.':143}';
-    $user_mbx = 'user/'.$in_uid;
-    $imap_mbx = $CONF_imap_host_perl.$user_mbx;
-    $acl_mbx = "user/$in_uid".'%';
-    if ( !($imapCnx = imap_open($CONF_imap_host_perl,
-                                $imap_muser,
-                                $imap_mpass,
-                                OP_HALFOPEN)) ) {
-        $_SESSION['in_msg'] .= "$warn IMAP Connection failure ("
-            . imap_last_error() . ")$ef";
-    } else {
-
-        $mbx_exists = 0;
-        $mbxList = imap_list($imapCnx, $CONF_imap_host_perl, $user_mbx);
-        if ( is_array($mbxList) ) {$mbx_exists = 1;}
-        $pat = '/@'.$local_domain.'/i';
-        if ( preg_match ($pat, $addr, $mat) ) {
-
-            if ($mbx_exists == 0) {
-                // add a mailbox
-                if ( !(imap_createmailbox($imapCnx, $imap_mbx)) ) {
-                    $_SESSION['in_msg']
-                        .= "$warn IMAP Create mailbox failure ("
-                        . imap_last_error() . ")$ef";
-                } else {
-                    $_SESSION['in_msg']
-                        .= "$ok IMAP mailbox created</font><br>";
-                }
-            }
-            imap_setacl ($imapCnx, $acl_mbx, $in_uid,     'lrswipcda');
-            imap_setacl ($imapCnx, $acl_mbx, $imap_muser, 'lrswipcda');
-
-        } else {
-
-            if ($mbx_exists > 0) {
-
-                // remove access to the mailbox
-                imap_setacl ($imapCnx, $acl_mbx, $in_uid, "");
-
-            }
-        }
-    }
-
-    imap_close($imapCnx);
 }
 
 //---------------------------------------------------------
@@ -204,6 +148,58 @@ function common_name_check ($a_dn, $a_flag, $a_cn) {
             } else {
                 $_SESSION['in_msg']
                     .= "$ok Common Name $a_cn added to $a_dn.$ef";
+            }
+        }
+    }
+}
+
+// --------------------------------------------------------------
+// Update maildelivery as required
+
+function maildelivery_check ($a_dn, $a_flag, $a_maildelivery) {
+
+    global $ds, $ok, $warn, $ef;
+
+    $maildelivery_attr['maildelivery'] = $a_maildelivery;
+
+    // search for it
+    $aFilter = "(&(objectclass=person)(maildelivery=".$a_maildelivery."))";
+    $aReturn = array ('maildelivery');
+    $sr = @ldap_read ($ds, $a_dn, $aFilter, $aReturn);
+    $maildeliveryEntry = ldap_get_entries($ds, $sr);
+    $maildelivery_cnt = $maildeliveryEntry["count"];
+
+    if (strlen($a_flag)==0) {
+
+        $_SESSION['in_msg'] .= "maildelivery_cnt $maildelivery_cnt<br>\n";
+
+        // delete it if we find it
+        if ($maildelivery_cnt>0) {
+            $r = @ldap_mod_del($macdirDS, $a_dn, $maildelivery_attr);
+            $err = ldap_errno ($macdirDS);
+            $err_msg = ldap_error ($macdirDS);
+            if ($err>0) {
+                $_SESSION['in_msg'] .= "$warn ldap error removing $a_maildelivery "
+                    . "from $a_dn: $err - $err_msg.$ef";
+            } else {
+                $_SESSION['in_msg'] .= "$ok Common Name $a_maildelivery removed "
+                    . "from $a_dn.$ef";
+            }
+        }
+
+    } else {
+        // add it if we don't have it
+        if ($maildelivery_cnt==0) {
+            $r = @ldap_mod_add($macdirDS, $a_dn, $maildelivery_attr);
+            $err = ldap_errno ($macdirDS);
+            $err_msg = ldap_error ($macdirDS);
+            if ($err != 0) {
+                $_SESSION['in_msg']
+                    .= "$warn ldap error adding $a_maildelivery to $a_dn: "
+                    . "$err - $err_msg.$ef";
+            } else {
+                $_SESSION['in_msg']
+                    .= "$ok Common Name $a_maildelivery added to $a_dn.$ef";
             }
         }
     }
@@ -569,7 +565,6 @@ array_push ($fld_list, 'homedirectory');
 array_push ($fld_list, 'l');
 array_push ($fld_list, 'loginshell');
 array_push ($fld_list, 'mail');
-array_push ($fld_list, 'maildelivery');
 array_push ($fld_list, 'maildepartment');
 array_push ($fld_list, 'mobile');
 array_push ($fld_list, 'nickname');
@@ -692,13 +687,15 @@ if (isset($in_button_add)) {
                 $a_cn = strtok(',');
             }
 
-            // create mail distribution entries
-            $a_ml = strtok($inMailIDNew,',');
-            while (strlen($a_ml)>0) {
+            // create maildelivery attributes
+            $first_maildelivery
+                = $a_maildelivery
+                = strtok($in_new_maildelivery,',');
+            while (strlen($a_maildelivery)>0) {
                 $_SESSION['in_msg']
-                    .="$ok adding mailDistributionID = $a_ml$ef";
-                $ldap_entry["maildistributionid"][] = $a_ml;
-                $a_ml = strtok(',');
+                    .= "$ok adding maildelivery = $a_maildelivery$ef";
+                $ldap_entry["maildelivery"][] = $a_maildelivery;
+                $a_maildelivery = strtok(',');
             }
 
             // see if we need posix objectclasses
@@ -822,9 +819,6 @@ if (isset($in_button_add)) {
 
         // add the kerberos principal
         kp_add($in_uid);
-
-        // create a mailbox if necessary
-        mailbox_check ($in_uid, $in_maildelivery, $CONF_mailbox_domain);
 
         // Check mailalias
         if ($in_mailalias_cnt>0) {
@@ -1039,6 +1033,23 @@ if (isset($in_button_add)) {
             }
         }
 
+        # Check maildelivery attribute
+        if (isset($in_new_maildelivery)) {
+            $a_maildelivery
+                = stripslashes(trim(strtok($in_new_maildelivery, ',')));
+            while (strlen($a_maildelivery)>0) {
+                maildelivery_check ($in_dn, $a_maildelivery, $a_maildelivery);
+                $a_maildelivery = stripslashes(trim(strtok(',')));
+            }
+        }
+        if ($in_maildelivery_cnt>0) {
+            for ($i=0; $i<$in_maildelivery_cnt; $i++) {
+                maildelivery_check ($in_dn,
+                                   stripslashes($in_maildelivery[$i]),
+                                   stripslashes($in_maildelivery_list[$i]));
+            }
+        }
+
         // check posix groups
 
         if ($in_uidnumber>0) {
@@ -1107,9 +1118,6 @@ if (isset($in_button_add)) {
                      $inAppAddList,
                      $inAppDelList);
     }
-
-    // check mailbox
-    mailbox_check ($in_uid, $in_maildelivery, $CONF_mailbox_domain);
 
     // Check PAM groups
     if (isset($tags['count']['pamgroup'])) {
@@ -1186,8 +1194,6 @@ if (isset($in_button_add)) {
         $_SESSION['in_msg'] .= "$warn ldap error deleting $in_dn: "
             . "$err - $err_msg.$ef";
     }
-
-    mailbox_check ($in_uid, "", $CONF_mailbox_domain);
 
     // delete the kerberos principal
     kp_delete($in_uid);

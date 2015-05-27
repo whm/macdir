@@ -1,3 +1,9 @@
+macdir (2.8) unstable; urgency=medium
+
+  * Allow for multiple values for the mailDelivery attribute.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Tue, 26 May 2015 23:24:58 -0700
+
 macdir (2.7) unstable; urgency=low
 
   * WebAuth bug fixes.

@@ -189,7 +189,7 @@ function set_mail () {
  t = t.replace (/\.$/g,"");
  f.in_mail.value = t + '@<?php echo $mail_domain;?>';
  t = f.in_uid.value.toLowerCase() + '@<?php echo $mailbox_domain;?>';
- f.in_maildelivery.value = t;
+ f.in_new_maildelivery.value = t;
 }
 
 // ------------------------------------
@@ -199,7 +199,7 @@ function unset_mail () {
  var i;
  f = document.user_maint;
  f.in_mail.value = '';
- f.in_maildelivery.value = '';
+ f.in_new_maildelivery.value = '';
 }
 
 /* ----------------- */
@@ -619,18 +619,44 @@ function checkIt() {
             size="40"
             name="in_new_mailalias"></td>
 </tr>
+
 <tr>
  <td align="right">Mail Delivery:</td>
-   <?php
-     $z = '';
-     if (isset($info[0]["maildelivery"][0])) {
-       $z = $info[0]["maildelivery"][0];
-     }
-   ?>
- <td colspan="5"><input type="text" size="40"
-            name="in_maildelivery" value="<?php print $z;?>"></td>
+ <td colspan="5">
+  <?php
+  if ($entry_found>0) {
+    $maildelivery_cnt = $info[0]["mailDelivery"]["count"];
+    echo "    <input type=\"hidden\"";
+    echo " name=\"in_maildelivery_cnt\"" ;
+    echo " value=\"$maildelivery_cnt\">\n";
+    for ($i=0; $i<$maildelivery_cnt; $i++) {
+      $thisCN = $info[0]["mailDelivery"][$i];
+  ?>
+     <input type="checkbox" CHECKED
+            name="in_maildelivery[<?echo $i;?>]"
+            value="<?php print $this_maildelivery;?>">
+            <?php print "$this_maildelivery\n";?>
+     <input type="hidden"
+            name="in_maildelivery_list[<?echo $i;?>]"
+            value="<?php print $this_maildelivery;?>">
+     <br>
+  <?php
+      if ($i == 0) { ?>
+      <input type="hidden"
+             name="in_first_maildelivery"
+             value="<?php print $this_maildelivery;?>">
+  <?php
+      // end of if
+      }
+    // end of for loop
+    }
+  // end of entry_found test
+  }
+?>
+     <input type="text"
+            size="40"
+            name="in_new_maildelivery"></td>
 </tr>
-
 
 <tr bgcolor="#660000">
   <td colspan="6" align="center">
