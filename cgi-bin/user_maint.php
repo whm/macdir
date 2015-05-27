@@ -650,8 +650,6 @@ function checkIt() {
             value="<?php print $this_maildelivery;?>">
      <br>
   <?php
-      // end of if
-      }
     // end of for loop
     }
   // end of entry_found test
