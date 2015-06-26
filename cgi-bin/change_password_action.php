@@ -202,7 +202,7 @@ if ( strlen($in_button_update)>0 ) {
                     ldap_set_password ($in_uid, 'ntpassword', $ntPwd);
                     ldap_set_password ($in_uid, 'sambantpassword', $ntPwd);
                 }
-                kp_pd($in_uid, $in_new_password);
+                kp_pw($in_uid, $in_new_password);
             }
         }
     }

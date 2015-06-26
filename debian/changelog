@@ -1,3 +1,9 @@
+macdir-simple (3.1) UNRELEASED; urgency=medium
+
+  * Correct function call when changing the password.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Thu, 25 Jun 2015 23:55:35 -0700
+
 macdir-simple (3.0) unstable; urgency=medium
 
   * Rename package to prevent confusion with macdir work that has
