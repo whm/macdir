@@ -13,7 +13,8 @@ $in_uid  = $_REQUEST['in_uid'];
 // Open a session and check for authorization
 require('whm_php_sessions.inc');
 require('whm_php_auth.inc');
-whm_auth("phoneadmin|ldapadmin");
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 $title = 'Contact Maintenance';
 $heading = 'Contact Maintenance';
@@ -24,8 +25,6 @@ require('inc_header.php');
 if (!isset($_SESSION['in_msg'])) {
   $_SESSION['in_msg'] = '';
 }
-
-$ds = ldap_connect($ldap_server);
 
 $ldap_filter = '';
 if (strlen($in_uid)>0) {
@@ -38,7 +37,6 @@ $entry_found = 0;
 
 if (strlen($ldap_filter)>0) {
   $return_attr = array();
-  $r=ldap_bind($ds,$ldap_manager,$ldap_password);
   $old_err = error_reporting(E_ERROR | E_PARSE);
   $sr = ldap_search ($ds, $ldap_base, $ldap_filter, $return_attr);
   $info = ldap_get_entries($ds, $sr);

@@ -3,13 +3,10 @@
 
 $title = 'PRIDE Directory Search Results';
 $heading = 'Employee Directory';
-require ('inc_header.php');
-require ('/etc/whm/macdir_auth.php');
-
-// -- disable admin access without authentication
-$pidir_manager = '';
-$pidir_password = '';
-
+require('inc_header.php');
+require('/etc/whm/macdir_auth.php');
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 ?>
 
 <!-- Main body of document -->
@@ -42,8 +39,6 @@ $filter .= ')';
 $base_dn = 'dc=whm,dc=com';
 $return_attr = array('cn','mail','telephonenumber','employeenumber');
 
-$ds = ldap_connect("ldap.whm.com");
-$r  = ldap_bind($ds,$pidir_manager,$pidir_password);
 $sr = ldap_search($ds, $base_dn, $filter, $return_attr);  
 $info = ldap_get_entries($ds, $sr);
 $ret_cnt = $info["count"];

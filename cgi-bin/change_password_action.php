@@ -151,6 +151,7 @@ $in_date_last_maint = $now;
 
 // initial directory connection and ldap base dn
 require('/etc/whm/macdir_auth.php');
+require('inc_bind.php');
 
 // set update message area
 $ok = 'color="#009900"';
@@ -162,11 +163,7 @@ if ( strlen($in_button_update)>0 ) {
     $filter = "(&(objectclass=person)";
     $filter .= "(uid=$in_uid))";
     $return_attr = array('cn','dn');
-    $ds = ldap_connect($ldap_server);
-    if (!ldap_bind($ds,'','')) {
-        $_SESSION['s_msg'] .= "<font $warn>Failure to bind anonymously to "
-            . "$ldap_server</font><br>";
-    }
+    $ds = macdir_bind($ldap_server, 'ANON');
     $sr = ldap_search($ds, $ldap_base, $filter, $return_attr);  
     $info = ldap_get_entries($ds, $sr);
     if ($info["count"] == 0) {
@@ -174,7 +171,6 @@ if ( strlen($in_button_update)>0 ) {
             .= "<font $warn>Authentication failure for $in_uid</font><br>";
     } else {
         $user_dn = $info[0]['dn'];
-        
         // attempt to bind using the old password
         if ( !@ldap_bind($ds,$user_dn,$in_old_password) ) {
             $_SESSION['s_msg'] .= "<font $warn>"
@@ -182,33 +178,24 @@ if ( strlen($in_button_update)>0 ) {
             $_SESSION['s_msg']
                 .= "<font $warn>Password not changed.</font><br>";
         } else {
-            // now bind as the admin to make the changes
-            if (!@ldap_bind($ds,$ldap_manager,$ldap_password)) {
-                $_SESSION['s_msg'] .= "<font $warn>Failure to bind to "
-                    . "$ldap_server as directory manager</font><br>";
-                $_SESSION['s_msg'] 
-                    .= "<font $warn>Password not changed.</font><br>";
-            } else {
-                ldap_set_password ($in_uid, 'userpassword', $in_new_password);
-                // Essentially disable setting samba passwords, but leave the 
-                // code here for a while.
-                if ($config['smb_passwd'] == 'yes') {
-                    $samba_cmd = "/usr/local/sbin/mkntpwd $in_new_password";
-                    $nt_lm_passwords = shell_exec($samba_cmd);
-                    $lmPwd = strtok($nt_lm_passwords,":");
-                    $ntPwd = substr(strtok(":"),0,32);
-                    # -- no LM passwords 
-                    # ldap_set_password ($in_uid, 'lmpassword', $lmPwd);
-                    ldap_set_password ($in_uid, 'ntpassword', $ntPwd);
-                    ldap_set_password ($in_uid, 'sambantpassword', $ntPwd);
-                }
-                kp_pw($in_uid, $in_new_password);
+            $ds = $macdir_bind($ldap_server, 'GSSAPI');
+            ldap_set_password ($in_uid, 'userpassword', $in_new_password);
+            // Essentially disable setting samba passwords, but leave the 
+            // code here for a while.
+            if ($config['smb_passwd'] == 'yes') {
+                $samba_cmd = "/usr/local/sbin/mkntpwd $in_new_password";
+                $nt_lm_passwords = shell_exec($samba_cmd);
+                $lmPwd = strtok($nt_lm_passwords,":");
+                $ntPwd = substr(strtok(":"),0,32);
+                # -- no LM passwords 
+                # ldap_set_password ($in_uid, 'lmpassword', $lmPwd);
+                ldap_set_password ($in_uid, 'ntpassword', $ntPwd);
+                ldap_set_password ($in_uid, 'sambantpassword', $ntPwd);
             }
+            kp_pw($in_uid, $in_new_password);
         }
     }
 }
-
-ldap_unbind($ds);
 
 header ("REFRESH: 0; URL=change_password.php?in_uid=$in_uid");
 

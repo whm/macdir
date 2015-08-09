@@ -19,7 +19,10 @@ $in_button_delete = $_REQUEST['in_button_delete'];
 session_register("in_msg");
 $_SESSION['in_msg'] = '';
 
-require ('/etc/whm/macdir_auth.php');
+require('/etc/whm/macdir_auth.php');
+require('inc_auth.php');
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 // --------------------------------------------------------------
 // Update common names as required
@@ -104,17 +107,6 @@ array_push ($fld_list, 'sn');
 array_push ($fld_list, 'st');
 array_push ($fld_list, 'telephonenumber');
 array_push ($fld_list, 'uid');
-
-require ('inc_auth.php');
-$ds = ldap_connect($ldap_server);
-if (!$ds) {
-    $_SESSION['in_msg'] .= "Problem connecting to the $ldap_server server";
-    $in_button_add = '';
-    $in_button_update = '';
-    $in_button_delete = '';
-} else {
-    $r=ldap_bind($ds,$ldap_manager,$ldap_password);
-}
 
 if (isset($in_button_add)) {
     if (!isset($in_uid)) {

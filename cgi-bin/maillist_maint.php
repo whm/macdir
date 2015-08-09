@@ -15,7 +15,6 @@ $in_localmailbox  = $_REQUEST['in_localmailbox'];
 // Open a session and check for authorization
 require('whm_php_sessions.inc');
 require('whm_php_auth.inc');
-whm_auth("email-admin|email-lists");
 
 $title = 'Mail List Maintenance';
 $heading = 'Mail List Maintenance';
@@ -23,11 +22,10 @@ require ('inc_header.php');
 
 require('/etc/whm/macdir_auth.php');
 require('inc_maillist_auth.php');
-$ldap_search_base = "ou=maillists,$ldap_base";
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
-// Bind to the directory
-$ds = ldap_connect($ldap_server);
-$r  = ldap_bind($ds,$ldap_manager,$ldap_password);
+$ldap_search_base = "ou=maillists,$ldap_base";
 
 $warn = '<font color="#cc0000">';
 $ok = '<font color="#00cc00">';

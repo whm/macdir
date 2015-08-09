@@ -64,7 +64,9 @@ function manager_check ($mgr_array) {
 $title = 'Software Applications';
 $heading = 'Software Applications';
 require('inc_header.php');
-require ('/etc/whm/macdir_auth.php');
+require('/etc/whm/macdir_auth.php');
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 // clean out the messages
 $msg = '';
@@ -83,8 +85,6 @@ $return_attr = array('cn',
                      'manageruid',
                      'memberuid');
 
-$ds = ldap_connect($ldap_server);
-$r  = ldap_bind($ds,$ldap_manager,$ldap_password);
 $sr = ldap_search($ds, $base_dn, $filter, $return_attr);  
 $info = ldap_get_entries($ds, $sr);
 $ret_cnt = $info["count"];

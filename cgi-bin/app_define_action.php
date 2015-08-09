@@ -16,7 +16,12 @@ $in_button_delete = $_REQUEST['in_button_delete'];
 // -------------------------------------------------------------
 // main routine
 
+// Open a session
+session_start();
+
 require ('/etc/whm/macdir_auth.php');
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 $_SESSION['in_msg'] = '';
 $warn = '<font color="#cc0000">';
@@ -30,16 +35,6 @@ $pride_command_processor = 'ldap-aliases@pipe.whm.com';
 // that have a simple value.
 $fld_list = array();
 array_push ($fld_list, 'description');
-
-$ds = ldap_connect($ldap_server);
-if (!$ds) {
-    $_SESSION['in_msg'] .= "Problem connecting to the $ldap_server server";
-    $in_button_add = '';
-    $in_button_update = '';
-    $in_button_delete = '';
-} else {
-    $r=ldap_bind($ds,$ldap_manager,$ldap_password);
-}
 
 if (isset($in_button_add)) {
 

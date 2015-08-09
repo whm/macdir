@@ -14,6 +14,8 @@ $in_uid = $_REQUEST['in_uid'];
 session_start();
 require('inc_config.php');
 require('/etc/whm/macdir_auth.php');
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 $title = 'MacAllister Directory Search Details';
 $heading = "A Person's Details";
@@ -32,10 +34,6 @@ function prt_row($t, $v) {
         echo '<td valign="top">'.$data_font.nl2br($v)."</td></tr>\n";
     }
 }
-
-// -- disable admin access without authentication
-$ds = ldap_connect($ldap_server);
-$r  = ldap_bind($ds, $ldap_manager, $ldap_password);
 
 $label_font = '<font face="Arial, Helvetica, sans-serif">';
 $data_font = '<font face="Times New Roman, Times, serif">';

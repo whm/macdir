@@ -33,15 +33,8 @@ array_push ($fld_list, 'linkuid');
 array_push ($fld_list, 'pridecredential');
 
 require ('/etc/whm/macdir_auth.php');
-$ds = ldap_connect($ldap_server);
-if (!$ds) {
-    $_SESSION['in_msg'] .= "Problem connecting to the $ldap_server server";
-    $in_button_add = '';
-    $in_button_update = '';
-    $in_button_delete = '';
-} else {
-  $r  = ldap_bind($ds, $ldap_manager, $ldap_password);
-}
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 $link_base = 'uid=' . $_SERVER['REMOTE_USER'] . ',' . $ldap_user_base;
 $link_filter = "(&(objectclass=pridelistobject)(cn=$in_cn))";

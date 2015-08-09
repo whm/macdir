@@ -1,3 +1,9 @@
+macdir-simple (3.2) unstable; urgency=medium
+
+  * Retire all binds to the directory that use the ldap manager password.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Sun, 09 Aug 2015 13:51:10 -0700
+
 macdir-simple (3.1) unstable; urgency=medium
 
   * Correct function call when changing the password.

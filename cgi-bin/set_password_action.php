@@ -17,8 +17,8 @@ session_start();
 
 // bind to the ldap directory
 require('/etc/whm/macdir_auth.php');
-$dirServer = ldap_connect($ldap_server);
-$ldapReturn = ldap_bind($dirServer, $ldap_manager, $ldap_password);
+require('inc_bind.php');
+$dirServer = macdir_bind($ldap_server, 'GSSAPI');
 
 // -------------------------------
 // find out if a kerberos principal exists

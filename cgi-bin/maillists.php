@@ -17,6 +17,8 @@ $heading = 'MacAllister Mail Lists';
 require('inc_header.php');
 require ('/etc/whm/macdir_auth.php');
 require ('inc_maillist_auth.php');
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 ?>
 
@@ -55,8 +57,6 @@ $return_attr = array('localmailbox',
 		     'manageruid',
 		     'description');
 
-$ds = ldap_connect($ldap_server);
-$r  = ldap_bind($ds,$ldap_manager,$ldap_password);
 $sr = ldap_search($ds, $base_dn, $filter, $return_attr);  
 $info = ldap_get_entries($ds, $sr);
 $ret_cnt = $info["count"];

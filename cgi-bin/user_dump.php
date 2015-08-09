@@ -9,13 +9,10 @@ $in_uid  = $_REQUEST['in_uid'];
 
 $title = 'MacAllister Directory Search Details';
 $heading = 'MacAllister Directory';
-require ('inc_header.php');
-require ('/etc/whm/macdir_auth.php');
-
-// -- disable admin access without authentication
-//$ldap_manager = '';
-//$ldap_password = '';
-
+require('inc_header.php');
+require('/etc/whm/macdir_auth.php');
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 ?>
 
 <!-- Main body of document -->
@@ -28,9 +25,6 @@ $base_dn = $dn;
 $filter = '(objectclass=person)';
 $dn_array = ldap_explode_dn ($dn, 1);
 $in_uid = $dn_array[0];
-
-$ds = ldap_connect($ldap_server);
-$r  = ldap_bind($ds,$ldap_manager,$ldap_password);
 
 $sr = ldap_read($ds, $base_dn, $filter);  
 if ($entry = ldap_first_entry ($ds, $sr)) {

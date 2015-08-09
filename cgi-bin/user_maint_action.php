@@ -31,6 +31,8 @@ $in_xml_data          = $_REQUEST['in_xml_data'];
 session_start();
 require('inc_config.php');
 require ('/etc/whm/macdir_auth.php');
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 // --------------------------------------------------------------
 // Find a unique UID for use Linux
@@ -642,16 +644,6 @@ array_push ($fld_list, 'title');
 array_push ($fld_list, 'uid');
 array_push ($fld_list, 'uidnumber');
 array_push ($fld_list, 'workphone');
-
-$ds = ldap_connect($ldap_server);
-if (!$ds) {
-    $_SESSION['in_msg'] .= "Problem connecting to the $ldap_server server";
-    $in_button_add = '';
-    $in_button_update = '';
-    $in_button_delete = '';
-} else {
-    $r=ldap_bind($ds,$ldap_manager,$ldap_password);
-}
 
 // get a list of pam, posix, and application groups
 require ('inc_groups.php');

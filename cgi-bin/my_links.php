@@ -20,7 +20,9 @@ session_start();
 $title = "Search My Links";
 $heading = "Search My Links";
 require('inc_header.php');
-require ('/etc/whm/macdir_auth.php');
+require('/etc/whm/macdir_auth.php');
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 # create a form to attribute mapping
 $form["commonname"]  = "cn";
@@ -163,8 +165,6 @@ $this_uid = $_SERVER['REMOTE_USER'];
 
 $link_base = "uid=${this_uid},${ldap_user_base}";
 $base_filter .= $private_filter;
-$ds = ldap_connect($ldap_server);
-$r  = ldap_bind($ds, $ldap_manager, $ldap_password);
 $thisFilter .= "(objectclass=person)";
 $thisFilter .= "(uid=".$this_uid.")";
 $thisFilter .= ")";

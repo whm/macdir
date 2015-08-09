@@ -13,7 +13,7 @@ $in_uid         = $_REQUEST['in_uid'];
 // description: This form is for updating phone information for people
 //              listed in the LDAP Directory.
 
-// Open a session and check for authorization
+// Open a session
 session_start();
 
 require('inc_config.php');
@@ -21,9 +21,10 @@ require('inc_config.php');
 $title = 'User Maintenance';
 $heading = 'User Maintenance';
 
-require ('inc_header.php');
+require('inc_header.php');
 require('/etc/whm/macdir_auth.php');
-$ds = ldap_connect($ldap_server);
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 // -----------------------------------------------------
 // get a list of pam and application groups
@@ -44,7 +45,6 @@ if (strlen($in_uid)>0) {
 if (isset($ldap_filter)) {
 
   $return_attr = array();
-  $r=ldap_bind($ds,$ldap_manager,$ldap_password);
   $old_err = error_reporting(E_ERROR | E_PARSE);
   $sr = ldap_search ($ds, $ldap_base, $ldap_filter, $return_attr);
   $info = ldap_get_entries($ds, $sr);

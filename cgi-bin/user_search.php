@@ -10,11 +10,8 @@ session_start();
 $title = 'Search for a Person';
 $heading = 'MacAllister Directory';
 require('inc_header.php');
-require ('/etc/whm/macdir_auth.php');
-
-// -- disable admin access without authentication
-$ldap_manager = '';
-$ldap_password = '';
+require('/etc/whm/macdir_auth.php');
+require('inc_bind.php');
 
 // clean out the messages
 $msg = '';
@@ -48,7 +45,7 @@ $form["maildistributionid"] = "maildistributionid";
 // construct the filter from input data
 $base_filter = '';
 foreach ($form as $formName => $ldapName) {
-  $name = "in_$formName"; 
+  $name = "in_$formName";
   if (isset($_REQUEST[$name])) {
     $a_val = $_REQUEST[$name];
     if (strlen($a_val)>0) {$base_filter .= "($ldapName=*$a_val*)";}
@@ -73,7 +70,7 @@ if ( ! isset($base_filter) ) {
 
   // reset session information from the input data
   foreach ($form as $formName => $ldapName) {
-    $name = "in_$formName"; 
+    $name = "in_$formName";
     $sessName = "SEAR_$formName";
     if (isset($$name)) {
       $_SESSION[$sessName] = $$name;
@@ -87,147 +84,147 @@ if ( ! isset($base_filter) ) {
 ?>
 
 To search for an somone just enter some or all of the data requested
-below.  If there is more than one match you will be presented with a 
-list to select from.  If your selection is too broad you will be presented 
-with only a partial list of matches. Anything that you enter into 
-a field is treated as a wild card. For example entering &quot;ill&quot; 
+below.  If there is more than one match you will be presented with a
+list to select from.  If your selection is too broad you will be presented
+with only a partial list of matches. Anything that you enter into
+a field is treated as a wild card. For example entering &quot;ill&quot;
 for the first name will return matches for Bill and William.
 
 <p>
 <div align="center">
 <form action="user_search.php">
 <table border="0">
-  <tr> 
-    <td> 
+  <tr>
+    <td>
       <div align="right">First Name:</div>
     </td>
-    <td> 
-      <input type="text" 
-             name="in_firstname" 
+    <td>
+      <input type="text"
+             name="in_firstname"
              value="<?php print $_SESSION['SEAR_firstname'];?>"
              size="32">
     </td>
   </tr>
-  <tr> 
-    <td> 
+  <tr>
+    <td>
       <div align="right">Last Name:</div>
     </td>
-    <td> 
-      <input type="text" 
-             name="in_lastname" 
+    <td>
+      <input type="text"
+             name="in_lastname"
              value="<?php print $_SESSION['SEAR_lastname'];?>"
              size="32">
     </td>
   </tr>
 <? if ($in_more_search == 'yes') { ?>
-  <tr> 
-    <td> 
+  <tr>
+    <td>
       <div align="right">Title:</div>
     </td>
-    <td> 
-      <input type="text" 
-             name="in_title" 
+    <td>
+      <input type="text"
+             name="in_title"
              value="<?php print $_SESSION['SEAR_title'];?>"
              size="32">
     </td>
   </tr>
 <?php } ?>
-  <tr> 
-    <td> 
+  <tr>
+    <td>
       <div align="right">Common Name:</div>
     </td>
-    <td> 
-      <input type="text" 
-             name="in_commonname" 
+    <td>
+      <input type="text"
+             name="in_commonname"
              value="<?php print $_SESSION['SEAR_commonname'];?>"
              size="32">
     </td>
   </tr>
 <? if ($in_more_search == 'yes') { ?>
-  <tr> 
-    <td> 
+  <tr>
+    <td>
       <div align="right">Postal Address:</div>
     </td>
-    <td> 
-      <input type="text" 
-             name="in_postaladdress" 
+    <td>
+      <input type="text"
+             name="in_postaladdress"
              value="<?php print $_SESSION['SEAR_postaladdress'];?>"
              size="32">
     </td>
   </tr>
-  <tr> 
-    <td> 
+  <tr>
+    <td>
       <div align="right">City:</div>
     </td>
-    <td> 
-      <input type="text" 
-             name="in_city" 
+    <td>
+      <input type="text"
+             name="in_city"
              value="<?php print $_SESSION['SEAR_city'];?>"
              size="32">
     </td>
   </tr>
-  <tr> 
-    <td> 
+  <tr>
+    <td>
       <div align="right">State:</div>
     </td>
-    <td> 
-      <input type="text" 
-             name="in_state" 
+    <td>
+      <input type="text"
+             name="in_state"
              value="<?php print $_SESSION['SEAR_state'];?>"
              size="32">
     </td>
   </tr>
-  <tr> 
-    <td> 
+  <tr>
+    <td>
       <div align="right">Telephone Number:</div>
     </td>
-    <td> 
-      <input type="text" 
-             name="in_telephone_number" 
+    <td>
+      <input type="text"
+             name="in_telephone_number"
              value="<?php print $_SESSION['SEAR_telephone_number'];?>"
              size="32">
     </td>
   </tr>
-  <tr> 
-    <td> 
+  <tr>
+    <td>
       <div align="right">Work Telephone Number:</div>
     </td>
-    <td> 
-      <input type="text" 
-             name="in_workphone" 
+    <td>
+      <input type="text"
+             name="in_workphone"
              value="<?php print $_SESSION['SEAR_workphone'];?>"
              size="32">
     </td>
   </tr>
-  <tr> 
-    <td> 
+  <tr>
+    <td>
       <div align="right">Cell Phone Number:</div>
     </td>
-    <td> 
-      <input type="text" 
-             name="in_cell_number" 
+    <td>
+      <input type="text"
+             name="in_cell_number"
              value="<?php print $_SESSION['SEAR_cell_number'];?>"
              size="32">
     </td>
   </tr>
-  <tr> 
-    <td> 
+  <tr>
+    <td>
       <div align="right">eMail:</div>
     </td>
-    <td> 
-      <input type="text" 
-             name="in_email" 
+    <td>
+      <input type="text"
+             name="in_email"
              value="<?php print $_SESSION['SEAR_email'];?>"
              size="32">
     </td>
   </tr>
-  <tr> 
-    <td> 
+  <tr>
+    <td>
       <div align="right">Mail Distribution List:</div>
     </td>
-    <td> 
-      <input type="text" 
-             name="in_maildistributionid" 
+    <td>
+      <input type="text"
+             name="in_maildistributionid"
              value="<?php print $_SESSION['SEAR_maildistributionid'];?>"
              size="32">
     </td>
@@ -258,10 +255,13 @@ if ( isset($base_filter) && strlen($base_filter)>0) {
                        'telephonenumber',
                        'workphone',
                        'uid');
+  if (isset($_SERVER['REMOTE_USER'])) {
+      $ds = macdir_bind($ldap_server, 'GSSAPI');
+  } else {
+      $ds = macdir_bind($ldap_server);
+  }
 
-  $ds = ldap_connect($ldap_server);
-  $r  = ldap_bind($ds,$ldap_manager,$ldap_password);
-  $sr = ldap_search($ds, $base_dn, $filter, $return_attr);  
+  $sr = ldap_search($ds, $base_dn, $filter, $return_attr);
   $info = ldap_get_entries($ds, $sr);
   $ret_cnt = $info["count"];
   if ($ret_cnt) {
@@ -286,17 +286,17 @@ if ( isset($base_filter) && strlen($base_filter)>0) {
       $a_maint_link = '';
       if ($ldap_admin>0) {
         $a_maint_link = '<a href="user_maint.php'
-                      . '?in_uid=' . $a_uid
-                      . '"><img src="/macdir-images/icon-edit.png" border="0"></a>';
+            . '?in_uid=' . $a_uid
+            . '"><img src="/macdir-images/icon-edit.png" border="0"></a>';
       } elseif ($phone_admin>0) {
         $a_maint_link = '<a href="phone_maintenance.php'
-                      . '?in_uid=' . $a_uid
-                      . '"><img src="/macdir-images/icon-edit.png" border="0"></a>';
+            . '?in_uid=' . $a_uid
+            . '"><img src="/macdir-images/icon-edit.png" border="0"></a>';
       }
       $detail_link = '';
       if (isset($menuLoggedIn)) {
-        $detail_link = "<a href=\"user_details.php?in_dn=$a_dn_url\">"
-             . '<img src="/macdir-images/icon-view-details.png" border="0"</a>';
+          $detail_link = "<a href=\"user_details.php?in_dn=$a_dn_url\">"
+              . '<img src="/macdir-images/icon-view-details.png" border="0"</a>';
       }
       echo "<tr>\n";
       echo " <td>$a_maint_link$detail_link&nbsp;$a_cn</td>\n";
@@ -318,15 +318,15 @@ if ( isset($base_filter) && strlen($base_filter)>0) {
 }
 ?>
 <p>
-<?php 
+<?php
 if (isset($_SERVER['REMOTE_USER'])) {
-    if ($in_more_search == 'yes') { 
+    if ($in_more_search == 'yes') {
         print '<a href="' . $_SERVER['PHP_SELF'] . '?in_more_search=no">';
         print "Display Less Search Criteria</a>\n";
     } else {
         print '<a href="' . $_SERVER['PHP_SELF'] . '?in_more_search=yes">';
         print "Display More Search Criteria</a>\n";
-    } 
+    }
 }
 ?>
 <p>
@@ -334,4 +334,3 @@ if (isset($_SERVER['REMOTE_USER'])) {
 </div>
 
 <?php require('inc_footer.php');?>
-

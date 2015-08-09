@@ -5,6 +5,8 @@
 
 // get ldap information
 require('/etc/whm/macdir_auth.php');
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 $return_attr[] = 'cn';
 $return_attr[] = 'uid';
@@ -14,8 +16,6 @@ $filter .= '(objectclass=person)';
 $filter .= '(mail=*)';
 $filter .= ')';
 
-$ds = ldap_connect($ldap_server);
-$r  = ldap_bind($ds,"","");
 $sr = ldap_search($ds, $ldap_base, $filter, $return_attr);  
 $info = ldap_get_entries($ds, $sr);
 $ret_cnt = $info["count"];

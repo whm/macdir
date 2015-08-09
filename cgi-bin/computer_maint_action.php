@@ -18,6 +18,8 @@ $in_button_delete = $_REQUEST['in_button_delete'];
 require('/etc/whm/macdir_auth.php');
 require('inc_util.php');
 require ('inc_pwset.php');
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 // --------------------------------------------------------------
 // Check to make sure a uid is either in the specified posix 
@@ -217,17 +219,6 @@ array_push ($fld_list, 'comments');
 array_push ($fld_list, 'objectclass');
 array_push ($fld_list, 'macaddress');
 array_push ($fld_list, 'iphostnumber');
-
-// bind to the ldap directory
-$ds = ldap_connect($ldap_server);
-if (!$ds) {
-    $_SESSION['s_msg'] .= "Problem connecting to the $ldap_server server";
-    $in_button_add = '';
-    $in_button_update = '';
-    $in_button_delete = '';
-} else {
-    $ldapReturn = ldap_bind($ds, $ldap_manager, $ldap_password);
-}
 
 // get a list of pam, posix, and application groups
 require ('inc_groups.php');

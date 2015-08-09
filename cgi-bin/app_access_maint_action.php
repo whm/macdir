@@ -17,12 +17,12 @@ $in_button_delete = $_REQUEST['in_button_delete'];
 // file: app_access_maint_action.php
 // author: Bill MacAllister
 
-// Open a session and check for authorization
-require('whm_php_sessions.inc');
-require('whm_php_auth.inc');
-whm_auth("user");
+// Open a session
+session_start();
 
-require ('/etc/whm/macdir_auth.php');
+require('/etc/whm/macdir_auth.php');
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 // -------------------------------
 // update the passwords stored in the ldap directory
@@ -301,16 +301,6 @@ if (!isset($in_employeenumber)) {
     array_push ($fld_list, 'telephonenumber');
     array_push ($fld_list, 'title');
     array_push ($fld_list, 'uid');
-}
-
-$ds = ldap_connect($ldap_server);
-if (!$ds) {
-    $_SESSION['in_msg'] .= "Problem connecting to the $ldap_server server";
-    $in_button_add = '';
-    $in_button_update = '';
-    $in_button_delete = '';
-} else {
-    $r=ldap_bind($ds,$ldap_manager,$ldap_password);
 }
 
 // get a list application groups to be managed

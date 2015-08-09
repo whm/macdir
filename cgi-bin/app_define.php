@@ -12,17 +12,16 @@ $in_cn  = $_REQUEST['in_cn'];
 // description: This form is for creating application access control
 //              structures.
 
-// Open a session and check for authorization
-require('whm_php_sessions.inc');
-require('whm_php_auth.inc');
-whm_auth("ldapadmin");
+// Open a session
+session_start();
 
 $title = 'Application Definition';
 $heading = 'Application Definition';
 
-require ('inc_header.php');
+require('inc_header.php');
 require('/etc/whm/macdir_auth.php');
-$ds = ldap_connect($ldap_server);
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 $app_base = 'ou=applications,'.$ldap_base;
 
@@ -44,7 +43,6 @@ if (strlen($in_cn)>0) {
 if (strlen($ldap_filter)>0) {
 
   $return_attr = array();
-  $r=ldap_bind($ds,$ldap_manager,$ldap_password);
   $sr = @ldap_search ($ds, $app_base, $ldap_filter, $return_attr);
   $info = @ldap_get_entries($ds, $sr);
   $ret_cnt = $info["count"];

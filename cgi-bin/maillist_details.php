@@ -15,14 +15,12 @@ $in_localmailbox  = $_REQUEST['in_localmailbox'];
 $title = 'Mail List Details';
 $heading = "Mail List Details";
 require('inc_header.php');
-require ('/etc/whm/macdir_auth.php');
+require('/etc/whm/macdir_auth.php');
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 // clean out the messages
 $msg = '';
-
-// Bind to the directory
-$ds = ldap_connect($ldap_server);
-$r  = ldap_bind($ds,$ldap_manager,$ldap_password);
 
 // mail list array
 $ml_mail = array();

@@ -8,17 +8,14 @@
 // Open a session and check for authorization
 require('whm_php_sessions.inc');
 require('whm_php_auth.inc');
-whm_auth("ldapadmin");
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 $title = 'Computers';
 $heading = 'Computers';
 
 require ('inc_header.php');
 require('/etc/whm/macdir_auth.php');
-
-// bind to the ldap directory
-$dirServer = ldap_connect($ldap_server);
-$r=ldap_bind($dirServer,$ldap_manager,$ldap_password);
 
 //-------------------------------------------------------------
 // Start of main processing for the page

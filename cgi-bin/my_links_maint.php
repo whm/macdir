@@ -14,10 +14,10 @@ session_start();
 $title = 'Link Maintenance';
 $heading = 'Link Maintenance';
 
-require ('inc_header.php');
+require('inc_header.php');
 require('/etc/whm/macdir_auth.php');
-$ds = ldap_connect($ldap_server);
-$r  = ldap_bind($ds, $ldap_manager, $ldap_password);
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 if (isset($in_cn)) {
     

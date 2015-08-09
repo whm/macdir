@@ -25,16 +25,10 @@ $in_button_delete = $_REQUEST['in_button_delete'];
 
 require ('/etc/whm/macdir_auth.php');
 require('inc_maillist_auth.php');
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
+
 $ldap_ml_base = "ou=maillists,$ldap_base";
-$ds = ldap_connect($ldap_server);
-if (!$ds) {
-    $_SESSION['in_msg'] .= "Problem connecting to the $ldap_server server";
-    $in_button_add = '';
-    $in_button_update = '';
-    $in_button_delete = '';
-} else {
-    $r=ldap_bind($ds,$ldap_manager,$ldap_password);
-}
 
 // --------------------------------------------------------------
 // Make sure the uid exists

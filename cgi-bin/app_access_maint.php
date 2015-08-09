@@ -22,7 +22,8 @@ $heading = 'Application Access Maintenance';
 
 require ('inc_header.php');
 require('/etc/whm/macdir_auth.php');
-$ds = ldap_connect($ldap_server);
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 // -----------------------------------------------------
 // get a list of application groups to be managed
@@ -50,7 +51,6 @@ if (strlen($in_employeenumber)>0) {
 if (strlen($ldap_filter)>0) {
 
   $return_attr = array();
-  $r=ldap_bind($ds,$pidir_manager,$pidir_password);
   $old_err = error_reporting(E_ERROR | E_PARSE);
   $sr = ldap_search ($ds, $pidir_base, $ldap_filter, $return_attr);
   $info = ldap_get_entries($ds, $sr);

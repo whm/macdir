@@ -15,17 +15,14 @@ $in_uid  = $_REQUEST['in_uid'];
 // Open a session and check for authorization
 require('whm_php_sessions.inc');
 require('whm_php_auth.inc');
-whm_auth("ldapadmin");
+require('inc_bind.php');
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 $title = 'SMB Computer Maintenance';
 $heading = 'SMB Computer Maintenance';
 
 require ('inc_header.php');
 require('/etc/whm/macdir_auth.php');
-
-// bind to the ldap directory
-$ds = ldap_connect($ldap_server);
-$ldapReturn = ldap_bind($ds,$ldap_manager,$ldap_password);
 
 // -- make a zulu time readable
 function format_zulutime($in) {
