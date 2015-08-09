@@ -1,8 +1,10 @@
-macdir-simple (3.1) UNRELEASED; urgency=medium
+macdir-simple (3.1) unstable; urgency=medium
 
   * Correct function call when changing the password.
-
- -- Bill MacAllister <bill@ca-zephyr.org>  Thu, 25 Jun 2015 23:55:35 -0700
+  * Add ldap-test to make it easy to test basic kerberos connections
+    to the ldap server.
+    
+ -- Bill MacAllister <bill@ca-zephyr.org>  Sat, 08 Aug 2015 16:55:48 -0700
 
 macdir-simple (3.0) unstable; urgency=medium
 
