@@ -349,16 +349,16 @@ function checkIt() {
       action="user_maint_action.php"
       onsubmit="return checkIt()">
 
-<input type="hidden" name="in_uid"
-       value="<?php print $thisUID;?>">
-<input type="hidden" name="in_dn"
-       value="<?php print $thisDN;?>">
 <table border="1" cellpadding="2">
 <?php
   if ($entry_found) {
     $pwd_href = 'set_password.php?in_uid='.$thisUID;
 ?>
 <tr>
+  <input type="hidden" name="in_uid"
+         value="<?php print $thisUID;?>">
+  <input type="hidden" name="in_dn"
+         value="<?php print $thisDN;?>">
   <td align="right">Computer UID:</td>
   <td colspan="5">
     <table border="0" width="100%">
