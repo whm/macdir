@@ -32,7 +32,7 @@ array_push ($fld_list, 'prideurlprivate');
 array_push ($fld_list, 'linkuid');
 array_push ($fld_list, 'pridecredential');
 
-require ('/etc/whm/macdir_auth.php');
+require ('/etc/whm/macdir.php');
 require('inc_bind.php');
 $ds = macdir_bind($ldap_server, 'GSSAPI');
 

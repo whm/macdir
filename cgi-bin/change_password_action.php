@@ -150,7 +150,7 @@ $now = date ('Y-m-d H:i:s');
 $in_date_last_maint = $now;
 
 // initial directory connection and ldap base dn
-require('/etc/whm/macdir_auth.php');
+require('/etc/whm/macdir.php');
 require('inc_bind.php');
 
 // set update message area

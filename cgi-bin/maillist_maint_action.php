@@ -23,7 +23,7 @@ $in_button_delete = $_REQUEST['in_button_delete'];
 // file: maillist_maint_action.php
 // author: Bill MacAllister
 
-require ('/etc/whm/macdir_auth.php');
+require ('/etc/whm/macdir.php');
 require('inc_maillist_auth.php');
 require('inc_bind.php');
 $ds = macdir_bind($ldap_server, 'GSSAPI');

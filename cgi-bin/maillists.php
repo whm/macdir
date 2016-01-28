@@ -15,7 +15,7 @@ $in_listid  = $_REQUEST['in_listid'];
 $title = 'Search for a Mail Distribution List';
 $heading = 'MacAllister Mail Lists';
 require('inc_header.php');
-require ('/etc/whm/macdir_auth.php');
+require ('/etc/whm/macdir.php');
 require ('inc_maillist_auth.php');
 require('inc_bind.php');
 $ds = macdir_bind($ldap_server, 'GSSAPI');

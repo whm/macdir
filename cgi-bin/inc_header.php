@@ -1,6 +1,6 @@
 <?php
-$page_dir = dirname($SCRIPT_NAME);
-$page_name = substr($SCRIPT_NAME,strlen($page_dir));
+$page_dir = dirname($_SERVER['SCRIPT_FILENAME']);
+$page_name = substr($_SERVER['SCRIPT_FILENAME'], strlen($page_dir));
 $page_root = strtok($page_name,'.');
 if (substr($page_root,0,1)=='/') {$page_root = substr($page_root,1);}
 

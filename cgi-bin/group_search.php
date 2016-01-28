@@ -10,7 +10,7 @@ session_start();
 $title = 'MacAllister Directory Groups';
 $heading = 'MacAllister Directory Groups';
 require('inc_header.php');
-require('/etc/whm/macdir_auth.php');
+require('/etc/whm/macdir.php');
 require('inc_bind.php');
 
 // Bail out immediately is user is not logged in.  They should
@@ -19,6 +19,9 @@ if (! isset($_SERVER['REMOTE_USER'])) {
     header ("REFRESH: 0; URL=/");
     exit;
 }
+
+// Bind to the directory
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 // clean out the messages
 $msg = '';
@@ -35,7 +38,7 @@ foreach ($form as $attr => $title) {
   $name = "in_$attr";
   if (isset($_REQUEST[$name])) {
     $a_val = $_REQUEST[$name];
-    if (strlen($a_val)>0) {$base_filter .= "($ldapName=$a_val)";}
+    if (strlen($a_val)>0) {$base_filter .= "($attr=$a_val)";}
   }
 }
 
@@ -119,23 +122,27 @@ if ( isset($base_filter) && strlen($base_filter)>0) {
                 foreach ($form as $attr => $title) {
                     print " <th>$title</th>\n";
                 }
-                echo "</tr>\n";
-                $a_val = '';
-                foreach ($form as $attr => $title) {
-                    if ($attr == 'cn') {
-                      $a_val =
-                          '<a href="group_maintenance.php'
-                          . '?in_uid=' . $attr
-                          . '">' . $info[$i][$attr];
-                    } else {
-                        $a_val = $info[$i][$attr];
-                    }
-                    print "<tr>\n";
-                    print " <td>$title</td>\n";
-                    print " <td>$a_val</td>\n";
-                    print "</tr>\n";
-                }
+                print "</tr>\n";
             }
+            print "<tr>\n";
+            foreach ($form as $attr => $title) {
+                print ' <td>';
+                $a_val = '';
+                $sep = '';
+                for ($a=0; $a<$info[$i][$attr]["count"]; $a++) {
+                    $a_val .= $info[$i][$attr][$a];
+                    $sep = "<br>\n";
+                }
+                if ($attr == 'cn') {
+                    $a_val =
+                        '<a href="group_maintenance.php'
+                        . '?in_cn=' . $a_val
+                        . '">' . $a_val;
+                }
+                print $a_val;
+                print "</td>\n";
+            }
+            print "</tr>\n";
         }
         if ($header_set > 0) {
             print "</table>\n";

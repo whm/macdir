@@ -31,7 +31,7 @@ function prt ($fld) {
 $title = 'Password Change';
 $heading = 'Password Change';
 require ('inc_header.php');
-require('/etc/whm/macdir_auth.php');
+require('/etc/whm/macdir.php');
 
 ?>
 

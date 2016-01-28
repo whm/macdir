@@ -10,7 +10,7 @@ session_start();
 $title = 'Search for a Person';
 $heading = 'MacAllister Directory';
 require('inc_header.php');
-require('/etc/whm/macdir_auth.php');
+require('/etc/whm/macdir.php');
 require('inc_bind.php');
 
 // clean out the messages
@@ -45,40 +45,39 @@ $form["maildistributionid"] = "maildistributionid";
 // construct the filter from input data
 $base_filter = '';
 foreach ($form as $formName => $ldapName) {
-  $name = "in_$formName";
-  if (isset($_REQUEST[$name])) {
-    $a_val = $_REQUEST[$name];
-    if (strlen($a_val)>0) {$base_filter .= "($ldapName=*$a_val*)";}
-  }
+    $name = "in_$formName";
+    if (isset($_REQUEST[$name])) {
+        $a_val = $_REQUEST[$name];
+        if (strlen($a_val)>0) {$base_filter .= "($ldapName=*$a_val*)";}
+    }
 }
 
 if ( ! isset($base_filter) ) {
 
-  // construct a filter from session information if there
-  // is no input data
-  foreach ($form as $formName => $ldapName) {
-    $sessName = "SEAR_$formName";
-    if ( isset($_SESSION[$sessName]) ) {
-        $a_val = $_SESSION[$sessName];
-        if ( strlen($a_val) > 0 ) {
-            $base_filter .= "($ldapName=*$a_val*)";
+    // construct a filter from session information if there
+    // is no input data
+    foreach ($form as $formName => $ldapName) {
+        $sessName = "SEAR_$formName";
+        if ( isset($_SESSION[$sessName]) ) {
+            $a_val = $_SESSION[$sessName];
+            if ( strlen($a_val) > 0 ) {
+                $base_filter .= "($ldapName=*$a_val*)";
+            }
         }
     }
-  }
 
 } else {
 
-  // reset session information from the input data
-  foreach ($form as $formName => $ldapName) {
-    $name = "in_$formName";
-    $sessName = "SEAR_$formName";
-    if (isset($$name)) {
-      $_SESSION[$sessName] = $$name;
-    } else {
-      $_SESSION[$sessName] = '';
+    // reset session information from the input data
+    foreach ($form as $formName => $ldapName) {
+        $name = "in_$formName";
+        $sessName = "SEAR_$formName";
+        if (isset($$name)) {
+            $_SESSION[$sessName] = $$name;
+        } else {
+            $_SESSION[$sessName] = '';
+        }
     }
-  }
-
 }
 
 ?>
@@ -116,7 +115,7 @@ for the first name will return matches for Bill and William.
              size="32">
     </td>
   </tr>
-<? if ($in_more_search == 'yes') { ?>
+<?php if ($in_more_search == 'yes') { ?>
   <tr>
     <td>
       <div align="right">Title:</div>
@@ -140,7 +139,7 @@ for the first name will return matches for Bill and William.
              size="32">
     </td>
   </tr>
-<? if ($in_more_search == 'yes') { ?>
+<?php if ($in_more_search == 'yes') { ?>
   <tr>
     <td>
       <div align="right">Postal Address:</div>

@@ -4,7 +4,7 @@
 // Author: Bill MacAllister
 
 // get ldap information
-require('/etc/whm/macdir_auth.php');
+require('/etc/whm/macdir.php');
 require('inc_bind.php');
 $ds = macdir_bind($ldap_server, 'GSSAPI');
 

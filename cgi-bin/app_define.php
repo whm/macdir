@@ -19,7 +19,7 @@ $title = 'Application Definition';
 $heading = 'Application Definition';
 
 require('inc_header.php');
-require('/etc/whm/macdir_auth.php');
+require('/etc/whm/macdir.php');
 require('inc_bind.php');
 $ds = macdir_bind($ldap_server, 'GSSAPI');
 

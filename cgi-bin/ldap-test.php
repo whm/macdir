@@ -3,7 +3,7 @@
 
 # The auth credentials are not used that are in this file.  The only
 # think that is use is the ldap server and the ldap base.
-require('/etc/whm/macdir_auth.php');
+require('/etc/whm/macdir.php');
 
 $thisUser = $_SERVER['REMOTE_USER'];
 $thisServer = $ldap_server;

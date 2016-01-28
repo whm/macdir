@@ -30,7 +30,7 @@ $in_xml_data          = $_REQUEST['in_xml_data'];
 
 session_start();
 require('inc_config.php');
-require ('/etc/whm/macdir_auth.php');
+require ('/etc/whm/macdir.php');
 require('inc_bind.php');
 $ds = macdir_bind($ldap_server, 'GSSAPI');
 

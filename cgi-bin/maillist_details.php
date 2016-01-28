@@ -15,7 +15,7 @@ $in_localmailbox  = $_REQUEST['in_localmailbox'];
 $title = 'Mail List Details';
 $heading = "Mail List Details";
 require('inc_header.php');
-require('/etc/whm/macdir_auth.php');
+require('/etc/whm/macdir.php');
 require('inc_bind.php');
 $ds = macdir_bind($ldap_server, 'GSSAPI');
 
