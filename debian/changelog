@@ -1,3 +1,11 @@
+macdir-simple (3.3) unstable; urgency=medium
+
+  * Add in group search scripts.
+  * Remove pam_groups support.
+  * Remove samba computer support.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Wed, 27 Jan 2016 18:01:49 -0800
+
 macdir-simple (3.2) unstable; urgency=medium
 
   * Retire all binds to the directory that use the ldap manager password.

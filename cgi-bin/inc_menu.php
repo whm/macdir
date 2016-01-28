@@ -22,6 +22,9 @@ $menuItem['my_links.php'] = array('title' => 'My Links',
 $menuItem['my_links_maint.php'] = array('title' => 'Links Maint',
                                         'login' => 'user');
 
+$menuItem['apps.php'] = array ('title' => 'Groups',
+                               'login' => 'admin');
+
 $menuItem['apps.php'] = array ('title' => 'Apps',
                                'login' => 'admin');
 

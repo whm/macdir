@@ -88,26 +88,6 @@ if (isset($ldap_filter)) {
     }
     asort ($thisPosix);
 
-    // pam groups for this user
-    $pamFilter = "(&(objectclass=pamGroup)(memberDN=$thisDN))";
-    $pamReturn = array ('cn','description');
-    $old_err = error_reporting(E_ERROR | E_PARSE);
-    $sr = ldap_search ($ds, $ldap_groupbase, $pamFilter, $pamReturn);
-    $thisPamEntries = ldap_get_entries($ds, $sr);
-    $tmp_err = error_reporting($old_err);
-    $thisPam_cnt = $thisPamEntries["count"];
-    $thisPam = array();
-    for ($gi=0; $gi<$thisPam_cnt; $gi++) {
-      $z = '';
-      if (isset($thisPamEntries[$gi]['description'][0])) {
-        $z = $thisPamEntries[$gi]['description'][0];
-      }
-      $a_cn = $thisPamEntries[$gi]['cn'][0];
-      $a_description  = $z;
-      $thisPam[$a_cn] = $a_description;
-    }
-    asort($thisPam);
-
     // application groups for this user
     $aFilter = "(&(objectclass=prideApplication)(memberUid=$thisUID))";
     $aRetAttrs = array ('cn','description');
@@ -272,33 +252,6 @@ function checkIt() {
       return false;
     }
   }
-
-  /* pam group checks */
-  var pam_cnt = 0;
-  if (f.in_pam.length > 1) {
-    for (i=0; i<f.in_pam.length; i++) {
-      outData += "<pamgroup>";
-      outData += "<text>"+f.in_pam[i].value+"</text>";
-      if (f.in_pam[i].checked) {
-          outData += "<checked>Y</checked>";
-          pam_cnt++;
-      } else {
-          outData += "<checked>N</checked>";
-      }
-      outData += "</pamgroup>";
-    }
-  } else if (f.in_pam.value != EmptyField) {
-    outData += "<pamgroup>";
-    outData += "<text>"+f.in_pam.value+"</text>";
-    if (f.in_pam.checked) {
-      outData += "<checked>Y</checked>";
-      pam_cnt++;
-    } else {
-      outData += "<checked>N</checked>";
-    }
-    outData += "</pamgroup>";
-  }
-
   /* posix group checks */
   var posix_cnt = 0;
   if (f.in_posix.length > 1) {
@@ -741,195 +694,25 @@ function checkIt() {
             name="in_loginshell" value="/bin/ksh">Korn Shell
 </tr>
 <tr>
- <td align="right">Computer Access:</td>
- <td colspan="5">
-<?php
-  $br = '';
-  if ($pam_group_cnt>0) {
-    foreach ($pam_groups as $a_cn => $a_description) {
-      print $br;
-      $chk = '';
-      if (strlen($thisPam["$a_cn"])>0) {
-          $chk = 'CHECKED';
-      }
-?>
-     <input type="checkbox" <?php print $chk;?>
-            name="in_pam"
-            value="<?php print $a_cn;?>"><?php print "$a_description\n";?>
-<?php
-      $br = "      <br>\n";
-    }
-  }
-?>
- </td>
-</tr>
-<tr>
- <td align="right">Computer Groups:</td>
+ <td align="right">Groups:</td>
  <td colspan="5">
 <?php
 
 $br = '';
 $posix_display = array();
 $posix_checked = array();
-if (count($fs_groups)>0) {
-  foreach ($fs_groups as $group => $description) {
-    $posix_display[$group] = $description;
-    $posix_checked[$group] = '';
-  }
-}
 if (count($thisPosix)>0) {
   foreach ($thisPosix as $group => $description) {
     $posix_display[$group] = $description;
     $posix_checked[$group] = 'CHECKED';
   }
 }
-if (count($posix_display)>0) {
-  foreach ($posix_display as $group => $group_description) {
-    print $br;
-?>
-     <input type="checkbox" <?php echo $posix_checked[$group]; ?>
-            name="in_posix"
-            value="<?php print $group;?>"><?php print $group_description;?>
-<?php
-    $br = "      <br>\n";
-  }
-}
-print $br;
-
 ?>
  <input type="text"
         name="in_posix_new">
  </td>
 </tr>
-<?php
-# ---------------------------------------------------------------------
-# Samba LDAP maintenance
-# ---------------------------------------------------------------------
-if ($CONF_use_samba) {
-?>
 
-<tr bgcolor="#660000">
-  <td colspan="6" align="center">
-   <font color="#FFFFFF"><b>Samba Access</b></font>
-  </td>
-</tr>
-<?php if (strlen($info[0]["sambasid"][0]) > 0) {?>
-<tr>
- <td align="right">Delete Samba Access:</td>
- <td>
-   <input name="in_samba_delete"
-          type="checkbox"
-          value="Y">
- </td>
- <td colspan="4">
-  Samba SID:<?php print $info[0]["sambasid"][0];?>
- </td>
-</tr>
-<?php } else { ?>
-<tr>
- <td align="right">Add Samba Access:</td>
- <td colspan="5">
-   <input name="in_samba_add"
-          type="checkbox"
-          value="Y">
- </td>
-</tr>
-<?php } ?>
-<tr>
- <td align="right">Samba Allow Password Change:</td>
- <td colspan="5">
- <input type="text"
-        name="in_sambapwdcanchange"
-        value="<?php print $info[0]["sambapwdcanchange"][0];?>">
- </td>
-</tr>
-<tr>
- <td align="right">Samba Password Must Change:</td>
- <td colspan="5">
- <input type="text"
-        name="in_sambapwdmustchange"
-        value="<?php print $info[0]["sambapwdmustchange"][0];?>">
- </td>
-</tr>
-<tr>
- <td align="right">Samba Home Path:</td>
- <td colspan="5">
- <input type="text"
-        name="in_sambahomepath"
-        value="<?php print $info[0]["sambahomepath"][0];?>">
-  A UNC name, e.g. \\%N\
- </td>
-</tr>
-<tr>
- <td align="right">Samba Home Drive:</td>
- <td colspan="5">
- <input type="text"
-        name="in_sambahomedrive"
-        value="<?php print $info[0]["sambahomedrive"][0];?>">
-  A simple drive letter, e.g. H:
- </td>
-</tr>
-<tr>
- <td align="right">Samba Logon Script:</td>
- <td colspan="5">
- <input type="text"
-        name="in_sambalogonscript"
-        value="<?php print $info[0]["sambalogonscript"][0];?>">
-  A simple file name, e.g. logon.bat
- </td>
-</tr>
-<tr>
- <td align="right">Samba Profile Path:</td>
- <td colspan="5">
- <input type="text"
-        name="in_sambaprofilepath"
-        value="<?php print $info[0]["sambaprofilepath"][0];?>">
-  A UNC path for the profile directory, e.g. \\%N\profilename
- </td>
-</tr>
-<tr>
- <td align="right">Samba Primary Group SID:</td>
- <td colspan="5">
- <input type="text"
-        name="in_sambaprimarygroupsid"
-        value="<?php print $info[0]["sambaprimarygroupsid"][0];?>">
- </td>
-</tr>
-<tr>
- <td align="right">Samba Domain Name:</td>
- <td colspan="5">
- <input type="text"
-        name="in_sambadomainname"
-        value="<?php print $info[0]["sambadomainname"][0];?>">
-  A simple string for the Samba Domain, e.g. WORKGROUP
- </td>
-</tr>
-
-<tr>
- <td align="right">Account Flags:</td>
- <td colspan="5">
-<?php
-foreach ($samba_acct_flags['desc'] as $f_id => $f_desc) {
-    $chked = '';
-    if ( preg_match("/$f_id/", $info[0]["sambaacctflags"][0]) ) {
-        $chked = ' CHECKED';
-    }
-    if (strlen($chked)>0 || $samba_acct_flags['type'][$f_id]=='USER') {
-        echo " <input type=\"checkbox\" ";
-        echo "name=\"in_acct_flag_$f_id\" ";
-        echo "value=\"$f_id\"$chked>";
-        echo "$f_desc($f_id)<br> \n";
-    }
-}
-
-?>
- </td>
-</tr>
-
-<?php
-# End Samba
-# ------------------------------------------------------------------
-} ?>
 <tr>
  <td colspan="6">
 
