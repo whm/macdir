@@ -273,15 +273,19 @@ if ( isset($base_filter) && strlen($base_filter)>0) {
     echo " <th>Cell Phone</th>\n";
     echo "</tr>\n";
     for ($i=0; $i<$info["count"]; $i++) {
-      $a_dn = $info[$i]["dn"];
+      $a_dn     = $info[$i]["dn"];
       $a_dn_url = urlencode($a_dn);
-      $a_cn = $info[$i]["cn"][0];
-      $a_uid = $info[$i]["uid"][0];
+      $a_cn     = $info[$i]["cn"][0];
+      $a_uid    = $info[$i]["uid"][0];
 
-      $a_mail = $info[$i]["mail"][0];
-      $a_mobile = $info[$i]["mobile"][0];
-      $a_workphone = $info[$i]["workphone"][0];
-      $a_phone = $info[$i]["telephonenumber"][0];
+      $a_mail      = (empty($info[$i]["mail"][0])
+                     ? '' : $info[$i]["mail"][0]);
+      $a_mobile    = (empty($info[$i]["mobile"][0])
+                     ? '' : $info[$i]["mobile"][0]);
+      $a_workphone = (empty($info[$i]["workphone"][0])
+                     ? '' : $info[$i]["workphone"][0]);
+      $a_phone     = (empty($info[$i]["telephonenumber"][0])
+                     ? '' : $info[$i]["telephonenumber"][0]);
       $a_maint_link = '';
       if ($ldap_admin>0) {
         $a_maint_link = '<a href="user_maint.php'
