@@ -260,7 +260,7 @@ if ( isset($base_filter) && strlen($base_filter)>0) {
   if (isset($_SERVER['REMOTE_USER'])) {
       $ds = macdir_bind($ldap_server, 'GSSAPI');
   } else {
-      $ds = macdir_bind($ldap_server);
+      $ds = macdir_bind($ldap_server, '');
   }
 
   $sr = ldap_search($ds, $base_dn, $filter, $return_attr);
