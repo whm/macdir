@@ -32,7 +32,7 @@ $menuItem['app_access_maint.php'] = array('title' => 'App Access',
 
 $itemList = '';
 
-if ($menuLoggedIn>0) {
+if ( isset($_SERVER['REMOTE_USER']) ) {
     foreach ($menuItem as $id => $items) {
         if (($items['login'] == 'admin' && $ldap_admin) 
             || ($items['login'] == 'user')) {

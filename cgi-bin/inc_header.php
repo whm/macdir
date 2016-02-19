@@ -10,12 +10,9 @@ require('/etc/whm/macdir_admin.php');
 $ldap_admin   = 0;
 $phone_admin  = 0;
 $this_user    = '';
-$menuLoggedIn = 0;
 if ( isset($_SERVER['REMOTE_USER']) ) {
-    $this_user    = $_SERVER['REMOTE_USER'];
-    $menuLoggedIn = 1;
-}
-if ($menuLoggedIn) {
+    $this_user  = $_SERVER['REMOTE_USER'];
+    $ldap_admin = 0;
     // Just set this to admin for now.  In the future there will be
     // multiple levels of access to the directory.
     if (isset($macdir_admin[$this_user])) {

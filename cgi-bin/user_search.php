@@ -293,7 +293,7 @@ if ( isset($base_filter) && strlen($base_filter)>0) {
             . '"><img src="/macdir-images/icon-edit.png" border="0"></a>';
       }
       $detail_link = '';
-      if (isset($menuLoggedIn)) {
+      if ( isset($_SERVER['REMOTE_USER']) ) {
           $detail_link = "<a href=\"user_details.php?in_dn=$a_dn_url\">"
               . '<img src="/macdir-images/icon-view-details.png" border="0"</a>';
       }
