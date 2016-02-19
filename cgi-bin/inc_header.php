@@ -7,10 +7,12 @@ if (substr($page_root,0,1)=='/') {$page_root = substr($page_root,1);}
 require('/etc/whm/macdir_admin.php');
 
 // figure out the access level
-$ldap_admin = $phone_admin = 0;
-$this_user = '';
+$ldap_admin   = 0;
+$phone_admin  = 0;
+$this_user    = '';
+$menuLoggedIn = 0;
 if ( isset($_SERVER['REMOTE_USER']) ) {
-    $this_user = $_SERVER['REMOTE_USER'];
+    $this_user    = $_SERVER['REMOTE_USER'];
     $menuLoggedIn = 1;
 }
 if ($menuLoggedIn) {
