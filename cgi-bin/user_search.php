@@ -45,10 +45,13 @@ $form["maildistributionid"] = "maildistributionid";
 // construct the filter from input data
 $base_filter = '';
 foreach ($form as $formName => $ldapName) {
-    $name = "in_$formName";
-    if (isset($_REQUEST[$name])) {
-        $a_val = $_REQUEST[$name];
-        if (strlen($a_val)>0) {$base_filter .= "($ldapName=*$a_val*)";}
+    $in_name  = "in_$formName";
+    if (isset($_REQUEST[$in_name])) {
+        $a_val = $_REQUEST[$in_name];
+        if (strlen($a_val)>0) {
+            $base_filter .= "($ldapName=*$a_val*)";
+            $_SESSION["SEAR_$formName"] = $a_val;;
+        }
     }
 }
 
@@ -57,9 +60,9 @@ if ( ! isset($base_filter) ) {
     // construct a filter from session information if there
     // is no input data
     foreach ($form as $formName => $ldapName) {
-        $sessName = "SEAR_$formName";
-        if ( isset($_SESSION[$sessName]) ) {
-            $a_val = $_SESSION[$sessName];
+        $sess_name = "SEAR_$formName";
+        if ( isset($_SESSION[$sess_name]) ) {
+            $a_val = $_SESSION[$sess_name];
             if ( strlen($a_val) > 0 ) {
                 $base_filter .= "($ldapName=*$a_val*)";
             }
@@ -70,12 +73,12 @@ if ( ! isset($base_filter) ) {
 
     // reset session information from the input data
     foreach ($form as $formName => $ldapName) {
-        $name = "in_$formName";
-        $sessName = "SEAR_$formName";
+        $in_name = "in_$formName";
+        $sess_name = "SEAR_$formName";
         if (isset($$name)) {
-            $_SESSION[$sessName] = $$name;
+            $_SESSION[$sess_name] = $$in_name;
         } else {
-            $_SESSION[$sessName] = '';
+            $_SESSION[$sess_name] = '';
         }
     }
 }
