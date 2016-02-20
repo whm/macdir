@@ -13,7 +13,6 @@ $in_button_update    = $_REQUEST['in_button_update'];
 // File: set_password_action.php
 // Author: Bill MacAllister
 // Date: 22-Oct-2001
-session_start();
 
 // bind to the ldap directory
 require('/etc/whm/macdir.php');

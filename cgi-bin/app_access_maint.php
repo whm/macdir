@@ -12,9 +12,6 @@ $in_uid  = $_REQUEST['in_uid'];
 // date: 18-Jan-2003
 // description: This form is granting users access to PRIDE Web Files Services
 
-// Open a session and check for authorization
-session_start();
-
 require('inc_config.php');
 
 $title = 'Application Access Maintenance';

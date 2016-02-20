@@ -13,9 +13,6 @@ $in_uid         = $_REQUEST['in_uid'];
 // description: This form is for updating phone information for people
 //              listed in the LDAP Directory.
 
-// Open a session
-session_start();
-
 require('inc_config.php');
 
 $title = 'User Maintenance';

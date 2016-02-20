@@ -1,4 +1,7 @@
 <?php
+// Start up a session so we can remember where we are
+session_start();
+
 $page_dir = dirname($_SERVER['SCRIPT_FILENAME']);
 $page_name = substr($_SERVER['SCRIPT_FILENAME'], strlen($page_dir));
 $page_root = strtok($page_name,'.');

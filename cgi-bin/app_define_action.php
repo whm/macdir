@@ -16,9 +16,6 @@ $in_button_delete = $_REQUEST['in_button_delete'];
 // -------------------------------------------------------------
 // main routine
 
-// Open a session
-session_start();
-
 require ('/etc/whm/macdir.php');
 require('inc_bind.php');
 $ds = macdir_bind($ldap_server, 'GSSAPI');

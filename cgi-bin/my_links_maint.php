@@ -9,8 +9,6 @@ $in_cn  = $_REQUEST['in_cn'];
 # file: my_links_maint.php
 # author: Bill MacAllister
 
-session_start();
-
 $title = 'Link Maintenance';
 $heading = 'Link Maintenance';
 

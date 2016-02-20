@@ -28,7 +28,6 @@ $in_xml_data          = $_REQUEST['in_xml_data'];
 // file: user_maint_action.php
 // author: Bill MacAllister
 
-session_start();
 require('inc_config.php');
 require ('/etc/whm/macdir.php');
 require('inc_bind.php');

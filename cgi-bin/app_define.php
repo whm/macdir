@@ -12,9 +12,6 @@ $in_cn  = $_REQUEST['in_cn'];
 // description: This form is for creating application access control
 //              structures.
 
-// Open a session
-session_start();
-
 $title = 'Application Definition';
 $heading = 'Application Definition';
 

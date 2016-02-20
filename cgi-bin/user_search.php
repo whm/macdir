@@ -5,8 +5,6 @@
 // author: Bill MacAllister
 // date: 14-Oct-2002
 
-session_start();
-
 $title = 'Search for a Person';
 $heading = 'MacAllister Directory';
 require('inc_header.php');
@@ -20,13 +18,11 @@ $msg = '';
 if ( isset($_REQUEST['in_more_search']) ) {
     $in_more_search = $_REQUEST['in_more_search'];
 } else {
-    if ( isset($_SESSION['s_more_search']) ) {
-        $in_more_search = $_SESSION['s_more_search'];
-    } else {
-        $in_more_search = 'no';
-    }
+    $in_more_search
+        = empty($_SESSION['SEAR_more_search'])
+          ? 'no' : $_SESSION['SEAR_more_search'];
 }
-$_SESSION['s_more_search'] = $in_more_search;
+$_SESSION['SEAR_more_search'] = $in_more_search;
 
 // create a form to attribute mapping
 $form["firstname"]          = "givenname";
@@ -48,9 +44,9 @@ foreach ($form as $formName => $ldapName) {
     $in_name  = "in_$formName";
     if (isset($_REQUEST[$in_name])) {
         $a_val = $_REQUEST[$in_name];
-        if (strlen($a_val)>0) {
+        if (!empty($a_val)) {
             $base_filter .= "($ldapName=*$a_val*)";
-            $_SESSION["SEAR_$formName"] = $a_val;;
+            $_SESSION["SEAR_$formName"] = $a_val;
         }
     }
 }
@@ -61,11 +57,9 @@ if ( ! isset($base_filter) ) {
     // is no input data
     foreach ($form as $formName => $ldapName) {
         $sess_name = "SEAR_$formName";
-        if ( isset($_SESSION[$sess_name]) ) {
+        if ( !empty($_SESSION[$sess_name]) ) {
             $a_val = $_SESSION[$sess_name];
-            if ( strlen($a_val) > 0 ) {
-                $base_filter .= "($ldapName=*$a_val*)";
-            }
+            $base_filter .= "($ldapName=*$a_val*)";
         }
     }
 
@@ -75,11 +69,8 @@ if ( ! isset($base_filter) ) {
     foreach ($form as $formName => $ldapName) {
         $in_name = "in_$formName";
         $sess_name = "SEAR_$formName";
-        if (isset($$name)) {
-            $_SESSION[$sess_name] = $$in_name;
-        } else {
-            $_SESSION[$sess_name] = '';
-        }
+        $_SESSION[$sess_name]
+            = empty($_REQUEST[$in_name]) ? '' : $_REQUEST[$in_name];
     }
 }
 

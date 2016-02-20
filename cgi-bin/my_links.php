@@ -15,8 +15,6 @@ $in_url = $_REQUEST['in_url'];
 # file: my_list.php
 # author: Bill MacAllister
 
-session_start();
-
 $title = "Search My Links";
 $heading = "Search My Links";
 require('inc_header.php');

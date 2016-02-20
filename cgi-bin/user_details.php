@@ -11,7 +11,6 @@ $in_uid = $_REQUEST['in_uid'];
 # file: user_details.php
 # author: Bill MacAllister
 
-session_start();
 require('inc_config.php');
 require('/etc/whm/macdir.php');
 require('inc_bind.php');

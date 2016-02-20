@@ -5,8 +5,6 @@
 // author: Bill MacAllister
 // date: 27-Jan-2016
 
-session_start();
-
 $title = 'MacAllister Directory Groups';
 $heading = 'MacAllister Directory Groups';
 require('inc_header.php');

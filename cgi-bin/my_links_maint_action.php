@@ -16,8 +16,6 @@ $in_button_delete = $_REQUEST['in_button_delete'];
 // -------------------------------------------------------------
 // main routine
 
-session_start();
-
 $_SESSION['in_msg'] = '';
 $warn = '<font color="#cc0000">';
 $ok = '<font color="#00cc00">';

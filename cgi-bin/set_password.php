@@ -11,7 +11,6 @@ $in_uid  = $_REQUEST['in_uid'];
 // author: Bill MacAllister
 // date: October 2002
 //
-session_start();
 
 // -- Print a space or the field
 function prt ($fld) {
