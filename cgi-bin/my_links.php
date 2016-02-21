@@ -17,9 +17,11 @@ $in_url = $_REQUEST['in_url'];
 
 $title = "Search My Links";
 $heading = "Search My Links";
+
+require('inc_init.php');
 require('inc_header.php');
 require('/etc/whm/macdir.php');
-require('inc_bind.php');
+
 $ds = macdir_bind($ldap_server, 'GSSAPI');
 
 # create a form to attribute mapping

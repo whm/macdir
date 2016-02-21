@@ -5,9 +5,9 @@
 // file: user_maint_action.php
 // author: Bill MacAllister
 
-require('inc_config.php');
+require('inc_init.php');
 require ('/etc/whm/macdir.php');
-require('inc_bind.php');
+
 $ds = macdir_bind($ldap_server, 'GSSAPI');
 
 // --------------------------------------------------------------
@@ -15,10 +15,10 @@ $ds = macdir_bind($ldap_server, 'GSSAPI');
 
 function get_an_id ($seed, $attr) {
 
-    global $ds, $ldap_base, $ok, $warn, $ef;
+    global $ds, $ldap_base;
 
     if ($attr != 'gidnumber' && $attr != 'uidnumber') {
-        $_SESSION['in_msg'] = "$warn invalid call to get_an_id $ef";
+        $_SESSION['in_msg'] .= warn_html('Invalid call to get_an_id');
         return "INVALID ID REQUEST";
     }
 
@@ -45,8 +45,6 @@ function get_an_id ($seed, $attr) {
 
 function mailbox_check ($p_uid, $addr, $local_domain) {
 
-    global $ok;
-    global $warn;
     global $CONF_imap_host;
     global $imap_muser;
     global $imap_mpass;
@@ -62,8 +60,8 @@ function mailbox_check ($p_uid, $addr, $local_domain) {
                                 $imap_muser,
                                 $imap_mpass,
                                 OP_HALFOPEN)) ) {
-        $_SESSION['in_msg'] .= "$warn IMAP Connection failure ("
-            . imap_last_error() . ")$ef";
+        $_SESSION['in_msg']
+            .= warn_html('IMAP Connection failure ' . imap_last_error());
     } else {
 
         $mbx_exists = 0;
@@ -75,12 +73,11 @@ function mailbox_check ($p_uid, $addr, $local_domain) {
             if ($mbx_exists == 0) {
                 // add a mailbox
                 if ( !(imap_createmailbox($imapCnx, $imap_mbx)) ) {
-                    $_SESSION['in_msg']
-                        .= "$warn IMAP Create mailbox failure ("
-                        . imap_last_error() . ")$ef";
+                    $_SESSION['in_msg'] .=  warm_html(
+                        'IMAP Create mailbox failure ' . imap_last_error()
+                    );
                 } else {
-                    $_SESSION['in_msg']
-                        .= "$ok IMAP mailbox created</font><br>";
+                    $_SESSION['in_msg'] .= ok_html('IMAP mailbox created');
                 }
             }
             imap_setacl ($imapCnx, $acl_mbx, $p_uid,     'lrswipcda');
@@ -148,7 +145,8 @@ function characterData($parser, $data) {
 
 function common_name_check ($a_dn, $a_flag, $a_cn) {
 
-    global $ds, $ok, $warn, $ef;
+    GLOBAL $CON;
+    global $ds;
 
     $cn_attr['cn'] = $a_cn;
 
@@ -169,11 +167,12 @@ function common_name_check ($a_dn, $a_flag, $a_cn) {
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
             if ($err>0) {
-                $_SESSION['in_msg'] .= "$warn ldap error removing $a_cn "
-                    . "from $a_dn: $err - $err_msg.$ef";
+                $e = "$err - $err_msg";
+                $_SESSION['in_msg'] .= 
+                    warn_html("LDAP error removing $a_cn from $a_dn: $e");
             } else {
-                $_SESSION['in_msg'] .= "$ok Common Name $a_cn removed "
-                    . "from $a_dn.$ef";
+                $_SESSION['in_msg'] .=
+                    ok_html("Common Name $a_cn removed from $a_dn");
             }
         }
 
@@ -184,12 +183,12 @@ function common_name_check ($a_dn, $a_flag, $a_cn) {
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
             if ($err != 0) {
+                $e =  $err - $err_msg;
                 $_SESSION['in_msg']
-                    .= "$warn ldap error adding $a_cn to $a_dn: "
-                    . "$err - $err_msg.$ef";
+                    .= warn_html("LDAP error adding $a_cn to $a_dn: $e");
             } else {
                 $_SESSION['in_msg']
-                    .= "$ok Common Name $a_cn added to $a_dn.$ef";
+                    .= ok_html("Common Name $a_cn added to $a_dn");
             }
         }
     }
@@ -200,7 +199,8 @@ function common_name_check ($a_dn, $a_flag, $a_cn) {
 
 function maildelivery_check ($a_dn, $a_flag, $a_maildelivery) {
 
-    global $ds, $ok, $warn, $ef;
+    global $ds;
+    global $CON;
 
     $maildelivery_attr['maildelivery'] = $a_maildelivery;
 
@@ -221,13 +221,16 @@ function maildelivery_check ($a_dn, $a_flag, $a_maildelivery) {
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
             if ($err>0) {
+                my $e = " $err - $err_msg";
                 $_SESSION['in_msg']
-                    .= "$warn ldap error removing $a_maildelivery "
-                    . "from $a_dn: $err - $err_msg.$ef";
+                    .= warn_html(
+                        "ldap error removing $a_maildelivery from $a_dn: $e"
+                    );
             } else {
                 $_SESSION['in_msg']
-                    .= "$ok Common Name $a_maildelivery removed "
-                    . "from $a_dn.$ef";
+                    .= ok_html(
+                        "Common Name $a_maildelivery removed from $a_dn"
+                    );
             }
         }
 
@@ -238,12 +241,14 @@ function maildelivery_check ($a_dn, $a_flag, $a_maildelivery) {
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
             if ($err != 0) {
+                $e = "$err - $err_msg";
                 $_SESSION['in_msg']
-                    .= "$warn ldap error adding $a_maildelivery to $a_dn: "
-                    . "$err - $err_msg.$ef";
+                    .= warn_html(
+                        "LDAP error adding $a_maildelivery to $a_dn: $e"
+                    );
             } else {
                 $_SESSION['in_msg']
-                    .= "$ok Common Name $a_maildelivery added to $a_dn.$ef";
+                    .= ok_html("Common Name $a_maildelivery added to $a_dn");
             }
         }
     }
@@ -255,7 +260,7 @@ function maildelivery_check ($a_dn, $a_flag, $a_maildelivery) {
 
 function posix_group_check ($a_uid, $a_flag, $a_group) {
 
-    global $ds, $ldap_base, $ldap_groupbase, $ok, $warn, $ef;
+    global $ds, $ldap_base, $ldap_groupbase;
 
     $group_dn = "cn=$a_group,$ldap_groupbase";
     $group_attr['memberuid'] = $a_uid;
@@ -276,24 +281,27 @@ function posix_group_check ($a_uid, $a_flag, $a_group) {
             $r = @ldap_mod_del($ds, $group_dn, $group_attr);
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
-            $_SESSION['in_msg'] .= "$ok $a_uid removed from $a_group.$ef";
+            $_SESSION['in_msg'] .= ok_html("$a_uid removed from $a_group");
             if ($err>0) {
-                $_SESSION['in_msg'] .= "$warn ldap error removing $a_uid "
-                    . "from $a_group: $err - $err_msg.$ef";
+                $e = "$err - $err_msg";
+                $_SESSION['in_msg']
+                    .= warn_html(
+                        "LDAP error removing $a_uid from $a_group: $e"
+                    );
             }
         }
 
     } else {
         // add it if we don't
         if ($posix_cnt==0) {
-            $r = @ldap_mod_add($ds, $group_dn, $group_attr);
-            $err = ldap_errno ($ds);
+            $r       = @ldap_mod_add($ds, $group_dn, $group_attr);
+            $err     = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
-            $_SESSION['in_msg'] .= "$ok $a_uid added to $a_group.$ef";
+            $_SESSION['in_msg'] .= ok_html("$a_uid added to $a_group");
             if ($err != 0) {
+                $e = "$err - $err_msg";
                 $_SESSION['in_msg']
-                    .= "$warn ldap error add $a_uid to $a_group: "
-                    . "$err - $err_msg.$ef";
+                    .= warn_html("LDAP error add $a_uid to $a_group: $e");
             }
         }
     }
@@ -305,7 +313,7 @@ function posix_group_check ($a_uid, $a_flag, $a_group) {
 
 function app_group_check ($a_uid, $a_flag, $a_app) {
 
-    global $ds, $ldap_base, $ok, $warn, $ef;
+    global $ds, $ldap_base;
 
     $group_attr['memberUid'] = $a_uid;
 
@@ -327,10 +335,11 @@ function app_group_check ($a_uid, $a_flag, $a_app) {
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
             if ($err>0) {
-                $_SESSION['in_msg'] .= "$warn ldap error removing $a_uid "
-                    . "from $a_app: $err - $err_msg.$ef";
+                $e = "$err - $err_msg";
+                $_SESSION['in_msg']
+                    .= warn_html("LDAP error removing $a_uid from $a_app: $e");
             } else {
-                $_SESSION['in_msg'] .= "$ok $a_dn removed from $a_app.$ef";
+                $_SESSION['in_msg'] .= ok_html("$a_dn removed from $a_app");
             }
         }
 
@@ -343,11 +352,11 @@ function app_group_check ($a_uid, $a_flag, $a_app) {
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
             if ($err != 0) {
+                $e = "$err - $err_msg";
                 $_SESSION['in_msg']
-                    .= "$warn ldap error add $a_uid to $app_dn: "
-                    . "$err - $err_msg.$ef";
+                    .= warn_html("LDAP error add $a_uid to $app_dn: $e");
             } else {
-                $_SESSION['in_msg'] .= "$ok $a_uid added to $a_app.$ef";
+                $_SESSION['in_msg'] .= ok_html("$a_uid added to $a_app");
             }
         }
     }
@@ -358,7 +367,7 @@ function app_group_check ($a_uid, $a_flag, $a_app) {
 
 function mail_alias_check ($a_dn, $a_flag, $a_alias) {
 
-    global $ds, $ldap_base, $CONF_mail_domain, $ok, $warn, $ef;
+    global $ds, $ldap_base, $CONF_mail_domain;
 
     $add_alias = $a_alias;
     if ( strlen($a_alias) == strlen(str_replace('@','',$a_alias)) ) {
@@ -380,12 +389,13 @@ function mail_alias_check ($a_dn, $a_flag, $a_alias) {
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
             if ($err>0) {
+                $e = "$err - $err_msg";
                 $_SESSION['in_msg']
-                    .= "$warn ldap error removing alias $a_alias "
-                    . "from $a_dn: $err - $err_msg.$ef";
+                    .= warn_html(
+                        "LDAP error removing alias $a_alias from $a_dn: $e");
             } else {
-                $_SESSION['in_msg'] .= "$ok Mail Alias $a_alias removed "
-                    . "from $a_dn.$ef";
+                $_SESSION['in_msg']
+                    .= ok_html("Mail Alias $a_alias removed from $a_dn");
             }
         }
     }
@@ -405,13 +415,14 @@ function mail_alias_check ($a_dn, $a_flag, $a_alias) {
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
             if ($err != 0) {
+                $e = "$err - $err_msg";
                 $_SESSION['in_msg']
-                    .= "$warn ldap error adding alias $a_alias "
-                    . "to $a_dn: "
-                    . "$err - $err_msg.$ef";
+                    .= warn_html(
+                        "LDAP error adding alias $a_alias to $a_dn: $e"
+                    );
             } else {
                 $_SESSION['in_msg']
-                    .= "$ok Mail Alias $a_alias added to $a_dn.$ef";
+                    .= ok_html("Mail Alias $a_alias added to $a_dn");
             }
         }
     }
@@ -457,7 +468,9 @@ function kp_add ($uid) {
     if (strlen($kp)==0) {
         // add the kerberos principal
         $tmppass = uniqid('usermaint');
-        $kcmd = "$k5start -- /usr/bin/remctl $kdcmaster kadmin create $uid $tmppass enabled";
+        $kcmd = $k5start
+            . " -- /usr/bin/remctl $kdcmaster kadmin"
+            . " create $uid $tmppass enabled";
         $ret_last = exec($kcmd, $return_text, $return_status);
         if ($return_status) {
             $_SESSION['in_msg'] .= "$warn remctl error: ";
@@ -466,7 +479,8 @@ function kp_add ($uid) {
             }
             $_SESSION['in_msg'] .= '</font>';
         } else {
-            $_SESSION['in_msg'] .= "$ok Added Kerberos principal $kp</font><br>";
+            $_SESSION['in_msg']
+                .= "$ok Added Kerberos principal $kp</font><br>";
         }
     }
     return;
@@ -509,9 +523,6 @@ function check_groups ($a_dn,
                        $a_AppDelList) {
 
     global $ds;
-    global $ok;
-    global $warn;
-    global $ef;
     global $ldap_groupbase;
     global $ldap_base;
 
@@ -533,604 +544,589 @@ function check_groups ($a_dn,
 
 }
 
-// -------------------------------------------------------------
-// main routine
+# ------------------------------------------------------------
+# Set global variables
 
-$this_app_add_list
-    = empty($_REQUEST['in_appAddList']) ? array() : $_REQUEST['in_appAddList'];
-$this_app_del_list
-    = empty($_REQUEST['in_appDelList']) ? array() : $_REQUEST['in_appDelList'];
+function init_globals {
 
-$warn = '<font color="#cc0000">';
-$ok = '<font color="#00cc00">';
-$ef = "</font><br>\n";
+    global $CON;
+    $CON = array();
+    $CON['krb_oc']   = 'krb5Principal';
+    $CON['krb_attr'] = 'krb5principalname';
 
-$krb_oc     = 'krb5Principal';
-$krb_attr   = 'krb5principalname';
+    global $OUR;
+    $OUR = array();
+    $OUR['app_add_list']
+        = empty($_REQUEST['in_appAddList'])
+          ? array() : $_REQUEST['in_appAddList'];
+    $OUR['app_del_list']
+        = empty($_REQUEST['in_appDelList'])
+          ? array() : $_REQUEST['in_appDelList'];
 
-// This array describes the "simple" attributes.  That is attributes
-// that have a simple value.
-$fld_list = array();
-array_push ($fld_list, 'comments');
-array_push ($fld_list, 'facsimiletelephonenumber');
-array_push ($fld_list, 'gidnumber');
-array_push ($fld_list, 'givenname');
-array_push ($fld_list, 'homedirectory');
-array_push ($fld_list, 'l');
-array_push ($fld_list, 'loginshell');
-array_push ($fld_list, 'mail');
-array_push ($fld_list, 'maildepartment');
-array_push ($fld_list, 'mobile');
-array_push ($fld_list, 'nickname');
-array_push ($fld_list, 'objectclass');
-array_push ($fld_list, 'pager');
-array_push ($fld_list, 'postaladdress');
-array_push ($fld_list, 'postalcode');
-array_push ($fld_list, 'siteresponsibility');
-array_push ($fld_list, 'sn');
-array_push ($fld_list, 'st');
-array_push ($fld_list, 'telephonenumber');
-array_push ($fld_list, 'title');
-array_push ($fld_list, 'uid');
-array_push ($fld_list, 'uidnumber');
-array_push ($fld_list, 'workphone');
+    # This array describes the "simple" attributes.  That is attributes
+    # that have a simple value.
+    global $FLD_LISTQ;
+    $FLD_LIST = array();
+    array_push ($FLD_LIST, 'comments');
+    array_push ($FLD_LIST, 'facsimiletelephonenumber');
+    array_push ($FLD_LIST, 'gidnumber');
+    array_push ($FLD_LIST, 'givenname');
+    array_push ($FLD_LIST, 'homedirectory');
+    array_push ($FLD_LIST, 'l');
+    array_push ($FLD_LIST, 'loginshell');
+    array_push ($FLD_LIST, 'mail');
+    array_push ($FLD_LIST, 'maildepartment');
+    array_push ($FLD_LIST, 'mobile');
+    array_push ($FLD_LIST, 'nickname');
+    array_push ($FLD_LIST, 'objectclass');
+    array_push ($FLD_LIST, 'pager');
+    array_push ($FLD_LIST, 'postaladdress');
+    array_push ($FLD_LIST, 'postalcode');
+    array_push ($FLD_LIST, 'siteresponsibility');
+    array_push ($FLD_LIST, 'sn');
+    array_push ($FLD_LIST, 'st');
+    array_push ($FLD_LIST, 'telephonenumber');
+    array_push ($FLD_LIST, 'title');
+    array_push ($FLD_LIST, 'uid');
+    array_push ($FLD_LIST, 'uidnumber');
+    array_push ($FLD_LIST, 'workphone');
 
-// get a list of pam, posix, and application groups
-require ('inc_groups.php');
-
-// decode any xml data that is passed
-$tags = array();
-if (!empty($_REQUEST['in_xml_data'])) {
-    // Set up the XML parser
-    $xml_parser = xml_parser_create();
-    xml_parser_set_option($xml_parser, XML_OPTION_CASE_FOLDING, false);
-    xml_set_element_handler($xml_parser, "startElement", "endElement");
-    xml_set_character_data_handler($xml_parser, "characterData");
-
-    // Parse the data passed and then free the resouce
-    if ( !xml_parse($xml_parser, $_REQUEST['in_xml_data'], true) ) {
-        echo "XML error:"
-            . xml_error_string(xml_get_error_code($xml_parser))
-            . "<br>\n";
-        exit;
-    }
-    xml_parser_free($xml_parser);
+    return;
 }
 
-// Set the kerberos principal name for everyone to use
-$thisPrincipal = $_REQUEST['in_uid'] . '@' . $CONF_krb_realm;
+// -----------------------------------------------------
+// Add an LDAP Entry
 
-if (!empty($_REQUEST['in_button_add'])) {
+function add_ldap_entry {
 
-    // -----------------------------------------------------
-    // Add an LDAP Entry
-    // -----------------------------------------------------
+    global $CON;
+    global $FLD_LIST;
+    global $OUR;
+    global $ldap_groupbase;
+    global $ldap_base;
 
-    if (empty($_REQUEST['in_uid'])) {
-        $_SESSION['in_msg'] .= "$warn UID is required.$ef";
-    } elseif (empty($_REQUEST['in_new_cn'])) {
-        $_SESSION['in_msg'] .= "$warn Common Name is required.$ef";
-    } else {
+    
+    if ( empty($_REQUEST['in_uid']) ) {
+        $_SESSION['in_msg'] .= warn_html('UID is required');
+        return;
+    }
+    if ( empty($_REQUEST['in_new_cn']) ) {
+        $_SESSION['in_msg'] .= warn_html('Common Name is required');
+        return;
+    }
 
-        // check for duplicates first
+    // check for duplicates first
+    $filter = '(uid=' . $_REQUEST['in_uid'] . ')';
+    $attrs = array ('cn');
+    $sr = @ldap_search ($ds, $ldap_base, $filter, $attrs);
+    $entries = @ldap_get_entries($ds, $sr);
+    $uid_cnt = $entries["count"];
+    if ($uid_cnt>0) {
+        $a_cn = $entries[0]['cn'][0];
+        $_SESSION['in_msg'] .= warn_html("UID is already in use by $a_cn");
+        $_SESSION['in_msg'] .= warn_html('Add of user entry aborted');
+        return;
+    }
 
-        $filter = '(uid=' . $_REQUEST['in_uid'] . ')';
-        $attrs = array ('cn');
-        $sr = @ldap_search ($ds, $ldap_base, $filter, $attrs);
-        $entries = @ldap_get_entries($ds, $sr);
-        $uid_cnt = $entries["count"];
-        if ($uid_cnt>0) {
-            $a_cn = $entries[0]['cn'][0];
-            $_SESSION['in_msg'] .= "$warn UID is already in use by $a_cn.$ef";
-            $_SESSION['in_msg'] .= "$warn Add of user entry aborted.$ef";
-        } else {
+    // add the new entry
+    $this_uidnumber = 0;
+    $this_gidnumber = 0;
+    $ldap_entry["objectclass"][] = 'top';
+    $_SESSION['in_msg'] .= ok_html('Adding objectClass = top');
+    $ldap_entry["objectclass"][] = 'person';
+    $_SESSION['in_msg'] .= ok_html('Adding objectClass = person');
+    $ldap_entry["objectclass"][] = 'pridePerson';
+    $_SESSION['in_msg'] .= ok_html('Adding objectClass = pridePerson');
+    $ldap_entry["objectclass"][] = $CON['krb_oc'];
+    $_SESSION['in_msg'] .= ok_html('Adding objectClass = ' . $CON['krb_oc']);
+    
+    // Add kerberos principal name
+    $ldap_entry[$krb_attr][] = $thisPrincipal;
+    $_SESSION['in_msg'] .= ok_html("Adding $krb_attr = $thisPrincipal");
+    
+    // Create posix entry only when asked to
+    $posix_entry = 0;
+    if ( !empty($_REQUEST['in_linux_add']) ) {
+        $posix_entry = 1;
+    }
 
-            // add the new entry
-
-            $this_uidnumber = 0;
-            $this_gidnumber = 0;
-            $ldap_entry["objectclass"][] = "top";
-            $_SESSION['in_msg'] .= "$ok adding objectClass = top$ef";
-            $ldap_entry["objectclass"][] = "person";
-            $_SESSION['in_msg'] .= "$ok adding objectClass = person$ef";
-            $ldap_entry["objectclass"][] = "pridePerson";
-            $_SESSION['in_msg'] .= "$ok adding objectClass = pridePerson$ef";
-            $ldap_entry["objectclass"][] = $krb_oc;
-            $_SESSION['in_msg'] .= "$ok adding objectClass = $krb_oc$ef";
-
-            // Add kerberos principal name
-            $ldap_entry[$krb_attr][] = $thisPrincipal;
-            $_SESSION['in_msg'] .= "$ok adding $krb_attr = $thisPrincipal$ef";
-
-            // Create posix entry only when asked to
-            $posix_entry = 0;
-            if (!empty($_REQUEST['in_linux_add'])) {
+    foreach ($FLD_LIST as $fld) {
+        $val = stripslashes(trim($_REQUEST["in_$fld"]));
+        if (strlen($val)>0) {
+            $_SESSION['in_msg'] .= ok_html("Adding $fld = $val");
+            $ldap_entry[$fld][0] = $val;
+            if ($fld=='uidnumber')     {
+                $posix_entry = 1;
+                $this_uidnumber = $val;
+            }
+            if ($fld=='gidnumber') {
+                $posix_entry = 1;
+                $this_gidnumber = $val;
+            }
+            if ($fld=='loginshell' || $fld=='homedirectory') {
                 $posix_entry = 1;
             }
+        }
+    }
 
-            foreach ($fld_list as $fld) {
-                $val = stripslashes(trim($_REQUEST["in_$fld"]));
-                if (strlen($val)>0) {
-                    $_SESSION['in_msg'] .= "$ok adding $fld = $val$ef";
-                    $ldap_entry[$fld][0] = $val;
-                    if ($fld=='uidnumber')     {
+    // create cn entries
+    $first_cn = $a_cn = strtok($_REQUEST['in_new_cn'], ',');
+    while ( !empty($a_cn) ) {
+        $_SESSION['in_msg'] .= ok_html("Adding cn = $a_cn");
+        $ldap_entry["cn"][] = $a_cn;
+        $a_cn = strtok(',');
+    }
+
+    // create mailDelivery entries
+    $a_maildelivery = strtok($_REQUEST['in_new_maildelivery'], ',');
+    while ( !empty($a_maildelivery) ) {
+        $_SESSION['in_msg']
+            .= ok_html("Adding mailDelivery = $a_maildelivery");
+        $ldap_entry["mailDelivery"][] = $a_maildelivery;
+        $a_maildelivery = strtok(',');
+    }
+    
+    // see if we need posix objectclasses
+    if ($posix_entry) {
+        $ldap_entry['objectclass'][] = 'posixAccount';
+        $_SESSION['in_msg'] .= ok_html('Adding objectClass = posixAccount');
+        $ldap_entry['objectclass'][] = 'shadowAccount';
+        $_SESSION['in_msg'] .= ok_html('Adding objectClass = shadowAccount');
+        if ($this_uidnumber == 0) {
+            $this_uidnumber = 4000;
+        }
+        $this_uidnumber = get_an_id($this_uidnumber, 'uidnumber');
+        $ldap_entry["uidnumber"][] = $this_uidnumber;
+        $_SESSION['in_msg'] .= ok_html("Adding uidNumber = $this_uidnumber");
+        if ($this_gidnumber == 0) {
+            $this_gidnumber = $this_uidnumber;
+        }
+        $this_gidnumber = get_an_id($this_gidnumber, 'gidnumber');
+        $ldap_entry["gidnumber"][] = $this_gidnumber;
+        $_SESSION['in_msg'] .= ok_html("adding gidNumber = $this_gidnumber");
+    }
+
+    // add data to directory
+    $this_dn = 'uid=' . $_REQUEST['in_uid'] . ",ou=people,$ldap_base";
+    if (@ldap_add($ds, $this_dn, $ldap_entry)) {
+        $_SESSION['in_msg'] .= ok_html("Directory updated");
+    } else {
+        $_SESSION['in_msg']
+            .= warn_html("Problem adding $this_dn to directory");
+        $ldapErr = ldap_errno ($ds);
+        $ldapMsg = ldap_error ($ds);
+        $_SESSION['in_msg'] .= warn_html("Error: $ldapErr, $ldapMsg");
+    }
+
+    // check posix groups
+    if ($this_uidnumber>0) {
+
+        // posix group for this user maybe
+        $posixFilter = "(&(objectclass=posixGroup)";
+        $posixFilter .= '(cn=' . $_REQUEST['in_uid'] . ')';
+        $posixReturn = array ('gidNumber', 'cn');
+        $sr = @ldap_search ($ds,
+        $ldap_groupbase,
+        $posixFilter,
+        $posixReturn);
+        $posix = @ldap_get_entries($ds, $sr);
+        $posix_cnt = $posix["count"];
+        
+        // create a posix group for this user
+        if ($posix_cnt==0) {
+            $posix_attrs['objectclass'][0] = 'top';
+            $posix_attrs['objectclass'][1] = 'posixGroup';
+            $posix_attrs['cn'][0]          = $_REQUEST['in_uid'];
+            $posix_attrs['memberUid'][0]   = $_REQUEST['in_uid'];
+            $posix_attrs['gidNumber'][0]   = $this_gidnumber;
+            $posix_attrs['description'][0]
+                = 'Posix Group for user ' . $REQUEST['in_uid'];
+            $posix_dn
+                = 'cn=' . $_REQUEST['in_uid'] . ",$ldap_groupbase";
+            $r = @ldap_add($ds, $posix_dn, $posix_attrs);
+            $err = ldap_errno ($ds);
+            $err_msg = ldap_error ($ds);
+            if ($err == 0) {
+                $_SESSION['in_msg'] .= ok_html("$posix_dn updated");
+            } else {
+                $_SESSION['in_msg']
+                    .= warn_html("Problem adding $posix_dn to directory");
+                $ldapErr = ldap_errno ($ds);
+                $ldapMsg = ldap_error ($ds);
+                $_SESSION['in_msg'] .= warn_html("Error: $ldapErr, $ldapMsg");
+            }
+        } else {
+            posix_group_check ($_REQUEST['in_uid'],
+            $_REQUEST['in_uid'],
+            $_REQUEST['in_uid']);
+        }
+
+        // check the listed posix groups
+        if ($tags['count']['posixgroup']>0) {
+            if ($tags['count']['posixgroup']>0) {
+                foreach ($tags['data']['posixgroup']
+                as $idx => $this_posixgroup) {
+                    $flag = '';
+                    if ($this_posixgroup['checked'] == 'Y'
+                    && $thisUIDNnumber>0)
+                        {
+                            $flag = 'Y';
+                        }
+                    posix_group_check(
+                        $this_dn,
+                        $flag,
+                        $this_posixgroup['text']
+                    );
+                }
+            }
+        }
+
+        // check for any other additions
+        if ( !empty($_REQUEST['in_posix_new']) ) {
+            $thisGroup = trim(strtok($_REQUEST['in_posix_new'], ','));
+            while (strlen($thisGroup)>0) {
+                posix_group_check ($in_uid, $thisGroup, $thisGroup);
+                $thisGroup = trim(strtok(','));
+            }
+        }
+        
+        check_groups(
+            $this_dn,
+            $_REQUEST['in_uid'],
+            $this_uidnumber,
+            $this_gidnumber,
+            $OUR[app_add_list],
+            $OUR[app_del_list]
+        );
+    }
+
+    // add the kerberos principal
+    kp_add($_REQUEST['in_uid']);
+    
+    // create a mailbox if necessary
+    mailbox_check(
+        $_REQUEST['in_uid'],
+        $_REQUEST['in_maildelivery'],
+        $CONF_mailbox_domain
+    );
+
+    // Check mailalias
+    if ($_REQUEST['in_mailalias_cnt']>0) {
+        for ($i=0; $i<$_REQUEST['in_mailalias_cnt']; $i++) {
+            mail_alias_check(
+                $in_dn,
+                $_REQUEST["in_mailalias_$i"],
+                $_REQUEST["in_mailalias_list_$i"]
+            );
+        }
+    }
+    if ( !empty($_REQUEST['in_new_mailalias']) ) {
+        $a_mailalias
+            = trim(strtok($_REQUEST['in_new_mailalias'], ','));
+        while (strlen($a_mailalias)>0) {
+            mail_alias_check ($in_dn, $a_mailalias, $a_mailalias);
+            $a_mailalias = trim(strtok(','));
+        }
+    }
+
+    // notify the administrator
+    if ( !empty($CONF_ldap_manager_mailbox) ) {
+        $mail_msg .= strip_tags ($_SESSION['in_msg']);
+        $subj = "New LDAP entry in $ldap_dir_title";
+        mail(
+            $CONF_ldap_manager_mailbox,
+            $subj,
+            $mail_msg
+        );
+    }
+    
+    return;
+}
+
+// -----------------------------------------------------
+// Update an LDAP Entry
+
+function update_ldap_entry {
+
+    $ldap_filter = 'objectclass=*';
+
+    if ( empty($_REQUEST['in_dn']) ) {
+        $_SESSION['in_msg'] .= warm_html("No entry to update");
+        return;
+    }
+
+    $return_list   = $FLD_LIST;
+    $return_list[] = $krb_attr;
+    $sr = @ldap_read(
+        $ds,
+        $in_dn,
+        $ldap_filter,
+        $return_list
+    );
+    $info = @ldap_get_entries($ds, $sr);
+    $err = ldap_errno ($ds);
+    if ($err) {
+        $err_msg = ldap_error ($ds);
+        $_SESSION['in_msg'] .= "errors: $err $err_msg<br>\n";
+    }
+    $ret_cnt = $info["count"];
+    if ($ret_cnt < 1) {
+        $_SESSION['in_msg'] .= "Entry not found to update<br>\n";
+        return;
+    }
+        
+    $first_cn = '';
+    if ( !empty($info[0]['cn'][0])) {
+        $first_cn = trim($info[0]['cn'][0]);
+    }
+    $add_cnt     = 0;
+    $posix_entry = 0;
+    if ( !empty($_REQUEST['in_linux_add']) ) {
+        $posix_entry = 1;
+        $add_cnt++;
+    }
+
+    foreach ($FLD_LIST as $fld) {
+        if ( $fld == 'objectclass' ) {
+            continue;
+        }
+
+        $val_in = '';
+        $tmp    = $_REQUEST["in_$fld"];
+        if ( !empty($tmp) ) {
+            $val_in  = stripslashes(trim($tmp));
+        }
+
+        $val_ldap = '';
+        if ( !empty($info[0]["$fld"][0]) ) {
+            $val_ldap = trim($info[0]["$fld"][0]);
+        }
+
+        if ( $val_in != $val_ldap ) {
+            if ( empty($val_in) ) {
+                if ( !empty($val_ldap) ) {
+                    // delete the attribute
+                    $new_data["$fld"] = $val_ldap;
+                    $r = @ldap_mod_del($ds, $in_dn, $new_data);
+                    $err = ldap_errno ($ds);
+                    $err_msg = ldap_error ($ds);
+                    $_SESSION['in_msg'] .= ok_html("$fld: $val_ldap deleted");
+                    if ($err>0) {
+                        $e = "$err - $err_msg";
+                        $_SESSION['in_msg']
+                            .= warn_html(
+                                "$warn ldap error deleting attribute $fld: $e"
+                            );
+                    }
+                }
+            } else {
+                // try and replace it, if that fails try and add it
+                $new_data["$fld"] = $val_in;
+                // replace
+                $r = @ldap_mod_replace(
+                    $ds,
+                    $_REQUEST['in_dn'],
+                    $new_data
+                );
+                $err = ldap_errno ($ds);
+                $err_msg = ldap_error ($ds);
+                if ($err == 0) {
+                    $_SESSION['in_msg'] .= ok_html("$fld replaced");
+                } else {
+                    if ($fld=='uidnumber') {
+                        $this_uidnumber = $val_in;
                         $posix_entry = 1;
-                        $this_uidnumber = $val;
                     }
                     if ($fld=='gidnumber') {
+                        $this_gidnumber = $val_in;
                         $posix_entry = 1;
-                        $this_gidnumber = $val;
                     }
                     if ($fld=='loginshell' || $fld=='homedirectory') {
                         $posix_entry = 1;
                     }
-                }
-            }
-
-            // create cn entries
-            $first_cn = $a_cn = strtok($_REQUEST['in_new_cn'], ',');
-            while (!empty($a_cn)) {
-                $_SESSION['in_msg'] .= "$ok adding cn = $a_cn$ef";
-                $ldap_entry["cn"][] = $a_cn;
-                $a_cn = strtok(',');
-            }
-
-            // create mailDelivery entries
-            $a_maildelivery = strtok($_REQUEST['in_new_maildelivery'], ',');
-            while (!empty($a_maildelivery)) {
-                $_SESSION['in_msg']
-                    .="$ok adding mailDelivery = $a_maildelivery$ef";
-                $ldap_entry["mailDelivery"][] = $a_maildelivery;
-                $a_maildelivery = strtok(',');
-            }
-
-            // see if we need posix objectclasses
-            if ($posix_entry) {
-                $ldap_entry["objectclass"][] = "posixAccount";
-                $_SESSION['in_msg']
-                    .= "$ok adding objectClass = posixAccount$ef";
-                $ldap_entry["objectclass"][] = "shadowAccount";
-                $_SESSION['in_msg']
-                    .= "$ok adding objectClass = shadowAccount$ef";
-                if ($this_uidnumber == 0) {
-                    $this_uidnumber = 4000;
-                }
-                $this_uidnumber = get_an_id($this_uidnumber, 'uidnumber');
-                $ldap_entry["uidnumber"][] = $this_uidnumber;
-                $_SESSION['in_msg']
-                    .= "$ok adding uidNumber = $this_uidnumber$ef";
-                if ($this_gidnumber == 0) {
-                    $this_gidnumber = $this_uidnumber;
-                }
-                $this_gidnumber = get_an_id($this_gidnumber, 'gidnumber');
-                $ldap_entry["gidnumber"][] = $this_gidnumber;
-                $_SESSION['in_msg']
-                    .= "$ok adding gidNumber = $this_gidnumber$ef";
-            }
-
-            // add data to directory
-            $this_dn = 'uid=' . $_REQUEST['in_uid'] . ",ou=people,$ldap_base";
-            if (@ldap_add($ds, $this_dn, $ldap_entry)) {
-                $_SESSION['in_msg'] .= "$ok Directory updated.$ef";
-            } else {
-                $_SESSION['in_msg']
-                    .= "$warn Problem adding $this_dn to directory$ef";
-                $ldapErr = ldap_errno ($ds);
-                $ldapMsg = ldap_error ($ds);
-                $_SESSION['in_msg'] .= "$warn Error: $ldapErr, $ldapMsg<br>";
-            }
-
-            // check posix groups
-
-            if ($this_uidnumber>0) {
-
-                // posix group for this user maybe
-                $posixFilter = "(&(objectclass=posixGroup)";
-                $posixFilter .= '(cn=' . $_REQUEST['in_uid'] . ')';
-                $posixReturn = array ('gidNumber', 'cn');
-                $sr = @ldap_search ($ds,
-                                    $ldap_groupbase,
-                                    $posixFilter,
-                                    $posixReturn);
-                $posix = @ldap_get_entries($ds, $sr);
-                $posix_cnt = $posix["count"];
-
-                // create a posix group for this user
-                if ($posix_cnt==0) {
-                    $posix_attrs['objectclass'][0] = 'top';
-                    $posix_attrs['objectclass'][1] = 'posixGroup';
-                    $posix_attrs['cn'][0]          = $_REQUEST['in_uid'];
-                    $posix_attrs['memberUid'][0]   = $_REQUEST['in_uid'];
-                    $posix_attrs['gidNumber'][0]   = $this_gidnumber;
-                    $posix_attrs['description'][0]
-                        = 'Posix Group for user ' . $REQUEST['in_uid'];
-                    $posix_dn
-                        = 'cn=' . $_REQUEST['in_uid'] . ",$ldap_groupbase";
-                    $r = @ldap_add($ds, $posix_dn, $posix_attrs);
-                    $err = ldap_errno ($ds);
-                    $err_msg = ldap_error ($ds);
-                    if ($err == 0) {
-                        $_SESSION['in_msg'] .= "$ok $posix_dn updated.$ef";
-                    } else {
-                        $_SESSION['in_msg']
-                            .= "$warn Problem adding $posix_dn to "
-                            .  "directory$ef";
-                        $ldapErr = ldap_errno ($ds);
-                        $ldapMsg = ldap_error ($ds);
-                        $_SESSION['in_msg']
-                            .= "$warn Error: $ldapErr, $ldapMsg$ef";
-                    }
-                } else {
-                    posix_group_check ($_REQUEST['in_uid'],
-                                       $_REQUEST['in_uid'],
-                                       $_REQUEST['in_uid']);
-                }
-
-                // check the listed posix groups
-                if ($tags['count']['posixgroup']>0) {
-                    if ($tags['count']['posixgroup']>0) {
-                        foreach ($tags['data']['posixgroup']
-                        as $idx => $this_posixgroup) {
-                            $flag = '';
-                            if ($this_posixgroup['checked'] == 'Y'
-                            && $thisUIDNnumber>0)
-                                {
-                                    $flag = 'Y';
-                                }
-                            posix_group_check(
-                                $this_dn,
-                                $flag,
-                                $this_posixgroup['text']
-                            );
-                        }
-                    }
-                }
-
-                // check for any other additions
-                if (!empty($_REQUEST['in_posix_new'])) {
-                    $thisGroup = trim(strtok($_REQUEST['in_posix_new'], ','));
-                    while (strlen($thisGroup)>0) {
-                        posix_group_check ($in_uid, $thisGroup, $thisGroup);
-                        $thisGroup = trim(strtok(','));
-                    }
-                }
-
-                check_groups(
-                    $this_dn,
-                    $_REQUEST['in_uid'],
-                    $this_uidnumber,
-                    $this_gidnumber,
-                    $this_app_add_list,
-                    $this_app_del_list
-                );
-            }
-
-            // add the kerberos principal
-            kp_add($_REQUEST['in_uid']);
-
-            // create a mailbox if necessary
-            mailbox_check(
-                $_REQUEST['in_uid'],
-                $_REQUEST['in_maildelivery'],
-                $CONF_mailbox_domain
-            );
-
-            // Check mailalias
-            if ($_REQUEST['in_mailalias_cnt']>0) {
-                for ($i=0; $i<$_REQUEST['in_mailalias_cnt']; $i++) {
-                    mail_alias_check(
-                        $in_dn,
-                        $_REQUEST["in_mailalias_$i"],
-                        $_REQUEST["in_mailalias_list_$i"]
-                    );
-                }
-            }
-            if ( !empty($_REQUEST['in_new_mailalias']) ) {
-                $a_mailalias
-                    = trim(strtok($_REQUEST['in_new_mailalias'], ','));
-                while (strlen($a_mailalias)>0) {
-                    mail_alias_check ($in_dn, $a_mailalias, $a_mailalias);
-                    $a_mailalias = trim(strtok(','));
+                    $add_cnt++;
+                    $add_data["$fld"][] = $val_in;
+                    $_SESSION['in_msg'] .= ok_html("$fld added");
                 }
             }
         }
+    }
 
-        // notify the administrator
-        if ( !empty($CONF_ldap_manager_mailbox) ) {
-            $mail_msg .= strip_tags ($_SESSION['in_msg']);
-            $subj = "New LDAP entry in $ldap_dir_title";
-            mail(
-                $CONF_ldap_manager_mailbox,
-                $subj,
-                $mail_msg
+    // -- Make sure every entry has a kerberos principal
+    if ( !empty($info[0][$krb_attr][0]) ) {
+        $krb_oc_add = 1;
+        foreach ($info[0]['objectclass'] as $oc) {
+            if ($oc==$CON['krb_oc']) {
+                $krb_oc_add = 0;
+            }
+        }
+        if ($krb_oc_add > 0) {
+            $add_data['objectclass'][] = $CON['krb_oc'];
+            $_SESSION['in_msg']
+                .= ok_html('objectclass ' . $CON['krb_oc'] . 'added');
+        }
+        $add_data[ $CON['krb_attr'] ][] = $thisPrincipal;
+        $_SESSION['in_msg']
+            .= ok_html($CON['krb_attr'] . " = $thisPrincipal added");
+        $add_cnt++;
+    }
+
+    // add the kerberos principal
+    kp_add($_REQUEST['in_uid']);
+        
+    // -- add attributes
+    if ($add_cnt>0) {
+            
+        // -- posix processing
+        if ($posix_entry) {
+            foreach ($info[0]['objectclass'] as $oc) {
+                if ($oc=='posixaccount') {
+                    $posix_entry = 0;
+                }
+            }
+        }
+        if ($posix_entry) {
+            $add_data['objectclass'][] = 'posixAccount';
+            $add_data['objectclass'][] = 'shadowAccount';
+            $_SESSION['in_msg'] .= ok_html('posixAccount added');
+            $_SESSION['in_msg'] .= ok_html('shadowAccount added');
+            if ($this_uidnumber == 0) {
+                $this_uidnumber = 4000;
+            }
+            $this_uidnumber = get_an_id($this_uidnumber, 'uidnumber');
+            $add_data["uidnumber"][] = $this_uidnumber;
+            $_SESSION['in_msg']
+                .= ok_html("Adding uidNumber = $this_uidnumber");
+            if ($this_gidnumber == 0) {
+                $this_gidnumber = $this_uidnumber;
+            }
+            $this_gidnumber = get_an_id($this_gidnumber, 'gidnumber');
+            $add_data["gidnumber"][] = $this_gidnumber;
+            $_SESSION['in_msg']
+                .= ok_html("Adding gidNumber = $this_gidnumber");
+        }
+    }
+
+    // -- add the needed attributes
+    $r = @ldap_mod_add($ds, $in_dn, $add_data);
+    $err = ldap_errno ($ds);
+    $err_msg = ldap_error ($ds);
+    if ( $err != 0 ) {
+        $e = "$err - $err_msg";
+        $_SESSION['in_msg'] .= warn_html("LDAP error adding attributes: $e");
+    }
+
+    // Check mail aliases
+    if ( $_REQUEST['in_mailalias_cn']>0 ) {
+        for ($i=0; $i<$_REQUEST['in_mailalias_cnt']; $i++) {
+            mail_alias_check(
+                $_REQUEST['in_dn'],
+                $_REQUEST["in_mailalias_$i"],
+                $_REQUEST["in_mailalias_list_$i"]
             );
         }
-
-    } elseif (!empty($_REQUEST['in_button_update'])) {
-
-        // -----------------------------------------------------
-        // Update an LDAP Entry
-        // -----------------------------------------------------
-
-        $ldap_filter = 'objectclass=*';
-
-        if ( empty($_REQUEST['in_dn'] ) {
-            $_SESSION['in_msg'] .= "$warn No entry to update$ef";
-            $ret_cnt = 0;
-        } else {
-            $return_list   = $fld_list;
-            $return_list[] = $krb_attr;
-            $sr = @ldap_read(
-                $ds,
-                $in_dn,
-                $ldap_filter,
-                $return_list
-            );
-            $info = @ldap_get_entries($ds, $sr);
-            $err = ldap_errno ($ds);
-            if ($err) {
-                $err_msg = ldap_error ($ds);
-                $_SESSION['in_msg'] .= "errors: $err $err_msg<br>\n";
-            }
-            $ret_cnt = $info["count"];
+    }
+    if ( !empty($_REQUEST['in_new_mailalias'])>0 ) {
+        $a_mailalias = trim(strtok($_REQUEST['in_new_mailalias'], ','));
+        while (strlen($a_mailalias)>0) {
+            mail_alias_check ($in_dn, $a_mailalias, $a_mailalias);
+            $a_mailalias = trim(strtok(','));
         }
-        if ($ret_cnt) {
+    }
 
-            $first_cn = '';
-            if ( !empty($info[0]['cn'][0])) {
-                $first_cn = trim($info[0]['cn'][0]);
-            }
-            $add_cnt     = 0;
-            $posix_entry = 0;
-            if ( !empty($_REQUEST['in_linux_add']) ) {
-                $posix_entry = 1;
-                $add_cnt++;
-            }
+    // Check common name
+    if ( !empty($_REQUEST['in_new_cn']) ) {
+        $a_cn = stripslashes(trim(strtok($_REQUEST['in_new_cn'], ',')));
+        while ( !empty($a_cn) ) {
+            common_name_check ($_REQUEST['in_dn'], $a_cn, $a_cn);
+            $a_cn = stripslashes(trim(strtok(',')));
+        }
+    }
+    if ( $_REQUEST['in_cn_cnt']>0 ) {
+        for ($i=0; $i<$_REQUEST['in_cn_cnt']; $i++) {
+            common_name_check(
+                $_REQUEST['in_dn'],
+                stripslashes($in_cn[$i]),
+                stripslashes($in_cn_list[$i])
+            );
+        }
+    }
 
-            foreach ($fld_list as $fld) {
-                if ( $fld == 'objectclass' ) {
-                    continue;
-                }
+    // Check mailDelivery
+    if ( !empty($_REQUEST['in_new_maildelivery']) ) {
+        $a_maildelivery = strtok($_REQUEST['in_new_maildelivery']);
+        $a_maildelivery = stripslashes(trim($a_maildelivery, ','));
+        while (strlen($a_maildelivery)>0) {
+            maildelivery_check(
+                $_REQUEST['in_dn'],
+                $a_maildelivery,
+                $a_maildelivery
+            );
+            $a_maildelivery = stripslashes(trim(strtok(',')));
+        }
+    }
+    if ( $_REQUEST['in_maildelivery_cnt']>0 ) {
+        for ($i=0; $i<$_REQUEST['in_maildelivery_cnt']; $i++) {
+            maildelivery_check(
+                $_REQUEST['in_dn'],
+                stripslashes($_REQUEST["in_maildelivery_$i"]),
+                stripslashes($_REQUEST["in_maildelivery_list_$i"])
+            );
+        }
+    }
+    
+    // check posix groups
+    
+    if ( !empty($_REQUEST['in_uidnumber'}\]) ) {
 
-                $val_in = '';
-                $tmp    = $_REQUEST["in_$fld"];
-                if ( !empty($tmp) ) {
-                    $val_in  = stripslashes(trim($tmp));
-                }
-
-                $val_ldap = '';
-                if ( !empty($info[0]["$fld"][0]) ) {
-                    $val_ldap = trim($info[0]["$fld"][0]);
-                }
-
-                if ( $val_in != $val_ldap ) {
-                    if ( empty($val_in) ) {
-                        if ( !empty($val_ldap) ) {
-                            // delete the attribute
-                            $new_data["$fld"] = $val_ldap;
-                            $r = @ldap_mod_del($ds, $in_dn, $new_data);
-                            $err = ldap_errno ($ds);
-                            $err_msg = ldap_error ($ds);
-                            $_SESSION['in_msg']
-                                .= "$ok $fld: $val_ldap deleted.$ef";
-                            if ($err>0) {
-                                $_SESSION['in_msg']
-                                    .= "$warn ldap error deleting "
-                                    . "attribute $fld: $err - $err_msg.$ef";
-                            }
-                        }
-                    } else {
-                        // try and replace it, if that fails try and add it
-                        $new_data["$fld"] = $val_in;
-
-                        // replace
-                        $r = @ldap_mod_replace(
-                            $ds,
-                            $_REQUEST['in_dn'],
-                            $new_data
-                        );
-                        $err = ldap_errno ($ds);
-                        $err_msg = ldap_error ($ds);
-                        if ($err == 0) {
-                            $_SESSION['in_msg'] .= "$ok $fld replaced.$ef";
-
-                        } else {
-
-                            if ($fld=='uidnumber') {
-                                $this_uidnumber = $val_in;
-                                $posix_entry = 1;
-                            }
-                            if ($fld=='gidnumber') {
-                                $this_gidnumber = $val_in;
-                                $posix_entry = 1;
-                            }
-                            if ($fld=='loginshell' || $fld=='homedirectory') {
-                                $posix_entry = 1;
-                            }
-
-                            $add_cnt++;
-                            $add_data["$fld"][] = $val_in;
-                            $_SESSION['in_msg'] .= "$ok $fld added.$ef";
-                        }
-                    }
-                }
-            }
-
-            // -- Make sure every entry has a kerberos principal
-            if ( !empty($info[0][$krb_attr][0]) ) {
-                $krb_oc_add = 1;
-                foreach ($info[0]['objectclass'] as $oc) {
-                    if ($oc==$krb_oc) {$krb_oc_add = 0;}
-                }
-                if ($krb_oc_add > 0) {
-                    $add_data['objectclass'][] = $krb_oc;
-                    $_SESSION['in_msg'] .= "$ok objectclass $krb_oc added.$ef";
-                }
-                $add_data[$krb_attr][] = $thisPrincipal;
-                $_SESSION['in_msg']
-                    .= "$ok $krb_attr = $thisPrincipal added.$ef";
-                $add_cnt++;
-            }
-
-            // add the kerberos principal
-            kp_add($_REQUEST['in_uid']);
-
-            // -- add attributes
-            if ($add_cnt>0) {
-
-                // -- posix processing
-                if ($posix_entry) {
-                    foreach ($info[0]['objectclass'] as $oc) {
-                        if ($oc=='posixaccount') {
-                            $posix_entry = 0;
-                        }
-                    }
-                }
-                if ($posix_entry) {
-                    $add_data['objectclass'][] = 'posixAccount';
-                    $add_data['objectclass'][] = 'shadowAccount';
-                    $_SESSION['in_msg'] .= "$ok posixAccount added.$ef";
-                    $_SESSION['in_msg'] .= "$ok shadowAccount added.$ef";
-                    if ($this_uidnumber == 0) {
-                        $this_uidnumber = 4000;
-                    }
-                    $this_uidnumber = get_an_id($this_uidnumber, 'uidnumber');
-                    $add_data["uidnumber"][] = $this_uidnumber;
-                    $_SESSION['in_msg']
-                        .= "$ok adding uidNumber = $this_uidnumber$ef";
-                    if ($this_gidnumber == 0) {
-                        $this_gidnumber = $this_uidnumber;
-                    }
-                    $this_gidnumber = get_an_id($this_gidnumber, 'gidnumber');
-                    $add_data["gidnumber"][] = $this_gidnumber;
-                    $_SESSION['in_msg']
-                        .= "$ok adding gidNumber = $this_gidnumber$ef";
-                }
-            }
-
-            // -- add the needed attributes
-            $r = @ldap_mod_add($ds, $in_dn, $add_data);
+        // posix group for this user maybe
+        $posixFilter = '(&';
+        $posixFilter .= '(objectclass=posixGroup)';
+        $posixFilter .= '(cn=' . $_REQUEST['in_uid'] . ')';
+        $posixFilter .= ')';
+        $posixReturn = array ('gidNumber', 'cn');
+        $sr = @ldap_search ($ds, $ldap_base, $posixFilter, $posixReturn);
+        $posix = @ldap_get_entries($ds, $sr);
+        $posix_cnt = $posix["count"];
+        
+        // create a posix group for this user
+        if ($posix_cnt==0) {
+            $posix_attrs['objectclass'][0] = 'top';
+            $posix_attrs['objectclass'][1] = 'posixGroup';
+            $posix_attrs['cn'][0]          = $_REQUEST['in_uid'];
+            $posix_attrs['memberUid'][0]   = $_REQUEST['in_uid'];
+            $posix_attrs['gidNumber'][0]   = $this_gidnumber;
+            $posix_attrs['description'][0] = "User's personal group";
+            $posix_dn = "cn=$in_uid,$ldap_groupbase";
+            $r = @ldap_add($ds, $posix_dn, $posix_attrs);
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
-            if ( $err != 0 ) {
-                $_SESSION['in_msg'] .= "$warn ldap error adding attributes: "
-                    . "$err - $err_msg.$ef";
-            }
-        }
-
-        // Check mail aliases
-        if ( $_REQUEST['in_mailalias_cn']>0 ) {
-            for ($i=0; $i<$_REQUEST['in_mailalias_cnt']; $i++) {
-                mail_alias_check(
-                    $_REQUEST['in_dn'],
-                    $_REQUEST["in_mailalias_$i"],
-                    $_REQUEST["in_mailalias_list_$i"]
-                );
-            }
-        }
-        if ( !empty($_REQUEST['in_new_mailalias'])>0 ) {
-            $a_mailalias = trim(strtok($_REQUEST['in_new_mailalias'], ','));
-            while (strlen($a_mailalias)>0) {
-                mail_alias_check ($in_dn, $a_mailalias, $a_mailalias);
-                $a_mailalias = trim(strtok(','));
-            }
-        }
-
-        // Check common name
-        if ( !empty($_REQUEST['in_new_cn']) ) {
-            $a_cn = stripslashes(trim(strtok($_REQUEST['in_new_cn'], ',')));
-            while ( !empty($a_cn) ) {
-                common_name_check ($_REQUEST['in_dn'], $a_cn, $a_cn);
-                $a_cn = stripslashes(trim(strtok(',')));
-            }
-        }
-        if ( $_REQUEST['in_cn_cnt']>0 ) {
-            for ($i=0; $i<$_REQUEST['in_cn_cnt']; $i++) {
-                common_name_check(
-                    $_REQUEST['in_dn'],
-                    stripslashes($in_cn[$i]),
-                    stripslashes($in_cn_list[$i])
-                );
-            }
-        }
-
-        // Check mailDelivery
-        if ( !empty($_REQUEST['in_new_maildelivery']) ) {
-            $a_maildelivery = strtok($_REQUEST['in_new_maildelivery']);
-            $a_maildelivery = stripslashes(trim($a_maildelivery, ','));
-            while (strlen($a_maildelivery)>0) {
-                maildelivery_check(
-                    $_REQUEST['in_dn'],
-                    $a_maildelivery,
-                    $a_maildelivery
-                );
-                $a_maildelivery = stripslashes(trim(strtok(',')));
-            }
-        }
-        if ( $_REQUEST['in_maildelivery_cnt']>0 ) {
-            for ($i=0; $i<$_REQUEST['in_maildelivery_cnt']; $i++) {
-                maildelivery_check(
-                    $_REQUEST['in_dn'],
-                    stripslashes($_REQUEST["in_maildelivery_$i"]),
-                    stripslashes($_REQUEST["in_maildelivery_list_$i"])
-                );
-            }
-        }
-
-        // check posix groups
-
-        if ( !empty($_REQUEST['in_uidnumber'}\]) ) {
-
-            // posix group for this user maybe
-            $posixFilter = '(&';
-            $posixFilter .= '(objectclass=posixGroup)';
-            $posixFilter .= '(cn=' . $_REQUEST['in_uid'] . ')';
-            $posixFilter .= ')';
-            $posixReturn = array ('gidNumber', 'cn');
-            $sr = @ldap_search ($ds, $ldap_base, $posixFilter, $posixReturn);
-            $posix = @ldap_get_entries($ds, $sr);
-            $posix_cnt = $posix["count"];
-
-            // create a posix group for this user
-            if ($posix_cnt==0) {
-                $posix_attrs['objectclass'][0] = 'top';
-                $posix_attrs['objectclass'][1] = 'posixGroup';
-                $posix_attrs['cn'][0]          = $_REQUEST['in_uid'];
-                $posix_attrs['memberUid'][0]   = $_REQUEST['in_uid'];
-                $posix_attrs['gidNumber'][0]   = $this_gidnumber;
-                $posix_attrs['description'][0] = "User's personal group";
-                $posix_dn = "cn=$in_uid,$ldap_groupbase";
-                $r = @ldap_add($ds, $posix_dn, $posix_attrs);
-                $err = ldap_errno ($ds);
-                $err_msg = ldap_error ($ds);
-                if ($err == 0) {
-                    $_SESSION['in_msg'] .= "$ok $posix_dn updated.$ef";
-                } else {
-                    $_SESSION['in_msg'] .= "$warn Problem adding $posix_dn to "
-                        .  "directory$ef";
-                    $ldapErr = ldap_errno ($ds);
-                    $ldapMsg = ldap_error ($ds);
-                    $_SESSION['in_msg']
-                        .= "$warn Error: $ldapErr, $ldapMsg$ef";
-                }
+            if ($err == 0) {
+                $_SESSION['in_msg'] .= ok_html("$posix_dn updated");
             } else {
-                posix_group_check(
-                    $_REQUEST['in_uid'],
-                    $_REQUEST['in_uid'],
-                    $_REQUEST['in_uid']
-                );
+                $_SESSION['in_msg']
+                    .= warn_html("Problem adding $posix_dn to directory");
+                $ldapErr = ldap_errno ($ds);
+                $ldapMsg = ldap_error ($ds);
+                $_SESSION['in_msg'] .= warn_html("Error: $ldapErr, $ldapMsg");
             }
+        } else {
+            posix_group_check(
+                $_REQUEST['in_uid'],
+                $_REQUEST['in_uid'],
+                $_REQUEST['in_uid']
+            );
         }
+
         // check the listed posix groups
         if ( !empty($tags['count']['posixgroup']) ) {
-            if ($tags['count']['posixgroup']>0) {
+            if ( $tags['count']['posixgroup']>0 ) {
                 foreach (
                     $tags['data']['posixgroup'] as $idx => $this_posixgroup
                 ) {
                     $flag = '';
                     if ($this_posixgroup['checked'] == 'Y'
-                        && $this_uidnumber>0)
-                    {
+                        & $this_uidnumber>0) {
                         $flag = 'Y';
                     }
                     posix_group_check (
@@ -1141,9 +1137,7 @@ if (!empty($_REQUEST['in_button_add'])) {
             }
         }
         // check for any other additions
-        if ( !empty($_REQUEST['in_posix_new')
-            && !empty($_REQUEST['in_uidnumber']) )
-        {
+        if ( !empty($_REQUEST['in_posix_new']) ) {
             $thisGroup = trim(strtok($in_posix_new, ','));
             while ( !empty($thisGroup) ) {
                 posix_group_check(
@@ -1154,17 +1148,17 @@ if (!empty($_REQUEST['in_button_add'])) {
                 $thisGroup = trim(strtok(','));
             }
         }
-
-        check_groups(
-            $_REQUEST['in_dn'],
-            $_REQUEST['in_uid'],
-            $_REQUEST['in_uidnumber'],
-            $_REQUEST['in_gidnumber'],
-            $this_app_add_list,
-            $this_app_del_list
-        );
     }
-
+    
+    check_groups(
+        $_REQUEST['in_dn'],
+        $_REQUEST['in_uid'],
+        $_REQUEST['in_uidnumber'],
+        $_REQUEST['in_gidnumber'],
+        $OUR[app_add_list],
+        $OUR[app_del_list]
+    );
+            
     // check mailbox
     mailbox_check(
         $_REQUEST['in_uid'],
@@ -1172,19 +1166,20 @@ if (!empty($_REQUEST['in_button_add'])) {
         $CONF_mailbox_domain
     );
 
-} elseif ( !empty($_REQUEST['in_button_delete']) ) {
+    return;
+}
 
-    // -----------------------------------------------------
-    // Delete an LDAP Entry
-    // -----------------------------------------------------
-
+// -----------------------------------------------------
+// Delete an LDAP Entry
+function delete_ldap_entry {
+    
     // delete their posix group if they have one
     $del_dn = 'cn=' . $_REQUEST['in_uid'] . ",$ldap_groupbase";
     $r = @ldap_delete($ds, $posix_dn);
     $err = ldap_errno ($ds);
     $err_msg = ldap_error ($ds);
     if ($err == 0) {
-        $_SESSION['in_msg'] .= "$ok $del_dn deleted.$ef";
+        $_SESSION['in_msg'] .= ok_html("$del_dn deleted");
     }
 
     // delete from other posix groups
@@ -1232,23 +1227,58 @@ if (!empty($_REQUEST['in_button_add'])) {
     $err = ldap_errno ($ds);
     $err_msg = ldap_error ($ds);
     if ($err == 0) {
-        $_SESSION['in_msg'] .= $ok . $_REQUEST['in_dn'] . " deleted.$ef";
+        $_SESSION['in_msg'] .= ok_html($_REQUEST['in_dn'] . " deleted)");
     } else {
-        $_SESSION['in_msg'] .= "$warn ldap error deleting "
-            . $_REQUEST['in_dn'] . ": $err - $err_msg.$ef";
+        $E = "$err - $err_msg";
+        $_SESSION['in_msg']
+            .= warn_html('LDAP error deleting ' . $_REQUEST['in_dn'] . ": $e");
     }
 
-    mailbox_check(
-        $_REQUEST['in_uid'],
-        '',
-        $CONF_mailbox_domain
-    );
+    mailbox_check($_REQUEST['in_uid'], '', $CONF_mailbox_domain);
 
     // delete the kerberos principal
     kp_delete($in_uid);
 
+    return;
+}
+
+// -------------------------------------------------------------
+// main routine
+
+init_globals();
+// get a list of pam, posix, and application groups
+require ('inc_groups.php');
+
+// decode any xml data that is passed
+$tags = array();
+if (!empty($_REQUEST['in_xml_data'])) {
+    // Set up the XML parser
+    $xml_parser = xml_parser_create();
+    xml_parser_set_option($xml_parser, XML_OPTION_CASE_FOLDING, false);
+    xml_set_element_handler($xml_parser, "startElement", "endElement");
+    xml_set_character_data_handler($xml_parser, "characterData");
+
+    // Parse the data passed and then free the resouce
+    if ( !xml_parse($xml_parser, $_REQUEST['in_xml_data'], true) ) {
+        echo "XML error:"
+            . xml_error_string(xml_get_error_code($xml_parser))
+            . "<br>\n";
+        exit;
+    }
+    xml_parser_free($xml_parser);
+}
+
+// Set the kerberos principal name for everyone to use
+$thisPrincipal = $_REQUEST['in_uid'] . '@' . $CONF_krb_realm;
+
+if (!empty($_REQUEST['in_button_add'])) {
+    add_ldap_entry();
+} elseif ( !empty($_REQUEST['in_button_update']) ) {
+    update_ldap_entry();
+} elseif ( !empty($_REQUEST['in_button_delete']) ) {
+    delete_ldap_entry();
 } else {
-    $_SESSION['in_msg'] .= "$warn invalid action$ef";
+    $_SESSION['in_msg'] .= warn_html('Invalid action');
 }
 
 $a_url = "user_maint.php?in_uid=$in_uid";

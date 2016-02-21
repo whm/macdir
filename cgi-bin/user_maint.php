@@ -8,14 +8,12 @@
 // description: This form is for updating phone information for people
 //              listed in the LDAP Directory.
 
-require('inc_config.php');
-
 $title = 'User Maintenance';
 $heading = 'User Maintenance';
 
+require('inc_init.php');
 require('inc_header.php');
-require('/etc/whm/macdir.php');
-require('inc_bind.php');
+
 $ds = macdir_bind($ldap_server, 'GSSAPI');
 
 // -----------------------------------------------------

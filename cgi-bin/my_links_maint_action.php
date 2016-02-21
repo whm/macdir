@@ -30,8 +30,9 @@ array_push ($fld_list, 'prideurlprivate');
 array_push ($fld_list, 'linkuid');
 array_push ($fld_list, 'pridecredential');
 
-require ('/etc/whm/macdir.php');
-require('inc_bind.php');
+require('inc_init.php');
+require('/etc/whm/macdir.php');
+
 $ds = macdir_bind($ldap_server, 'GSSAPI');
 
 $link_base = 'uid=' . $_SERVER['REMOTE_USER'] . ',' . $ldap_user_base;

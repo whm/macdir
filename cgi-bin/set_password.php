@@ -27,8 +27,10 @@ function prt ($fld) {
 $title = 'System Manager Password Maintenance';
 $heading = 'Password Maintenance';
 
-require ('inc_header.php');
+require('inc_init.php');
+require('inc_header.php');
 require('/etc/whm/macdir.php');
+
 $ds = ldap_connect($ldap_server);
 
 ?>

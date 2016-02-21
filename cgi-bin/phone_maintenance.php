@@ -10,17 +10,14 @@ $in_uid  = $_REQUEST['in_uid'];
 // author: Bill MacAllister
 // date: 2-Jan-2004
 
-// Open a session and check for authorization
-require('whm_php_sessions.inc');
-require('whm_php_auth.inc');
-require('inc_bind.php');
-$ds = macdir_bind($ldap_server, 'GSSAPI');
-
 $title = 'Contact Maintenance';
 $heading = 'Contact Maintenance';
 
+require('inc_init.php');
 require('/etc/whm/macdir.php');
 require('inc_header.php');
+
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 if (!isset($_SESSION['in_msg'])) {
   $_SESSION['in_msg'] = '';

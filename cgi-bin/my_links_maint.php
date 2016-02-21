@@ -12,9 +12,10 @@ $in_cn  = $_REQUEST['in_cn'];
 $title = 'Link Maintenance';
 $heading = 'Link Maintenance';
 
-require('inc_header.php');
+require('inc_init.php');
 require('/etc/whm/macdir.php');
-require('inc_bind.php');
+require('inc_header.php');
+
 $ds = macdir_bind($ldap_server, 'GSSAPI');
 
 if (isset($in_cn)) {

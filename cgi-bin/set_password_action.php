@@ -15,8 +15,9 @@ $in_button_update    = $_REQUEST['in_button_update'];
 // Date: 22-Oct-2001
 
 // bind to the ldap directory
+require('inc_init.php');
 require('/etc/whm/macdir.php');
-require('inc_bind.php');
+
 $dirServer = macdir_bind($ldap_server, 'GSSAPI');
 
 // -------------------------------

@@ -11,14 +11,14 @@ $in_uid = $_REQUEST['in_uid'];
 # file: user_details.php
 # author: Bill MacAllister
 
-require('inc_config.php');
-require('/etc/whm/macdir.php');
-require('inc_bind.php');
-$ds = macdir_bind($ldap_server, 'GSSAPI');
-
 $title = 'MacAllister Directory Search Details';
 $heading = "A Person's Details";
+
+require('inc_init.php');
+require('/etc/whm/macdir.php');
 require ('inc_header.php');
+
+$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 # -- print a row if there is something to print
 

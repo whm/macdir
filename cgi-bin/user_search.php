@@ -7,15 +7,14 @@
 
 $title = 'Search for a Person';
 $heading = 'MacAllister Directory';
+require('inc_init.php');
 require('inc_header.php');
-require('/etc/whm/macdir.php');
-require('inc_bind.php');
 
 // clean out the messages
 $msg = '';
 
 // set default for amount of search details to display
-if ( isset($_REQUEST['in_more_search']) ) {
+if ( !empty($_REQUEST['in_more_search']) ) {
     $in_more_search = $_REQUEST['in_more_search'];
 } else {
     $in_more_search
@@ -78,12 +77,12 @@ if ( empty($base_filter) ) {
 
 ?>
 
-To search for an somone just enter some or all of the data requested
-below.  If there is more than one match you will be presented with a
-list to select from.  If your selection is too broad you will be presented
-with only a partial list of matches. Anything that you enter into
-a field is treated as a wild card. For example entering &quot;ill&quot;
-for the first name will return matches for Bill and William.
+To search for somone just enter some.  If there is more than one match
+you will be presented with a list to select from.  If your selection
+is too broad you will be presented with only a partial list of matches.
+Anything that you enter into a field is treated as a wild card. For
+example entering &quot;ill&quot; for the first name will return
+matches for Bill and William.
 
 <p>
 <div align="center">
