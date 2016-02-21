@@ -40,18 +40,20 @@ $form["maildistributionid"] = "maildistributionid";
 
 // construct the filter from input data
 $base_filter = '';
+$form_val    = array();
 foreach ($form as $formName => $ldapName) {
     $in_name  = "in_$formName";
-    if (isset($_REQUEST[$in_name])) {
+    if ( !empty($_REQUEST[$in_name]) ) {
         $a_val = $_REQUEST[$in_name];
-        if (!empty($a_val)) {
-            $base_filter .= "($ldapName=*$a_val*)";
-            $_SESSION["SEAR_$formName"] = $a_val;
-        }
+        $base_filter .= "($ldapName=*$a_val*)";
+        $_SESSION["SEAR_$formName"] = $a_val;
+        $form_val[$in_name]         = $a_val;
+    } else {
+        $form_val[$in_name] = '';
     }
 }
 
-if ( ! isset($base_filter) ) {
+if ( empty($base_filter) ) {
 
     // construct a filter from session information if there
     // is no input data
@@ -94,7 +96,7 @@ for the first name will return matches for Bill and William.
     <td>
       <input type="text"
              name="in_firstname"
-             value="<?php print $_SESSION['SEAR_firstname'];?>"
+             value="<?php print $form_val['in_firstname'];?>"
              size="32">
     </td>
   </tr>
@@ -105,7 +107,7 @@ for the first name will return matches for Bill and William.
     <td>
       <input type="text"
              name="in_lastname"
-             value="<?php print $_SESSION['SEAR_lastname'];?>"
+             value="<?php print $form_val['in_lastname'];?>"
              size="32">
     </td>
   </tr>
@@ -117,7 +119,7 @@ for the first name will return matches for Bill and William.
     <td>
       <input type="text"
              name="in_title"
-             value="<?php print $_SESSION['SEAR_title'];?>"
+             value="<?php print $form_val['in_title'];?>"
              size="32">
     </td>
   </tr>
@@ -129,7 +131,7 @@ for the first name will return matches for Bill and William.
     <td>
       <input type="text"
              name="in_commonname"
-             value="<?php print $_SESSION['SEAR_commonname'];?>"
+             value="<?php print $form_val['in_commonname'];?>"
              size="32">
     </td>
   </tr>
@@ -141,7 +143,7 @@ for the first name will return matches for Bill and William.
     <td>
       <input type="text"
              name="in_postaladdress"
-             value="<?php print $_SESSION['SEAR_postaladdress'];?>"
+             value="<?php print $form_val['in_postaladdress'];?>"
              size="32">
     </td>
   </tr>
@@ -152,7 +154,7 @@ for the first name will return matches for Bill and William.
     <td>
       <input type="text"
              name="in_city"
-             value="<?php print $_SESSION['SEAR_city'];?>"
+             value="<?php print $form_val['in_city'];?>"
              size="32">
     </td>
   </tr>
@@ -163,7 +165,7 @@ for the first name will return matches for Bill and William.
     <td>
       <input type="text"
              name="in_state"
-             value="<?php print $_SESSION['SEAR_state'];?>"
+             value="<?php print $form_val['in_state'];?>"
              size="32">
     </td>
   </tr>
@@ -174,7 +176,7 @@ for the first name will return matches for Bill and William.
     <td>
       <input type="text"
              name="in_telephone_number"
-             value="<?php print $_SESSION['SEAR_telephone_number'];?>"
+             value="<?php print $form_val['in_telephone_number'];?>"
              size="32">
     </td>
   </tr>
@@ -185,7 +187,7 @@ for the first name will return matches for Bill and William.
     <td>
       <input type="text"
              name="in_workphone"
-             value="<?php print $_SESSION['SEAR_workphone'];?>"
+             value="<?php print $form_val['in_workphone'];?>"
              size="32">
     </td>
   </tr>
@@ -196,7 +198,7 @@ for the first name will return matches for Bill and William.
     <td>
       <input type="text"
              name="in_cell_number"
-             value="<?php print $_SESSION['SEAR_cell_number'];?>"
+             value="<?php print $form_val['in_cell_number'];?>"
              size="32">
     </td>
   </tr>
@@ -207,7 +209,7 @@ for the first name will return matches for Bill and William.
     <td>
       <input type="text"
              name="in_email"
-             value="<?php print $_SESSION['SEAR_email'];?>"
+             value="<?php print $form_val['in_email'];?>"
              size="32">
     </td>
   </tr>
@@ -218,7 +220,7 @@ for the first name will return matches for Bill and William.
     <td>
       <input type="text"
              name="in_maildistributionid"
-             value="<?php print $_SESSION['SEAR_maildistributionid'];?>"
+             value="<?php print $form_val['in_maildistributionid'];?>"
              size="32">
     </td>
   </tr>

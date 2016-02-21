@@ -1,11 +1,6 @@
 <?php
 //
 // ----------------------------------------------------------
-// Register Global Fix
-//
-$in_button_find = $_REQUEST['in_button_find'];
-$in_uid         = $_REQUEST['in_uid'];
-// ----------------------------------------------------------
 //
 // file: user_maint.php
 // author: Bill MacAllister
@@ -28,18 +23,27 @@ $ds = macdir_bind($ldap_server, 'GSSAPI');
 
 require('inc_groups.php');
 
+// -----------------------------------------------------
+// Set some variables
+$this_mail_domain    = empty($mail_domain) ? '' : $mail_domain;
+$this_mailbox_domain = empty($mailbox_domain) ? '' : $mailbox_domain;
+
 // ---------------------------------------------------------
 // Lookup an entry
 
-$entry_found = 0;
+$entry_found     = 0;
 $add_delete_flag = 1;
-$thisUID = $thisDN = $ldap_filter = '';
+$thisUID         = '';
+$thisDN          = '';
+$ldap_filter     = '';
 
-if (!isset($in_uid)) {$in_uid = '';}
-if (strlen($in_uid)>0) {
-  $ldap_filter = "uid=$in_uid";
+if (empty($_REQUEST['in_uid'])) {
+    $in_uid = '';
+} else {
+    $in_uid = $_REQUEST['in_uid'];
+    $ldap_filter = "uid=$in_uid";
 }
-if (isset($ldap_filter)) {
+if (!empty($ldap_filter)) {
 
   $return_attr = array();
   $old_err = error_reporting(E_ERROR | E_PARSE);
@@ -133,7 +137,7 @@ if (isset($msg)) {
   echo "</tr>\n";
   $msg = '';
 }
-if (isset($_SESSION['in_msg'])) {
+if ( !empty($_SESSION['in_msg']) ) {
     echo "<tr>\n";
     echo "  <td colspan=\"2\" align=\"center\">".$_SESSION['in_msg']."</td>\n";
     echo "</tr>\n";
@@ -151,22 +155,22 @@ if (isset($_SESSION['in_msg'])) {
 // ------------------------------------
 // Set mail fields
 function set_mail () {
- var f;
- f = document.user_maint;
- var this_cn = f.in_new_cn.value;
- if (f.in_cn_cnt.value > 0) {
-   this_cn = f.in_first_cn.value;
- } else if (f.in_new_cn.value == '') {
-   this_cn = f.in_uid.value;
- }
- var t = this_cn;
- t = t.replace (/\s+/g,".");
- t = t.replace (/\.\./g,"");
- t = t.replace (/^\./g,"");
- t = t.replace (/\.$/g,"");
- f.in_mail.value = t + '@<?php echo $mail_domain;?>';
- t = f.in_uid.value.toLowerCase() + '@<?php echo $mailbox_domain;?>';
- f.in_new_maildelivery.value = t;
+    var f;
+    f = document.user_maint;
+    var this_cn = f.in_new_cn.value;
+    if (f.in_cn_cnt.value > 0) {
+        this_cn = f.in_first_cn.value;
+    } else if (f.in_new_cn.value == '') {
+        this_cn = f.in_uid.value;
+    }
+    var t = this_cn;
+    t = t.replace (/\s+/g,".");
+    t = t.replace (/\.\./g,"");
+    t = t.replace (/^\./g,"");
+    t = t.replace (/\.$/g,"");
+    f.in_mail.value = t + '@<?php echo $this_mail_domain;?>';
+    t = f.in_uid.value.toLowerCase() + '@<?php echo $this_mailbox_domain;?>';
+    f.in_new_maildelivery.value = t;
 }
 
 // ------------------------------------
@@ -510,17 +514,23 @@ function checkIt() {
    Add:<br>
    <select name="inAppAddList[]" multiple="multiple" size="5">
 <?php
-  foreach ($app_groups as $a_cn => $a_description) {
-    if (isset($thisApps[$a_cn])) { continue; }
-    echo "    <option value=\"$a_cn\">$a_description\n";
+  if ( !empty($app_groups) ) {
+      foreach ($app_groups as $a_cn => $a_description) {
+          if ( !empty($thisApps[$a_cn])) {
+              continue;
+          }
+          echo "    <option value=\"$a_cn\">$a_description\n";
+      }
   }
 ?>
    </select><br>
    Remove:<br>
    <select name="inAppDelList[]" multiple="multiple" size="4">
 <?php
-  foreach ($thisApps as $appName => $appDescription) {
-    echo "    <option value=\"$appName\">$appDescription ($appName)\n";
+  if ( !empty($thisApps) ) {
+      foreach ($thisApps as $appName => $appDescription) {
+          echo "    <option value=\"$appName\">$appDescription ($appName)\n";
+      }
   }
 ?>
    </select>
@@ -542,7 +552,9 @@ function checkIt() {
  <td align="right">Mail:</td>
    <?php
      $z = '';
-     if (isset($info[0]["mail"][0])) {$z = $info[0]["mail"][0];}
+     if ( !empty($info[0]["mail"][0]) ) {
+         $z = $info[0]["mail"][0];
+     }
    ?>
  <td colspan="5"><input type="text" size="40"
             name="in_mail" value="<?php print $z;?>"></td>
@@ -551,11 +563,14 @@ function checkIt() {
  <td align="right">Mail Aliases:</td>
  <td colspan="5">
   <?php
-    $ma_cnt = $info[0]["mailalias"]["count"];
-    echo "    <input type=\"hidden\" name=\"in_mailalias_cnt\" value=\"$ma_cnt\">\n";
-    if ($ma_cnt>0) {
+  $ma_cnt = empty($info[0]["mailalias"]["count"])
+          ? 0 : $info[0]["mailalias"]["count"];
+  echo '    <input type="hidden" ';
+  echo            'name="in_mailalias_cnt" ';
+  echo            'value="' . $ma_cnt . ">\n";
+  if ($ma_cnt>0) {
       for ($i=0; $i<$ma_cnt; $i++) {
-        $ma[] = $info[0]["mailalias"][$i];
+          $ma[] = $info[0]["mailalias"][$i];
       }
       sort($ma);
       $i = 0;
@@ -578,7 +593,7 @@ function checkIt() {
             size="40"
             name="in_new_mailalias"></td>
 </tr>
-        
+
 <tr>
  <td align="right">Mail Delivery:</td>
  <td colspan="5">
@@ -592,11 +607,11 @@ function checkIt() {
       $this_maildelivery = $info[0]["maildelivery"][$i];
   ?>
      <input type="checkbox" CHECKED
-            name="in_maildelivery[<?echo $i;?>]"
+            name="in_maildelivery_<?echo $i;?>"
             value="<?php print $this_maildelivery;?>">
         <?php print "$this_maildelivery\n";?>
      <input type="hidden"
-            name="in_maildelivery_list[<?echo $i;?>]"
+            name="in_maildelivery_list_<?echo $i;?>"
             value="<?php print $this_maildelivery;?>">
      <br>
   <?php
@@ -616,7 +631,7 @@ function checkIt() {
   </td>
 </tr>
 
-<?php if (strlen($info[0]["uidnumber"][0]) == 0) {?>
+<?php if ( empty($info[0]["uidnumber"][0]) ) {?>
 <tr>
  <td align="right">Add Linux Access:</td>
  <td colspan="5">
@@ -630,11 +645,11 @@ function checkIt() {
  <td align="right">UID Number:</td>
  <td><input type="text" size="10"
             name="in_uidnumber"
-            value="<?php print $info[0]["uidnumber"][0];?>"></td>
+            value=""></td>
  <td align="right">GID Number:</td>
  <td><input type="text" size="10"
             name="in_gidnumber"
-            value="<?php print $info[0]["gidnumber"][0];?>"></td>
+            value=""></td>
  <td colspan="2">Leave blank to auto-generate</td>
 </tr>
 <?php } else { ?>
@@ -698,7 +713,7 @@ function checkIt() {
 $br = '';
 $posix_display = array();
 $posix_checked = array();
-if (count($thisPosix)>0) {
+if ( !empty($thisPosix) && $thisPosix>0 ) {
   foreach ($thisPosix as $group => $description) {
     $posix_display[$group] = $description;
     $posix_checked[$group] = 'CHECKED';
