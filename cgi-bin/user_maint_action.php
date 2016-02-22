@@ -50,7 +50,9 @@ function mailbox_check ($p_uid, $addr, $local_domain) {
     global $imap_mpass;
 
     // Don't check a mailbox if there is none
-    if (strlen($impa_host) == 0) {return;}
+    if (empty($CONF_imap_host)) {
+        return;
+    }
 
     $CONF_imap_host_perl = '{' . $CONF_imap_host . ':143}';
     $user_mbx = 'user/' . $p_uid;
@@ -221,7 +223,7 @@ function maildelivery_check ($a_dn, $a_flag, $a_maildelivery) {
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
             if ($err>0) {
-                my $e = " $err - $err_msg";
+                $e = "$err - $err_msg";
                 $_SESSION['in_msg']
                     .= warn_html(
                         "ldap error removing $a_maildelivery from $a_dn: $e"
@@ -541,13 +543,13 @@ function check_groups ($a_dn,
             }
         }
     }
-
+    return;
 }
 
 # ------------------------------------------------------------
 # Set global variables
 
-function init_globals {
+function init_globals() {
 
     global $CON;
     $CON = array();
@@ -562,6 +564,8 @@ function init_globals {
     $OUR['app_del_list']
         = empty($_REQUEST['in_appDelList'])
           ? array() : $_REQUEST['in_appDelList'];
+    $OUR['principal'] = $_REQUEST['in_uid'] . '@' . $CONF_krb_realm;
+
 
     # This array describes the "simple" attributes.  That is attributes
     # that have a simple value.
@@ -597,14 +601,13 @@ function init_globals {
 // -----------------------------------------------------
 // Add an LDAP Entry
 
-function add_ldap_entry {
+function add_ldap_entry($ds) {
 
     global $CON;
     global $FLD_LIST;
-    global $OUR;
     global $ldap_groupbase;
     global $ldap_base;
-
+    global $OUR;
     
     if ( empty($_REQUEST['in_uid']) ) {
         $_SESSION['in_msg'] .= warn_html('UID is required');
@@ -641,8 +644,9 @@ function add_ldap_entry {
     $_SESSION['in_msg'] .= ok_html('Adding objectClass = ' . $CON['krb_oc']);
     
     // Add kerberos principal name
-    $ldap_entry[$krb_attr][] = $thisPrincipal;
-    $_SESSION['in_msg'] .= ok_html("Adding $krb_attr = $thisPrincipal");
+    $ldap_entry[ $CON['krb_attr'] ][] = $OUR['principal'];
+    $_SESSION['in_msg']
+        .= ok_html('Adding ' . $CON['krb_attr'] . ' = ' . $OUR['principal']);
     
     // Create posix entry only when asked to
     $posix_entry = 0;
@@ -804,9 +808,12 @@ function add_ldap_entry {
     kp_add($_REQUEST['in_uid']);
     
     // create a mailbox if necessary
+    $mail_delivery = empty($_REQUEST['in_maildelivery'])
+        ? ''
+        : $_REQUEST['in_maildelivery'];
     mailbox_check(
         $_REQUEST['in_uid'],
-        $_REQUEST['in_maildelivery'],
+        $mail_delivery,
         $CONF_mailbox_domain
     );
 
@@ -846,7 +853,13 @@ function add_ldap_entry {
 // -----------------------------------------------------
 // Update an LDAP Entry
 
-function update_ldap_entry {
+function update_ldap_entry($ds) {
+
+    global $CON;
+    global $FLD_LIST;
+    global $ldap_groupbase;
+    global $ldap_base;
+    global $OUR;
 
     $ldap_filter = 'objectclass=*';
 
@@ -965,9 +978,9 @@ function update_ldap_entry {
             $_SESSION['in_msg']
                 .= ok_html('objectclass ' . $CON['krb_oc'] . 'added');
         }
-        $add_data[ $CON['krb_attr'] ][] = $thisPrincipal;
+        $add_data[ $CON['krb_attr'] ][] = $OUR['principal'];
         $_SESSION['in_msg']
-            .= ok_html($CON['krb_attr'] . " = $thisPrincipal added");
+            .= ok_html($CON['krb_attr'] . ' = ' . $OUR['principal'] . 'added');
         $add_cnt++;
     }
 
@@ -1077,7 +1090,7 @@ function update_ldap_entry {
     
     // check posix groups
     
-    if ( !empty($_REQUEST['in_uidnumber'}\]) ) {
+    if ( !empty($_REQUEST['in_uidnumber']) ) {
 
         // posix group for this user maybe
         $posixFilter = '(&';
@@ -1171,8 +1184,14 @@ function update_ldap_entry {
 
 // -----------------------------------------------------
 // Delete an LDAP Entry
-function delete_ldap_entry {
+function delete_ldap_entry($ds) {
     
+    global $CON;
+    global $FLD_LIST;
+    global $ldap_groupbase;
+    global $ldap_base;
+    global $OUR;
+
     // delete their posix group if they have one
     $del_dn = 'cn=' . $_REQUEST['in_uid'] . ",$ldap_groupbase";
     $r = @ldap_delete($ds, $posix_dn);
@@ -1268,20 +1287,17 @@ if (!empty($_REQUEST['in_xml_data'])) {
     xml_parser_free($xml_parser);
 }
 
-// Set the kerberos principal name for everyone to use
-$thisPrincipal = $_REQUEST['in_uid'] . '@' . $CONF_krb_realm;
-
 if (!empty($_REQUEST['in_button_add'])) {
-    add_ldap_entry();
+    add_ldap_entry($ds);
 } elseif ( !empty($_REQUEST['in_button_update']) ) {
-    update_ldap_entry();
+    update_ldap_entry($ds);
 } elseif ( !empty($_REQUEST['in_button_delete']) ) {
-    delete_ldap_entry();
+    delete_ldap_entry($ds);
 } else {
     $_SESSION['in_msg'] .= warn_html('Invalid action');
 }
 
-$a_url = "user_maint.php?in_uid=$in_uid";
+$a_url = 'user_maint.php?in_uid=' . $_REQUEST['in_uid'];
 header ("REFRESH: 0; URL=$a_url");
 ?>
 

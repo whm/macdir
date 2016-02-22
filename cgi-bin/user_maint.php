@@ -52,10 +52,11 @@ if (!empty($ldap_filter)) {
   if ($ret_cnt == 1) {
      $entry_found = 1;
      $in_uid = $info[0]["uid"][0];
-  } elseif ($retcnt > 1) {
-     $msg .= "More than on entry found for $ldap_filter search.\n";
+  } elseif ($ret_cnt > 1) {
+     $_SESSION['in_msg']
+         .= "More than on entry found for $ldap_filter search.\n";
   } else {
-     $msg .= "No entry found.\n";
+     $_SESSION['in_msg'] .= "No entry found.\n";
   }
 
   // Now see if there is a uid and if they are in any posix or pam groups

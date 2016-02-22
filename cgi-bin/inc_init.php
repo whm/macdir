@@ -77,20 +77,21 @@ $phone_admin  = 0;
 $this_user    = '';
 if ( isset($_SERVER['REMOTE_USER']) ) {
     $this_user  = $_SERVER['REMOTE_USER'];
-    if (empty($_SERVER['WEBAUTH_LDAP_CZPRIVILGEGROUP1'])) {
-        if ($_SERVER['WEBAUTH_LDAP_CZPRIVILGEGROUP']=='ldap:admin') {
+    if (empty($_SERVER['WEBAUTH_LDAP_CZPRIVILEGEGROUP1'])) {
+        if ($_SERVER['WEBAUTH_LDAP_CZPRIVILEGEGROUP']=='ldap:admin') {
             $ldap_admin = 1;
         }
-        if ($_SERVER['WEBAUTH_LDAP_CZPRIVILGEGROUP']=='ldap:phoneadmin') {
+        if ($_SERVER['WEBAUTH_LDAP_CZPRIVILEGEGROUP']=='ldap:phoneadmin') {
             $phone_admin = 1;
         }
     } else {
         $i = 1;
-        while(!empty($_SERVER["WEBAUTH_LDAP_CZPRIVILGEGROUP$i"])) {
-            if ($_SERVER["WEBAUTH_LDAP_CZPRIVILGEGROUP$i"]=='ldap:admin') {
+        while(!empty($_SERVER["WEBAUTH_LDAP_CZPRIVILEGEGROUP$i"])) {
+            if ($_SERVER["WEBAUTH_LDAP_CZPRIVILEGEGROUP$i"]=='ldap:admin') {
                 $ldap_admin = 1;
             }
-            if ($_SERVER["WEBAUTH_LDAP_CZPRIVILGEGROUP$i"]=='ldap:phoneadmin') {
+            if ($_SERVER["WEBAUTH_LDAP_CZPRIVILEGEGROUP$i"]=='ldap:phoneadmin')
+            {
                 $phone_admin = 1;
             }
             $i++;
