@@ -77,19 +77,30 @@ $phone_admin  = 0;
 $this_user    = '';
 if ( isset($_SERVER['REMOTE_USER']) ) {
     $this_user  = $_SERVER['REMOTE_USER'];
-    $ldap_admin = 0;
-    // Just set this to admin for now.  In the future there will be
-    // multiple levels of access to the directory.
-    if (isset($macdir_admin[$this_user])) {
-        $ldap_admin = 1;
-    }
-    if ( isset($_SERVER['WEBAUTH_LDAP_GROUP']) ) {
-        if ($_SERVER['WEBAUTH_LDAP_GROUP'] == 'ldap:admin') {
+    if (empty($_SERVER['WEBAUTH_LDAP_CZPRIVILGEGROUP1'])) {
+        if ($_SERVER['WEBAUTH_LDAP_CZPRIVILGEGROUP']=='ldap:admin') {
             $ldap_admin = 1;
+        }
+        if ($_SERVER['WEBAUTH_LDAP_CZPRIVILGEGROUP']=='ldap:phoneadmin') {
+            $phone_admin = 1;
+        }
+    } else {
+        $i = 1;
+        while(!empty($_SERVER["WEBAUTH_LDAP_CZPRIVILGEGROUP$i"])) {
+            if ($_SERVER["WEBAUTH_LDAP_CZPRIVILGEGROUP$i"]=='ldap:admin') {
+                $ldap_admin = 1;
+            }
+            if ($_SERVER["WEBAUTH_LDAP_CZPRIVILGEGROUP$i"]=='ldap:phoneadmin') {
+                $phone_admin = 1;
+            }
+            $i++;
+            if ($ldap_admin==1 && $phone_admin==1) {
+                break;
+            }
+            if ($i>32767) {
+                exit('Problem setting admin privs');
+            }
         }
     }
 }
-
-# TODO: Remove this hack
-require('/etc/whm/macdir_admin.php');
 
