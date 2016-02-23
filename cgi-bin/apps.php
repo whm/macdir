@@ -63,10 +63,11 @@ function manager_check ($mgr_array) {
 
 $title = 'Software Applications';
 $heading = 'Software Applications';
+
+require('inc_init.php');
 require('inc_header.php');
-require('/etc/whm/macdir.php');
-require('inc_bind.php');
-$ds = macdir_bind($ldap_server, 'GSSAPI');
+
+$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 // clean out the messages
 $msg = '';

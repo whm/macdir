@@ -3,7 +3,7 @@
 // ----------------------------------------------------------
 // Register Global Fix
 //
-$in_cn  = $_REQUEST['in_cn'];
+$in_cn = empty($_REQUEST['in_cn']) ? '' : $_REQUEST['in_cn'];
 // ----------------------------------------------------------
 //
 // file: app_define.php
@@ -15,10 +15,10 @@ $in_cn  = $_REQUEST['in_cn'];
 $title = 'Application Definition';
 $heading = 'Application Definition';
 
+require('inc_init.php');
 require('inc_header.php');
-require('/etc/whm/macdir.php');
-require('inc_bind.php');
-$ds = macdir_bind($ldap_server, 'GSSAPI');
+
+$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 $app_base = 'ou=applications,'.$ldap_base;
 

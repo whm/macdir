@@ -3,11 +3,14 @@
 // ----------------------------------------------------------
 // Register Global Fix
 //
-$in_dn  = $_REQUEST['in_dn'];
-$in_cn  = $_REQUEST['in_cn'];
-$in_button_add = $_REQUEST['in_button_add'];
-$in_button_update = $_REQUEST['in_button_update'];
-$in_button_delete = $_REQUEST['in_button_delete'];
+$in_dn = empty($_REQUEST['in_dn']) ? '' : $_REQUEST['in_dn'];
+$in_cn = empty($_REQUEST['in_cn']) ? '' : $_REQUEST['in_cn'];
+$in_button_add = empty($_REQUEST['in_button_add'])
+    ? '' : $_REQUEST['in_button_add'];
+$in_button_update = empty($_REQUEST['in_button_update'])
+    ? '' : $_REQUEST['in_button_update'];
+$in_button_delete = empty($_REQUEST['in_button_delete'])
+    ? '' : $_REQUEST['in_button_delete'];
 // ----------------------------------------------------------
 //
 // file: my_links_maint_action.php
@@ -33,7 +36,7 @@ array_push ($fld_list, 'pridecredential');
 require('inc_init.php');
 require('/etc/whm/macdir.php');
 
-$ds = macdir_bind($ldap_server, 'GSSAPI');
+$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 $link_base = 'uid=' . $_SERVER['REMOTE_USER'] . ',' . $ldap_user_base;
 $link_filter = "(&(objectclass=pridelistobject)(cn=$in_cn))";

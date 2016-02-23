@@ -8,14 +8,13 @@
 require('inc_init.php');
 require ('/etc/whm/macdir.php');
 
-$ds = macdir_bind($ldap_server, 'GSSAPI');
-
 // --------------------------------------------------------------
 // Find a unique UID for use Linux
 
 function get_an_id ($seed, $attr) {
 
-    global $ds, $ldap_base;
+    global $ds;
+    global $CONF;
 
     if ($attr != 'gidnumber' && $attr != 'uidnumber') {
         $_SESSION['in_msg'] .= warn_html('Invalid call to get_an_id');
@@ -27,7 +26,7 @@ function get_an_id ($seed, $attr) {
     while ($found_it == 0) {
         $a_filter = "(&(objectclass=posixaccount)($attr=$this_id))";
         $a_attrs  = array ($attr);
-        $sr = @ldap_search ($ds, $ldap_base, $a_filter, $a_attrs);
+        $sr = @ldap_search ($ds, $CONF['ldap_base'], $a_filter, $a_attrs);
         $e = @ldap_get_entries($ds, $sr);
         $cnt = $e["count"];
         if ($cnt < 1) {
@@ -45,29 +44,27 @@ function get_an_id ($seed, $attr) {
 
 function mailbox_check ($p_uid, $addr, $local_domain) {
 
-    global $CONF_imap_host;
-    global $imap_muser;
-    global $imap_mpass;
+    global $CONF;
 
     // Don't check a mailbox if there is none
-    if (empty($CONF_imap_host)) {
+    if (empty($CONF['imap_host'])) {
         return;
     }
 
-    $CONF_imap_host_perl = '{' . $CONF_imap_host . ':143}';
+    $imap_host_perl = '{' . $CONF['imap_host'] . ':143}';
     $user_mbx = 'user/' . $p_uid;
-    $imap_mbx = $CONF_imap_host_perl . $user_mbx;
+    $imap_mbx = $imap_host_perl . $user_mbx;
     $acl_mbx = "user/$p_uid" . '%';
-    if ( !($imapCnx = imap_open($CONF_imap_host_perl,
-                                $imap_muser,
-                                $imap_mpass,
+    if ( !($imapCnx = imap_open($imap_host_perl,
+                                $CONF['imap_mgr_user'],
+                                $CONF['imap_mgr_pass'],
                                 OP_HALFOPEN)) ) {
         $_SESSION['in_msg']
             .= warn_html('IMAP Connection failure ' . imap_last_error());
     } else {
 
         $mbx_exists = 0;
-        $mbxList = imap_list($imapCnx, $CONF_imap_host_perl, $user_mbx);
+        $mbxList = imap_list($imapCnx, $imap_host_perl, $user_mbx);
         if ( is_array($mbxList) ) {$mbx_exists = 1;}
         $pat = '/@' . $local_domain . '/i';
         if ( preg_match ($pat, $addr, $mat) ) {
@@ -83,7 +80,12 @@ function mailbox_check ($p_uid, $addr, $local_domain) {
                 }
             }
             imap_setacl ($imapCnx, $acl_mbx, $p_uid,     'lrswipcda');
-            imap_setacl ($imapCnx, $acl_mbx, $imap_muser, 'lrswipcda');
+            imap_setacl(
+                $imapCnx,
+                $acl_mbx,
+                $CONF['imap_mgr_user'],
+                'lrswipcda'
+            );
 
         } else {
 
@@ -262,9 +264,10 @@ function maildelivery_check ($a_dn, $a_flag, $a_maildelivery) {
 
 function posix_group_check ($a_uid, $a_flag, $a_group) {
 
-    global $ds, $ldap_base, $ldap_groupbase;
+    global $ds;
+    global $CONF;
 
-    $group_dn = "cn=$a_group,$ldap_groupbase";
+    $group_dn = "cn=$a_group," . $CONF['ldap_group_base'];
     $group_attr['memberuid'] = $a_uid;
 
     // search for it
@@ -272,7 +275,7 @@ function posix_group_check ($a_uid, $a_flag, $a_group) {
     $posixFilter .= "(cn=$a_group)";
     $posixFilter .= "(memberUid=$a_uid))";
     $posixReturn = array ('gidNumber','cn');
-    $sr = @ldap_search ($ds, $ldap_base, $posixFilter, $posixReturn);
+    $sr = @ldap_search ($ds, $CONF['ldap_base'], $posixFilter, $posixReturn);
     $posix = ldap_get_entries($ds, $sr);
     $posix_cnt = $posix["count"];
 
@@ -315,7 +318,8 @@ function posix_group_check ($a_uid, $a_flag, $a_group) {
 
 function app_group_check ($a_uid, $a_flag, $a_app) {
 
-    global $ds, $ldap_base;
+    global $ds;
+    global $CONF;
 
     $group_attr['memberUid'] = $a_uid;
 
@@ -324,7 +328,7 @@ function app_group_check ($a_uid, $a_flag, $a_app) {
     $aFilter .= "(cn=$a_app)";
     $aFilter .= "(memberUid=$a_uid))";
     $aRetAttrs = array ('cn');
-    $sr = @ldap_search ($ds, $ldap_base, $aFilter, $aRetAttrs);
+    $sr = @ldap_search ($ds, $CONF['ldap_base'], $aFilter, $aRetAttrs);
     $app = @ldap_get_entries($ds, $sr);
     $aCnt = $app["count"];
 
@@ -349,7 +353,7 @@ function app_group_check ($a_uid, $a_flag, $a_app) {
 
         // add it if we don't
         if ($aCnt==0) {
-            $app_dn = "cn=$a_app,ou=applications,$ldap_base";
+            $app_dn = "cn=$a_app," . $CONF['ldap_app_base'];
             $r = @ldap_mod_add($ds, $app_dn, $group_attr);
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
@@ -369,11 +373,12 @@ function app_group_check ($a_uid, $a_flag, $a_app) {
 
 function mail_alias_check ($a_dn, $a_flag, $a_alias) {
 
-    global $ds, $ldap_base, $CONF_mail_domain;
+    global $ds;
+    global $CONF;
 
     $add_alias = $a_alias;
     if ( strlen($a_alias) == strlen(str_replace('@','',$a_alias)) ) {
-        $add_alias .= '@' . $CONF_mail_domain;
+        $add_alias .= '@' . $CONF['mail_domain'];
     }
 
     // search for attributes values to delete
@@ -435,13 +440,13 @@ function mail_alias_check ($a_dn, $a_flag, $a_alias) {
 
 function find_kp ($uid) {
 
-    global $k5start;
-    global $kdcmaster;
+    global $CONF;
 
     $kp = '';
 
     // check to see if there is a kerberos principal
-    $kcmd = "$k5start -- /usr/bin/remctl $kdcmaster kadmin examine $uid";
+    $kcmd = $CONF['k5start']
+        . ' -- /usr/bin/remctl ' . $CONF['kdcmaster'] . " kadmin examine $uid";
     $return_text = array();
     $ret_last = exec($kcmd, $return_text, $return_status);
     $pat = '/^Principal:\s+(.*)/';
@@ -461,17 +466,15 @@ function find_kp ($uid) {
 
 function kp_add ($uid) {
 
-    global $k5start;
-    global $kdcmaster;
-    global $ok;
-    global $warn;
+    global $CON;
+    global $CONF;
 
     $kp = find_kp($uid);
     if (strlen($kp)==0) {
         // add the kerberos principal
         $tmppass = uniqid('usermaint');
-        $kcmd = $k5start
-            . " -- /usr/bin/remctl $kdcmaster kadmin"
+        $kcmd = $CONF['k5start']
+            . ' -- /usr/bin/remctl ' . $CONF['kdcmaster'] . ' kadmin'
             . " create $uid $tmppass enabled";
         $ret_last = exec($kcmd, $return_text, $return_status);
         if ($return_status) {
@@ -481,8 +484,7 @@ function kp_add ($uid) {
             }
             $_SESSION['in_msg'] .= '</font>';
         } else {
-            $_SESSION['in_msg']
-                .= "$ok Added Kerberos principal $kp</font><br>";
+            $_SESSION['in_msg'] .= ok_html("Added Kerberos principal $kp");
         }
     }
     return;
@@ -493,15 +495,15 @@ function kp_add ($uid) {
 
 function kp_delete ($uid) {
 
-    global $k5start;
-    global $kdcmaster;
-    global $ok;
-    global $warn;
+    global $CON;
+    global $CONF;
 
     $kp = find_kp($uid);
     if (strlen($kp)>0) {
-        $_SESSION['in_msg'] .= "$ok Deleting Kerberos principal</font><br>";
-        $kcmd = "$k5start -- /usr/bin/remctl $kdcmaster kadmin delete $uid";
+        $_SESSION['in_msg'] .= ok_html("Deleting Kerberos principal");
+        $kcmd = $CONF['k5start']
+            . ' -- /usr/bin/remctl ' . $CONF['kdcmaster']
+            . " kadmin delete $uid";
         $ret_last = exec($kcmd, $return_text, $return_status);
         if ($return_status) {
             $_SESSION['in_msg'] .= "$warn krb error: ";
@@ -525,8 +527,7 @@ function check_groups ($a_dn,
                        $a_AppDelList) {
 
     global $ds;
-    global $ldap_groupbase;
-    global $ldap_base;
+    global $CONF;
 
     // check for PAM access stuctures
 
@@ -551,12 +552,9 @@ function check_groups ($a_dn,
 
 function init_globals() {
 
-    global $CON;
-    $CON = array();
-    $CON['krb_oc']   = 'krb5Principal';
-    $CON['krb_attr'] = 'krb5principalname';
-
+    global $CONF
     global $OUR;
+    
     $OUR = array();
     $OUR['app_add_list']
         = empty($_REQUEST['in_appAddList'])
@@ -564,12 +562,11 @@ function init_globals() {
     $OUR['app_del_list']
         = empty($_REQUEST['in_appDelList'])
           ? array() : $_REQUEST['in_appDelList'];
-    $OUR['principal'] = $_REQUEST['in_uid'] . '@' . $CONF_krb_realm;
-
+    $OUR['principal'] = $_REQUEST['in_uid'] . '@' . $CONF['krb_realm'];
 
     # This array describes the "simple" attributes.  That is attributes
     # that have a simple value.
-    global $FLD_LISTQ;
+    global $FLD_LIST;
     $FLD_LIST = array();
     array_push ($FLD_LIST, 'comments');
     array_push ($FLD_LIST, 'facsimiletelephonenumber');
@@ -604,9 +601,8 @@ function init_globals() {
 function add_ldap_entry($ds) {
 
     global $CON;
+    global $CONF;
     global $FLD_LIST;
-    global $ldap_groupbase;
-    global $ldap_base;
     global $OUR;
     
     if ( empty($_REQUEST['in_uid']) ) {
@@ -621,7 +617,7 @@ function add_ldap_entry($ds) {
     // check for duplicates first
     $filter = '(uid=' . $_REQUEST['in_uid'] . ')';
     $attrs = array ('cn');
-    $sr = @ldap_search ($ds, $ldap_base, $filter, $attrs);
+    $sr = @ldap_search ($ds, $CONF['ldap_base'], $filter, $attrs);
     $entries = @ldap_get_entries($ds, $sr);
     $uid_cnt = $entries["count"];
     if ($uid_cnt>0) {
@@ -697,7 +693,7 @@ function add_ldap_entry($ds) {
         $ldap_entry['objectclass'][] = 'shadowAccount';
         $_SESSION['in_msg'] .= ok_html('Adding objectClass = shadowAccount');
         if ($this_uidnumber == 0) {
-            $this_uidnumber = 4000;
+            $this_uidnumber = $CONF['ldap_uidnumber_base'];
         }
         $this_uidnumber = get_an_id($this_uidnumber, 'uidnumber');
         $ldap_entry["uidnumber"][] = $this_uidnumber;
@@ -711,7 +707,7 @@ function add_ldap_entry($ds) {
     }
 
     // add data to directory
-    $this_dn = 'uid=' . $_REQUEST['in_uid'] . ",ou=people,$ldap_base";
+    $this_dn = 'uid=' . $_REQUEST['in_uid'] . ',' . $CONF['ldap_user_base'];
     if (@ldap_add($ds, $this_dn, $ldap_entry)) {
         $_SESSION['in_msg'] .= ok_html("Directory updated");
     } else {
@@ -729,10 +725,12 @@ function add_ldap_entry($ds) {
         $posixFilter = "(&(objectclass=posixGroup)";
         $posixFilter .= '(cn=' . $_REQUEST['in_uid'] . ')';
         $posixReturn = array ('gidNumber', 'cn');
-        $sr = @ldap_search ($ds,
-        $ldap_groupbase,
-        $posixFilter,
-        $posixReturn);
+        $sr = @ldap_search (
+            $ds,
+            $CONF['ldap_group_base'],
+            $posixFilter,
+            $posixReturn
+        );
         $posix = @ldap_get_entries($ds, $sr);
         $posix_cnt = $posix["count"];
         
@@ -746,7 +744,7 @@ function add_ldap_entry($ds) {
             $posix_attrs['description'][0]
                 = 'Posix Group for user ' . $REQUEST['in_uid'];
             $posix_dn
-                = 'cn=' . $_REQUEST['in_uid'] . ",$ldap_groupbase";
+                = 'cn=' . $_REQUEST['in_uid'] . ',' . $CONF['ldap_groupbase'];
             $r = @ldap_add($ds, $posix_dn, $posix_attrs);
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
@@ -814,7 +812,7 @@ function add_ldap_entry($ds) {
     mailbox_check(
         $_REQUEST['in_uid'],
         $mail_delivery,
-        $CONF_mailbox_domain
+        $CONF['mailbox_domain']
     );
 
     // Check mailalias
@@ -837,11 +835,11 @@ function add_ldap_entry($ds) {
     }
 
     // notify the administrator
-    if ( !empty($CONF_ldap_manager_mailbox) ) {
-        $mail_msg .= strip_tags ($_SESSION['in_msg']);
-        $subj = "New LDAP entry in $ldap_dir_title";
+    if ( !empty($CONF['manager_mailbox']) ) {
+        $mail_msg .= strip_tags($_SESSION['in_msg']);
+        $subj = 'New LDAP entry in ' . $CONF['ldap_title'];
         mail(
-            $CONF_ldap_manager_mailbox,
+            $CONF['manager_mailbox'],
             $subj,
             $mail_msg
         );
@@ -856,9 +854,8 @@ function add_ldap_entry($ds) {
 function update_ldap_entry($ds) {
 
     global $CON;
+    global $CONF;
     global $FLD_LIST;
-    global $ldap_groupbase;
-    global $ldap_base;
     global $OUR;
 
     $ldap_filter = 'objectclass=*';
@@ -1004,7 +1001,7 @@ function update_ldap_entry($ds) {
             $_SESSION['in_msg'] .= ok_html('posixAccount added');
             $_SESSION['in_msg'] .= ok_html('shadowAccount added');
             if ($this_uidnumber == 0) {
-                $this_uidnumber = 4000;
+                $this_uidnumber = $CONF['ldap_uidnumber_base'];
             }
             $this_uidnumber = get_an_id($this_uidnumber, 'uidnumber');
             $add_data["uidnumber"][] = $this_uidnumber;
@@ -1098,7 +1095,12 @@ function update_ldap_entry($ds) {
         $posixFilter .= '(cn=' . $_REQUEST['in_uid'] . ')';
         $posixFilter .= ')';
         $posixReturn = array ('gidNumber', 'cn');
-        $sr = @ldap_search ($ds, $ldap_base, $posixFilter, $posixReturn);
+        $sr = @ldap_search (
+            $ds,
+            $CONF['ldap_base'],
+            $posixFilter,
+            $posixReturn
+        );
         $posix = @ldap_get_entries($ds, $sr);
         $posix_cnt = $posix["count"];
         
@@ -1110,7 +1112,7 @@ function update_ldap_entry($ds) {
             $posix_attrs['memberUid'][0]   = $_REQUEST['in_uid'];
             $posix_attrs['gidNumber'][0]   = $this_gidnumber;
             $posix_attrs['description'][0] = "User's personal group";
-            $posix_dn = "cn=$in_uid,$ldap_groupbase";
+            $posix_dn = "cn=$in_uid," . $CONF['ldap_group_base'];
             $r = @ldap_add($ds, $posix_dn, $posix_attrs);
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
@@ -1176,7 +1178,7 @@ function update_ldap_entry($ds) {
     mailbox_check(
         $_REQUEST['in_uid'],
         $_REQUEST['$in_maildelivery'],
-        $CONF_mailbox_domain
+        $CONF['mailbox_domain']
     );
 
     return;
@@ -1187,13 +1189,12 @@ function update_ldap_entry($ds) {
 function delete_ldap_entry($ds) {
     
     global $CON;
+    global $CONF;
     global $FLD_LIST;
-    global $ldap_groupbase;
-    global $ldap_base;
     global $OUR;
 
     // delete their posix group if they have one
-    $del_dn = 'cn=' . $_REQUEST['in_uid'] . ",$ldap_groupbase";
+    $del_dn = 'cn=' . $_REQUEST['in_uid'] . ',' . $CONF['ldap_groupbase'];
     $r = @ldap_delete($ds, $posix_dn);
     $err = ldap_errno ($ds);
     $err_msg = ldap_error ($ds);
@@ -1207,7 +1208,7 @@ function delete_ldap_entry($ds) {
     $pg_filter .= '(memberUid=' . $in_uid . ')';
     $pg_filter .= ')';
     $pg_attrs = array ('cn', 'description');
-    $sr = @ldap_search ($ds, $ldap_base, $pg_filter, $pg_attrs);
+    $sr = @ldap_search ($ds, $CONF['ldap_base'], $pg_filter, $pg_attrs);
     $pg_group = @ldap_get_entries($ds, $sr);
     $pg_cnt = $pg_group["count"];
 
@@ -1227,7 +1228,7 @@ function delete_ldap_entry($ds) {
     $pg_filter .= '(memberUid=' . $_REQUEST['in_uid'] . ')';
     $pg_filter .= ')';
     $pg_attrs = array ('cn', 'description');
-    $sr = @ldap_search ($ds, $ldap_base, $pg_filter, $pg_attrs);
+    $sr = @ldap_search ($ds, $CONF['ldap_base'], $pg_filter, $pg_attrs);
     $pg_group = @ldap_get_entries($ds, $sr);
     $pg_cnt = $pg_group["count"];
 
@@ -1253,7 +1254,7 @@ function delete_ldap_entry($ds) {
             .= warn_html('LDAP error deleting ' . $_REQUEST['in_dn'] . ": $e");
     }
 
-    mailbox_check($_REQUEST['in_uid'], '', $CONF_mailbox_domain);
+    mailbox_check($_REQUEST['in_uid'], '', $CONF['mailbox_domain']);
 
     // delete the kerberos principal
     kp_delete($in_uid);
@@ -1265,6 +1266,9 @@ function delete_ldap_entry($ds) {
 // main routine
 
 init_globals();
+
+$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
+
 // get a list of pam, posix, and application groups
 require ('inc_groups.php');
 

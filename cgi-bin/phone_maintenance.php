@@ -3,7 +3,7 @@
 // ----------------------------------------------------------
 // Register Global Fix
 //
-$in_uid  = $_REQUEST['in_uid'];
+$in_uid  = empty($_REQUEST['in_uid']) ? '' $_REQUEST['in_uid'];
 // ----------------------------------------------------------
 //
 // file: phone_maintenance.php
@@ -17,7 +17,7 @@ require('inc_init.php');
 require('/etc/whm/macdir.php');
 require('inc_header.php');
 
-$ds = macdir_bind($ldap_server, 'GSSAPI');
+$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 if (!isset($_SESSION['in_msg'])) {
   $_SESSION['in_msg'] = '';

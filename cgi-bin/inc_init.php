@@ -38,7 +38,7 @@ function macdir_bind ($this_server, $bind_type) {
     if ($bind_type == 'GSSAPI' && isset($_SERVER['REMOTE_USER'])) {
         $r = ldap_sasl_bind($ldap,"","","GSSAPI");
         if (!isset($r)) {
-            die("ERROR: GSSAPI bind to $ldap_server failed.");
+            die("ERROR: GSSAPI bind to $this_server failed.");
         }
     }
     return $ldap;
@@ -51,25 +51,43 @@ function macdir_bind ($this_server, $bind_type) {
 # Start up a session so we can remember where we are
 session_start();
 
-$CONF_use_samba = 0;
-
-$CONF_krb_realm      = 'CA-ZEPHYR.ORG';
-
-$CONF_imap_host      = 'imap.ca-zephyr.org';
-$CONF_mail_domain    = 'ca-zephyr.org';
-$CONF_mailbox_domain = 'imap.ca-zephyr.org';
-
-$CONF_ldap_manager_mailbox = 'bill@ca-zephyr.org';
-
-# Get configuration for this instance
-require('/etc/whm/macdir.php');
-
-$page_dir  = dirname($_SERVER['SCRIPT_FILENAME']);
-$page_name = substr($_SERVER['SCRIPT_FILENAME'], strlen($page_dir));
-$page_root = strtok($page_name,'.');
-if (substr($page_root,0,1)=='/') {
-    $page_root = substr($page_root,1);
+if (file_exists('/etc/macdir/config.php')) {
+    require('/etc/macdir/config.php');
 }
+
+
+$CONF = array();
+$CONF['manager_mailbox'] = empty($ldap_manager_mailbox)
+    ? 'bill@ca-zephyr.org' : $manager_mailbox;
+
+$CONF['imap_host']      = empty($imap_host) ? '' : $imap_host;
+$CONF['imap_mgr_pass']  = empty($imap_mgr_pass) ? '' : $imap_mgr_pass;
+$CONF['imap_mgr_user']  = empty($imap_mgr_user) ? '' : $imap_mgr_user;
+$CONF['mail_domain']    = empty($mail_domain) ? '' : $maildomain;
+$CONF['mailbox_domain'] = empty($mailbox_domain) ? '' : $mailbox_domain;
+$CONF['ldap_base'] = empty($ldap_base)
+    ? 'dc=macallister,dc=grass-valley,dc=ca,dc=us' : $ldap_base;
+$CONF['ldap_app_base'] = empty($ldap_app_base)
+    ? 'ou=applications,' . $CONF['ldap_base'] : $ldap_group_base; 
+$CONF['ldap_group_base'] = empty($ldap_group_base)
+    ? 'ou=groups,' . $CONF['ldap_base'] : $ldap_group_base; 
+$CONF['ldap_uidnumber_base'] = empty($ldap_uidnumber_base)
+    ? 4000 : $ldap_uidnumber_base;
+$CONF['ldap_user_base'] = empty($ldap_user_base)
+    ? 'ou=people,' . $CONF['ldap_base'] : $ldap_user_base; 
+$CONF['ldap_server'] = empty($ldap_server)
+    ? 'macdir.ca-zephyr.org' : $ldap_server;
+$CONF['ldap_title'] = empty($ldap_title)
+    ? 'MacAllister Directory' : $ldap_title;
+
+$CONF['k5start'] = empty($k5start)
+    ? '/usr/bin/k5start -f /etc/keytab/macdir.keytab -U' : $k5start;
+$CONF['kdcmaster'] = empty($kdcmaster) ? 'portola.ca-zephyr.org' : $kdcmaster;
+$CONF['krb_realm'] = empty($krb_realm) ? 'CA-ZEPHYR.ORG' : $krb_realm;
+
+$CON = array();
+$CON['krb_oc']    = 'krb5Principal';
+$CON['krb_attr']  = 'krb5principalname';
 
 // figure out the access level
 $ldap_admin   = 0;

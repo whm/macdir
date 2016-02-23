@@ -3,23 +3,26 @@
 // ----------------------------------------------------------
 // Register Global Fix
 //
-$in_cn_cnt  = $_REQUEST['in_cn_cnt'];
-$in_pwfs_cnt  = $_REQUEST['in_pwfs_cnt'];
-$in_new_cn  = $_REQUEST['in_new_cn'];
-$in_employeenumber  = $_REQUEST['in_employeenumber'];
-$in_dn  = $_REQUEST['in_dn'];
-$in_uid  = $_REQUEST['in_uid'];
-$in_button_add = $_REQUEST['in_button_add'];
-$in_button_update = $_REQUEST['in_button_update'];
-$in_button_delete = $_REQUEST['in_button_delete'];
+$in_dn       = empty($_REQUEST['in_dn']) ? '' : $_REQUEST['in_dn'];
+$in_uid      = empty($_REQUEST['in_uid']) ? '' : $_REQUEST['in_uid'];
+$in_cn_cnt   = empty($_REQUEST['in_cn_cnt']) ? '' : $_REQUEST['in_cn_cnt'];
+$in_pwfs_cnt = empty($_REQUEST['in_pwfs_cnt']) ? '' : $_REQUEST['in_pwfs_cnt'];
+$in_new_cn   = empty($_REQUEST['in_new_cn']) ? '' : $_REQUEST['in_new_cn'];
+$in_employeenumber = empty($_REQUEST['in_employeenumber'])
+    ? '' : $_REQUEST['in_employeenumber'];
+$in_button_add = empty($_REQUEST['in_button_add'])
+    ? '' : $_REQUEST['in_button_add'];
+$in_button_update = empty($_REQUEST['in_button_update'])
+    ? '' : $_REQUEST['in_button_update'];
+$in_button_delete = empty($_REQUEST['in_button_delete'])
+    ? '' : $_REQUEST['in_button_delete'];
 // ----------------------------------------------------------
 //
 // file: app_access_maint_action.php
 // author: Bill MacAllister
 
-require('/etc/whm/macdir.php');
-require('inc_bind.php');
-$ds = macdir_bind($ldap_server, 'GSSAPI');
+require('inc_init.php');
+$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 // -------------------------------
 // update the passwords stored in the ldap directory

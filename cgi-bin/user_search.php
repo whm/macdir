@@ -10,9 +10,6 @@ $heading = 'MacAllister Directory';
 require('inc_init.php');
 require('inc_header.php');
 
-// clean out the messages
-$msg = '';
-
 // set default for amount of search details to display
 if ( !empty($_REQUEST['in_more_search']) ) {
     $in_more_search = $_REQUEST['in_more_search'];
@@ -228,9 +225,9 @@ matches for Bill and William.
       <input type="submit" value="Search Directory" name="button">
       </td>
   </tr>
-<?php if ( isset($msg) ) { ?>
+<?php if ( !empty($_SESSION['in_msg']) ) { ?>
   <tr><td align="center" colspan="2">
-      <?php echo $msg; $msg = '';?>
+      <?php echo $_SESSION['in_msg']; $_SESSION['in_msg'] = '';?>
       </td>
   </tr>
 <?php } ?>
@@ -240,9 +237,9 @@ matches for Bill and William.
 <p>
 
 <?php
-if ( isset($base_filter) && strlen($base_filter)>0) {
+if ( !empty($base_filter) ) {
   $filter = '(&(objectclass=person)'.$base_filter.')';
-  $base_dn = $ldap_base;
+  $base_dn = $CONF['ldap_base'];
   $return_attr = array('cn',
                        'mail',
                        'mobile',
@@ -250,9 +247,9 @@ if ( isset($base_filter) && strlen($base_filter)>0) {
                        'workphone',
                        'uid');
   if (isset($_SERVER['REMOTE_USER'])) {
-      $ds = macdir_bind($ldap_server, 'GSSAPI');
+      $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
   } else {
-      $ds = macdir_bind($ldap_server, '');
+      $ds = macdir_bind($CONF['ldap_server'], '');
   }
 
   $sr = ldap_search($ds, $base_dn, $filter, $return_attr);

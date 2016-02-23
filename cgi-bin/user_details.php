@@ -3,8 +3,8 @@
 // ----------------------------------------------------------
 // Register Global Fix
 //
-$in_dn  = $_REQUEST['in_dn'];
-$in_uid = $_REQUEST['in_uid'];
+$in_dn  = empty($_REQUEST['in_dn']) ? '' : $_REQUEST['in_dn'];
+$in_uid = empty($_REQUEST['in_uid']) ? '' : $_REQUEST['in_uid'];
 // ----------------------------------------------------------
 //
 # ------------------------------------------
@@ -18,7 +18,7 @@ require('inc_init.php');
 require('/etc/whm/macdir.php');
 require ('inc_header.php');
 
-$ds = macdir_bind($ldap_server, 'GSSAPI');
+$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 # -- print a row if there is something to print
 

@@ -3,13 +3,16 @@
 // ----------------------------------------------------------
 // Register Global Fix
 //
-$in_cn_cnt  = $_REQUEST['in_cn_cnt'];
-$in_new_cn  = $_REQUEST['in_new_cn'];
-$in_dn  = $_REQUEST['in_dn'];
-$in_uid  = $_REQUEST['in_uid'];
-$in_button_add = $_REQUEST['in_button_add'];
-$in_button_update = $_REQUEST['in_button_update'];
-$in_button_delete = $_REQUEST['in_button_delete'];
+$in_cn_cnt = empty($_REQUEST['in_cn_cnt']) ? '' : $_REQUEST['in_cn_cnt'];
+$in_new_cn = empty($_REQUEST['in_new_cn']) ? '' : $_REQUEST['in_new_cn'];
+$in_dn     = empty($_REQUEST['in_dn']) ? '' : $_REQUEST['in_dn'];
+$in_uid    = empty($_REQUEST['in_uid']) ? '' : $_REQUEST['in_uid'];
+$in_button_add = empty($_REQUEST['in_button_add'])
+    ? '' : $_REQUEST['in_button_add'];
+$in_button_update = empty($_REQUEST['in_button_update'])
+    ? '' : $_REQUEST['in_button_update'];
+$in_button_delete = empty($_REQUEST['in_button_delete'])
+    ? '' : $_REQUEST['in_button_delete'];
 // ----------------------------------------------------------
 //
 // file: phone_maintenance_action.php
@@ -22,7 +25,7 @@ $_SESSION['in_msg'] = '';
 require('inc_init.php');
 require('/etc/whm/macdir.php');
 
-$ds = macdir_bind($ldap_server, 'GSSAPI');
+$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 // --------------------------------------------------------------
 // Update common names as required

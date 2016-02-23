@@ -14,7 +14,7 @@ $heading = 'User Maintenance';
 require('inc_init.php');
 require('inc_header.php');
 
-$ds = macdir_bind($ldap_server, 'GSSAPI');
+$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 // -----------------------------------------------------
 // get a list of pam and application groups

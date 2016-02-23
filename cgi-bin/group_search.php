@@ -19,7 +19,7 @@ if (! isset($_SERVER['REMOTE_USER'])) {
 }
 
 // Bind to the directory
-$ds = macdir_bind($ldap_server, 'GSSAPI');
+$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 // clean out the messages
 $msg = '';

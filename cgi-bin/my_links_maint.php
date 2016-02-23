@@ -3,7 +3,7 @@
 // ----------------------------------------------------------
 // Register Global Fix
 //
-$in_cn  = $_REQUEST['in_cn'];
+$in_cn = empty($_REQUEST['in_cn']) ? '' : $_REQUEST['in_cn'];
 // ----------------------------------------------------------
 //
 # file: my_links_maint.php
@@ -16,7 +16,7 @@ require('inc_init.php');
 require('/etc/whm/macdir.php');
 require('inc_header.php');
 
-$ds = macdir_bind($ldap_server, 'GSSAPI');
+$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 if (isset($in_cn)) {
     

@@ -3,10 +3,13 @@
 // ----------------------------------------------------------
 // Register Global Fix
 //
-$in_date_last_maint  = $_REQUEST['in_date_last_maint'];
-$in_new_password     = $_REQUEST['in_new_password'];
-$in_uid              = $_REQUEST['in_uid'];
-$in_button_update    = $_REQUEST['in_button_update'];
+$in_button_update = empty($_REQUEST['in_button_update'])
+    ? '' : $_REQUEST['in_button_update'];
+$in_date_last_maint = empty($_REQUEST['in_date_last_maint'])
+    ? '' : $_REQUEST['in_date_last_maint'];
+$in_new_password = empty($_REQUEST['in_new_password'])
+    ? '' : $_REQUEST['in_new_password'];
+$in_uid  = empty($_REQUEST['in_uid']) ? '' : $_REQUEST['in_uid'];
 // ----------------------------------------------------------
 //
 
@@ -18,7 +21,7 @@ $in_button_update    = $_REQUEST['in_button_update'];
 require('inc_init.php');
 require('/etc/whm/macdir.php');
 
-$dirServer = macdir_bind($ldap_server, 'GSSAPI');
+$dirServer = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 // -------------------------------
 // find out if a kerberos principal exists

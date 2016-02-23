@@ -1,11 +1,5 @@
 <?PHP
 //
-// ----------------------------------------------------------
-// Register Global Fix
-//
-$in_uid  = $_SERVER['REMOTE_USER'];
-// ----------------------------------------------------------
-//
 // -------------------------------------------------------------
 // change_password.php
 // author: Bill MacAllister
@@ -28,10 +22,13 @@ function prt ($fld) {
 //-------------------------------------------------------------
 // Start of main processing for the page
 
-$title = 'Password Change';
+$title   = 'Password Change';
 $heading = 'Password Change';
-require ('inc_header.php');
-require('/etc/whm/macdir.php');
+
+require('inc_init.php');
+require('inc_header.php');
+
+$in_uid = empty($_REQUEST['in_uid']) ? '' : $_REQUEST['in_uid'];
 
 ?>
 
@@ -39,13 +36,13 @@ require('/etc/whm/macdir.php');
 // ------------------------------------
 // Check password entry
 function check_password () {
- var f;
- var i;
- f = document.setpw;
- if (f.in_new_password.value != f.in_verify_password.value) {
-    alert ("Password entry and Verify entry don't match");
-    return false;
- }
+    var f;
+    var i;
+    f = document.setpw;
+    if (f.in_new_password.value != f.in_verify_password.value) {
+        alert ("Password entry and Verify entry don't match");
+        return false;
+    }
 }
 </script>
 
@@ -97,5 +94,5 @@ function check_password () {
 </div>
 
 <?php
- require ('inc_footer.php'); 
+require ('inc_footer.php'); 
 ?>

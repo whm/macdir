@@ -3,12 +3,15 @@
 // ----------------------------------------------------------
 // Register Global Fix
 //
-$in_private = $_REQUEST['in_private'];
-$in_button_search = $_REQUEST['in_button_search'];
-$in_commonname = $_REQUEST['in_commonname'];
-$in_description = $_REQUEST['in_description'];
-$in_password = $_REQUEST['in_password'];
-$in_url = $_REQUEST['in_url'];
+$in_private = empty($_REQUEST['in_private']) ? '' : $_REQUEST['in_private'];
+$in_button_search = empty($_REQUEST['in_button_search'])
+    ? '' : $_REQUEST['in_button_search'];
+$in_commonname = empty($_REQUEST['in_commonname'])
+    ? '' : $_REQUEST['in_commonname'];
+$in_description = empty($_REQUEST['in_description'])
+    ? '' : $_REQUEST['in_description'];
+$in_password = empty($_REQUEST['in_password']) ? '' : $_REQUEST['in_password'];
+$in_url = empty($_REQUEST['in_url']) ? '' : $_REQUEST['in_url'];
 // ----------------------------------------------------------
 //
 # --------------------------------------------
@@ -22,7 +25,7 @@ require('inc_init.php');
 require('inc_header.php');
 require('/etc/whm/macdir.php');
 
-$ds = macdir_bind($ldap_server, 'GSSAPI');
+$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 # create a form to attribute mapping
 $form["commonname"]  = "cn";

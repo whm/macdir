@@ -3,11 +3,14 @@
 // ----------------------------------------------------------
 // Register Global Fix
 //
-$in_dn  = $_REQUEST['in_dn'];
-$in_cn  = $_REQUEST['in_cn'];
-$in_button_add = $_REQUEST['in_button_add'];
-$in_button_update = $_REQUEST['in_button_update'];
-$in_button_delete = $_REQUEST['in_button_delete'];
+$in_dn = empty($_REQUEST['in_dn']) ? '' : $_REQUEST['in_dn'];
+$in_cn = empty($_REQUEST['in_cn']) ? '' : $_REQUEST['in_cn'];
+$in_button_add = empty($_REQUEST['in_button_add'])
+    ? '' : $_REQUEST['in_button_add'];
+$in_button_update = empty($_REQUEST['in_button_update'])
+    ? '' : $_REQUEST['in_button_update'];
+$in_button_delete = empty($_REQUEST['in_button_delete'])
+    ? '' : $_REQUEST['in_button_delete'];
 // ----------------------------------------------------------
 //
 // file: app_define_action.php
@@ -18,7 +21,7 @@ $in_button_delete = $_REQUEST['in_button_delete'];
 
 require ('/etc/whm/macdir.php');
 require('inc_bind.php');
-$ds = macdir_bind($ldap_server, 'GSSAPI');
+$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 $_SESSION['in_msg'] = '';
 $warn = '<font color="#cc0000">';

@@ -1,16 +1,6 @@
 <?php
 //
 // ----------------------------------------------------------
-// Register Global Fix
-//
-$in_date_last_maint  = $_REQUEST['in_date_last_maint'];
-$in_new_password     = $_REQUEST['in_new_password'];
-$in_old_password     = $_REQUEST['in_old_password'];
-$in_uid              = $_SERVER['REMOTE_USER'];
-$in_button_update    = $_REQUEST['in_button_update'];
-// ----------------------------------------------------------
-//
-
 // File: change_password_action.php
 // Author: Bill MacAllister
 // Date: December 2002
@@ -20,13 +10,13 @@ $in_button_update    = $_REQUEST['in_button_update'];
 
 function find_kp ($uid) {
 
-    global $k5start;
-    global $kdcmaster;
+    global $CONF;
 
     $kp = '';
 
     // check to see if there is a kerberos principal
-    $kcmd = "$k5start -- /usr/bin/remctl $kdcmaster kadmin examine $uid";
+    $kcmd = $CONF['k5start']
+        . ' -- /usr/bin/remctl ' . $CONF['kdcmaster'] . " kadmin examine $uid";
     $return_text = array();
     $ret_last = exec($kcmd, $return_text, $return_status);
     $pat = '/^Principal:\s+(.*)/';
@@ -46,26 +36,26 @@ function find_kp ($uid) {
 
 function kp_pw ($uid, $pw) {
 
-    global $k5start;
-    global $kdcmaster;
-    global $ok;
-    global $warn;
+    global $CON;
+    global $CONF;
 
     $kp = find_kp($uid);
     if (strlen($kp)>0) {
         // add the kerberos principal
-        $kcmd = "$k5start -- /usr/bin/remctl $kdcmaster "
-            . "kadmin reset_passwd $uid $pw";
+        $kcmd = $CONF['k5start'] . ' -- /usr/bin/remctl ' . $CONF['kdcmaster']
+            . " kadmin reset_passwd $uid $pw";
         $ret_last = exec($kcmd, $return_text, $return_status);
         if ($return_status) {
             $_SESSION['s_msg'] .= "<font $warn> remctl error: ";
+            $msg = '';
+            $br  = '';
             foreach ($return_text as $t) {
-                $_SESSION['s_msg'] .= $t.'<br>';
+                $msg .= $br . $t;
+                $br = '<br/>';
             }
-            $_SESSION['s_msg'] .= '</font>';
+            $_SESSION['s_msg'] .= warn_html($msg);
         } else {
-            $_SESSION['s_msg'] 
-                .= "<font $ok> Kerberos password updated</font><br>";
+            $_SESSION['s_msg'] .= ok_html('Kerberos password updated');
         }
     }
     return;
@@ -76,17 +66,11 @@ function kp_pw ($uid, $pw) {
 
 function ldap_set_password ($uid, $pwField, $newPw) {
 
-    global $ldap_base;
-    global $ds;
-    global $ok;
-    global $warn;
+    global $CON;
+    global $CONF;
 
     $objClass = 'person';
-    if ($pwField == 'ntpassword' || $pwField == 'lmpassword') {
-        $objClass = 'sambaAccount';
-    } else {
-        $newPw = '{crypt}'.crypt($newPw);
-    }
+    $newPw = '{crypt}'.crypt($newPw);
 
     // display errors ourselves, so we turn of auto-error reporting
     $old_ldap_error_level = error_reporting(E_ERROR | E_PARSE);
@@ -94,7 +78,12 @@ function ldap_set_password ($uid, $pwField, $newPw) {
     // look for any user attributes for this object class
     $getAttrs = array();
     $ldapFilter = "(&(objectClass=$objClass)(uid=$uid))";
-    $searchResult = ldap_search($ds, $ldap_base, $ldapFilter, $getAttrs);
+    $searchResult = ldap_search(
+        $ds,
+        $CONF['ldap_base'],
+        $ldapFilter,
+        $getAttrs
+    );
     $ldapInfo = ldap_get_entries($ds, $searchResult);
     if ($ldapInfo["count"] == 0) {
 
@@ -115,12 +104,12 @@ function ldap_set_password ($uid, $pwField, $newPw) {
                 $attrs = array();
                 $attrs[$pwField] = $oldpw;
                 if (!ldap_mod_del($ds, $ldapDN, $attrs)) {
-                    $_SESSION['s_msg'] .= "<font $warn>Problem deleting "
-                        . "$pwField $ldapDN</font><br>";
+                    $_SESSION['s_msg']
+                        .= warn_html("Problem deleting $pwField from $ldapDN");
                     $ldapErr = ldap_errno ($ds);
                     $ldapMsg = ldap_error ($ds);
-                    $_SESSION['s_msg'] .= "<font $warn>Error: $ldapErr, "
-                        . "$ldapMsg</font><br>";
+                    $_SESSION['s_msg']
+                        .= warn_html("Error: $ldapErr, $ldapMsg");
                 }
             }
         }
@@ -129,14 +118,14 @@ function ldap_set_password ($uid, $pwField, $newPw) {
         $attrs[$pwField] = $newPw;
         // Add the new password to the directory
         if (!ldap_mod_add($ds, $ldapDN, $attrs)) {
-            $_SESSION['s_msg'] .= "<font $warn>Problem adding $pwField "
-                . "for $ldapDN</font><br>";
+            $_SESSION['s_msg']
+                .= warn_html("Problem adding $pwField for $ldapDN");
             $ldapErr = ldap_errno ($ds);
             $ldapMsg = ldap_error ($ds);
             $_SESSION['s_msg'] 
-                .= "<font $warn>Error: $ldapErr, $ldapMsg</font><br>";
+                .= want_html("Error: $ldapErr, $ldapMsg");
         } else {
-            $_SESSION['s_msg'] .= "<font $ok>Password changed.</font><br>";
+            $_SESSION['s_msg'] .= ok_html("Password changed.");
         }
     }
     $junk = error_reporting($old_ldap_error_level);
@@ -146,52 +135,39 @@ function ldap_set_password ($uid, $pwField, $newPw) {
 // ----------------------------------------------------
 // Main Routine
 
+// initial directory connection and ldap base dn
+require('inc_init.php');
+
 $now = date ('Y-m-d H:i:s');
 $in_date_last_maint = $now;
+$in_uid = empty($_REQUEST['in_uid']) ? '' : $_REQUEST['in_uid'];
 
-// initial directory connection and ldap base dn
-require('/etc/whm/macdir.php');
-require('inc_bind.php');
-
-// set update message area
-$ok = 'color="#009900"';
-$warn = 'color="#990000"';
-
-if ( strlen($in_button_update)>0 ) {
+if ( !empty($in_button_update) ) {
 
     // bind anonymously and look up the dn to bind as
     $filter = "(&(objectclass=person)";
     $filter .= "(uid=$in_uid))";
     $return_attr = array('cn','dn');
-    $ds = macdir_bind($ldap_server, 'ANON');
-    $sr = ldap_search($ds, $ldap_base, $filter, $return_attr);  
+    $ds = macdir_bind($CONF['ldap_server'], 'ANON');
+    $sr = ldap_search($ds, $CONF['ldap_base'], $filter, $return_attr);  
     $info = ldap_get_entries($ds, $sr);
     if ($info["count"] == 0) {
         $_SESSION['s_msg']
-            .= "<font $warn>Authentication failure for $in_uid</font><br>";
+            .= warn_html("Authentication failure for $in_uid");
     } else {
         $user_dn = $info[0]['dn'];
         // attempt to bind using the old password
         if ( !@ldap_bind($ds,$user_dn,$in_old_password) ) {
-            $_SESSION['s_msg'] .= "<font $warn>"
-                . "Failure to bind $ldap_server as $in_uid</font><br>";
             $_SESSION['s_msg']
-                .= "<font $warn>Password not changed.</font><br>";
+                .= warn_html('Failure to bind to ' . $CONF['ldap_server']
+                    . "as $in_uid"
+                );
+            $_SESSION['s_msg'] .= warn_html('Password not changed');
         } else {
-            $ds = $macdir_bind($ldap_server, 'GSSAPI');
+            $ds = $macdir_bind($CONF['ldap_server'], 'GSSAPI');
             ldap_set_password ($in_uid, 'userpassword', $in_new_password);
             // Essentially disable setting samba passwords, but leave the 
             // code here for a while.
-            if ($config['smb_passwd'] == 'yes') {
-                $samba_cmd = "/usr/local/sbin/mkntpwd $in_new_password";
-                $nt_lm_passwords = shell_exec($samba_cmd);
-                $lmPwd = strtok($nt_lm_passwords,":");
-                $ntPwd = substr(strtok(":"),0,32);
-                # -- no LM passwords 
-                # ldap_set_password ($in_uid, 'lmpassword', $lmPwd);
-                ldap_set_password ($in_uid, 'ntpassword', $ntPwd);
-                ldap_set_password ($in_uid, 'sambantpassword', $ntPwd);
-            }
             kp_pw($in_uid, $in_new_password);
         }
     }

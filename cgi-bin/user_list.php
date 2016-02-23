@@ -8,7 +8,7 @@ require('inc_init.php');
 require('inc_header.php');
 require('/etc/whm/macdir.php');
 
-$ds = macdir_bind($ldap_server, 'GSSAPI');
+$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 ?>
 
 <!-- Main body of document -->

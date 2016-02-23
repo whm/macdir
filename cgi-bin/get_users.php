@@ -6,7 +6,7 @@
 // get ldap information
 require('/etc/whm/macdir.php');
 require('inc_bind.php');
-$ds = macdir_bind($ldap_server, 'GSSAPI');
+$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 $return_attr[] = 'cn';
 $return_attr[] = 'uid';

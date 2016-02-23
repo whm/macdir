@@ -6,7 +6,7 @@
 require('/etc/whm/macdir.php');
 
 $thisUser = $_SERVER['REMOTE_USER'];
-$thisServer = $ldap_server;
+$thisServer = $CONF['ldap_server'];
 
 # Bind to the directory Server
 $ldap = ldap_connect("ldap://$thisServer");
