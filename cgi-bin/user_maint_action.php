@@ -478,11 +478,11 @@ function kp_add ($uid) {
             . " create $uid $tmppass enabled";
         $ret_last = exec($kcmd, $return_text, $return_status);
         if ($return_status) {
-            $_SESSION['in_msg'] .= "$warn remctl error: ";
+            $m = 'remctl error: ';
             foreach ($return_text as $t) {
-                $_SESSION['in_msg'] .= $t.'<br>';
+                $m .= $t.'<br>';
             }
-            $_SESSION['in_msg'] .= '</font>';
+            $_SESSION['in_msg'] .= warn_html($m);
         } else {
             $_SESSION['in_msg'] .= ok_html("Added Kerberos principal $kp");
         }
@@ -506,11 +506,11 @@ function kp_delete ($uid) {
             . " kadmin delete $uid";
         $ret_last = exec($kcmd, $return_text, $return_status);
         if ($return_status) {
-            $_SESSION['in_msg'] .= "$warn krb error: ";
+            $m = 'kerberos error: ';
             foreach ($return_text as $t) {
-                $_SESSION['in_msg'] .= $t.'<br>';
+                $m .= $t.'<br>';
             }
-            $_SESSION['in_msg'] .= '</font>';
+            $_SESSION['in_msg'] .= warn_html($m);
         }
     }
     return;
@@ -552,7 +552,7 @@ function check_groups ($a_dn,
 
 function init_globals() {
 
-    global $CONF
+    global $CONF;
     global $OUR;
     
     $OUR = array();
@@ -634,6 +634,8 @@ function add_ldap_entry($ds) {
     $_SESSION['in_msg'] .= ok_html('Adding objectClass = top');
     $ldap_entry["objectclass"][] = 'person';
     $_SESSION['in_msg'] .= ok_html('Adding objectClass = person');
+    $ldap_entry["objectclass"][] = 'czPerson';
+    $_SESSION['in_msg'] .= ok_html('Adding objectClass = czPerson');
     $ldap_entry["objectclass"][] = 'pridePerson';
     $_SESSION['in_msg'] .= ok_html('Adding objectClass = pridePerson');
     $ldap_entry["objectclass"][] = $CON['krb_oc'];
@@ -925,7 +927,7 @@ function update_ldap_entry($ds) {
                         $e = "$err - $err_msg";
                         $_SESSION['in_msg']
                             .= warn_html(
-                                "$warn ldap error deleting attribute $fld: $e"
+                                "ldap error deleting attribute $fld: $e"
                             );
                     }
                 }
@@ -1205,7 +1207,7 @@ function delete_ldap_entry($ds) {
     // delete from other posix groups
     $pg_filter = '(&';
     $pg_filter .= '(objectclass=posixGroup)';
-    $pg_filter .= '(memberUid=' . $in_uid . ')';
+    $pg_filter .= '(memberUid=' . $_REQUEST['in_uid'] . ')';
     $pg_filter .= ')';
     $pg_attrs = array ('cn', 'description');
     $sr = @ldap_search ($ds, $CONF['ldap_base'], $pg_filter, $pg_attrs);
@@ -1224,7 +1226,7 @@ function delete_ldap_entry($ds) {
 
     // delete from app groups
     $pg_filter = '(&';
-    $pg_fitler .= '(objectclass=prideApplication)';
+    $pg_filter .= '(objectclass=prideApplication)';
     $pg_filter .= '(memberUid=' . $_REQUEST['in_uid'] . ')';
     $pg_filter .= ')';
     $pg_attrs = array ('cn', 'description');
@@ -1257,7 +1259,7 @@ function delete_ldap_entry($ds) {
     mailbox_check($_REQUEST['in_uid'], '', $CONF['mailbox_domain']);
 
     // delete the kerberos principal
-    kp_delete($in_uid);
+    kp_delete($_REQUEST['in_uid']);
 
     return;
 }

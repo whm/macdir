@@ -85,6 +85,21 @@ $CONF['k5start'] = empty($k5start)
 $CONF['kdcmaster'] = empty($kdcmaster) ? 'portola.ca-zephyr.org' : $kdcmaster;
 $CONF['krb_realm'] = empty($krb_realm) ? 'CA-ZEPHYR.ORG' : $krb_realm;
 
+$CONF['maint_address']    = empty($maint_address) ? 1 : $maint_address;
+$CONF['maint_app_groups'] = empty($maint_app_groups) ? 0 : $maint_app_groups;
+$CONF['maint_cell']       = empty($maint_cell) ? 0 : $maint_cell;
+$CONF['maint_comments']   = empty($maint_fax) ? 1 : $maint_comments;
+$CONF['maint_fax']        = empty($maint_fax) ? 0 : $maint_fax;
+$CONF['maint_linux']      = empty($maint_linux) ? 1 : $maint_linux;
+$CONF['maint_mail_acct']  = empty($maint_mail_acct) ? 0 : $maint_mail_acct;
+$CONF['maint_mail_addr']  = empty($maint_mail_addr) ? 1 : $maint_mail_addr;
+$CONF['maint_nickname']   = empty($maint_nickname) ? 0 : $maint_nickname;
+$CONF['maint_pager']      = empty($mail_pager) ? 0 : $maint_pager;
+$CONF['maint_phone']      = empty($maint_phone) ? 1 : $maint_phone;
+$CONF['maint_title']      = empty($maint_title) ? 0 : $maint_title;
+$CONF['maint_workphone']  = empty($maint_workphone) ? 1 : $maint_workphone;
+
+// Some constants
 $CON = array();
 $CON['krb_oc']    = 'krb5Principal';
 $CON['krb_attr']  = 'krb5principalname';

@@ -14,11 +14,58 @@ $heading = 'User Maintenance';
 require('inc_init.php');
 require('inc_header.php');
 
+##############################################################################
+# Subroutines
+##############################################################################
+
+function display_update_buttons (
+    $entry_found = 0,
+    $add_delete_flag=0
+) {
+
+?>
+ <table border="0" width="100%">
+ <tr>
+
+ <?php if ($entry_found>0) { ?>
+ <td width="33%">
+  <input type="submit" name="in_button_update" value="Update">
+ </td>
+ <?php } else { ?>
+   <td>&nbsp;</td>
+ <?php } ?>
+
+ <?php if ($add_delete_flag>0 && $entry_found>0) { ?>
+ <td width="33%" align="center">
+  <input type="submit" name="in_button_delete" value="Delete">
+ </td>
+ <?php } else { ?>
+   <td>&nbsp;</td>
+ <?php } ?>
+
+ <?php if ($add_delete_flag>0 && $entry_found==0) { ?>
+ <td width="33%" align="right">
+  <input type="submit" name="in_button_add" value="Add">
+ </td>
+ <?php } else { ?>
+   <td>&nbsp;</td>
+ <?php } ?>
+
+ </tr>
+ </table>
+<?php
+ 
+ return;
+}
+
+##############################################################################
+# Main routine
+##############################################################################
+
+// Bind to the directory
 $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
-// -----------------------------------------------------
 // get a list of pam and application groups
-
 require('inc_groups.php');
 
 // -----------------------------------------------------
@@ -69,7 +116,12 @@ if (!empty($ldap_filter)) {
     $posixFilter = "(&(objectclass=posixGroup)(memberUid=$thisUID))";
     $posixReturn = array ('gidNumber','cn','description');
     $old_err = error_reporting(E_ERROR | E_PARSE);
-    $sr = ldap_search ($ds, $ldap_groupbase, $posixFilter, $posixReturn);
+    $sr = ldap_search (
+        $ds,
+        $CONF['ldap_groupbase'],
+        $posixFilter,
+        $posixReturn
+    );
     $posixEntries = ldap_get_entries($ds, $sr);
     $tmp_err = error_reporting($old_err);
     $thisPosix_cnt = $posixEntries["count"];
@@ -303,6 +355,13 @@ function checkIt() {
       onsubmit="return checkIt()">
 
 <table border="1" cellpadding="2">
+
+<tr>
+ <td colspan="6">
+<?php display_update_buttons($entry_found, $add_delete_flag); ?>
+ </td>
+</tr>
+
 <?php
   if ($entry_found) {
     $pwd_href = 'set_password.php?in_uid='.$thisUID;
@@ -359,17 +418,6 @@ function checkIt() {
 </tr>
 
 <tr>
- <td align="right">Nickname:</td>
-   <?php
-     $z = '';
-     if (isset($info[0]["nickname"][0])) {$z = $info[0]["nickname"][0];}
-   ?>
- <td colspan="5">
-   <input type="text" size="30" name="in_nickname" value="<?php print $z;?>">
- </td>
-</tr>
-
-<tr>
  <td align="right">Common Name:</td>
  <td colspan="5">
   <?php
@@ -404,6 +452,20 @@ function checkIt() {
             name="in_new_cn"></td>
 </tr>
 
+<?php if ($CONF['maint_nickname']) { ?>
+<tr>
+ <td align="right">Nickname:</td>
+   <?php
+     $z = '';
+     if (isset($info[0]["nickname"][0])) {$z = $info[0]["nickname"][0];}
+   ?>
+ <td colspan="5">
+   <input type="text" size="30" name="in_nickname" value="<?php print $z;?>">
+ </td>
+</tr>
+<?php } ?>
+
+<?php if ($CONF['maint_title']) { ?>
 <tr>
  <td align="right">Title:</td>
    <?php
@@ -413,6 +475,9 @@ function checkIt() {
  <td colspan="5">
    <input type="text" size="30" name="in_title" value="<?php print $z;?>"></td>
 </tr>
+<?php } ?>
+
+<?php if ($CONF['maint_phone']) { ?>
 <tr>
  <td align="right">Telephone Number:</td>
    <?php
@@ -424,6 +489,9 @@ function checkIt() {
  <td colspan="5">
    <input type="text" name="in_telephonenumber" value="<?php print $z;?>"></td>
 </tr>
+<?php } ?>
+
+<?php if ($CONF['maint_workphone']) { ?>
 <tr>
  <td align="right">Work Telephone Number:</td>
    <?php
@@ -435,6 +503,9 @@ function checkIt() {
  <td colspan="5">
    <input type="text" name="in_workphone" value="<?php print $z;?>"></td>
 </tr>
+<?php } ?>
+
+<?php if ($CONF['maint_cell']) { ?>
 <tr>
  <td align="right">Cell Telephone Number:</td>
    <?php
@@ -444,6 +515,9 @@ function checkIt() {
  <td colspan="5">
    <input type="text" name="in_mobile" value="<?php print $z;?>"></td>
 </tr>
+<?php } ?>
+
+<?php if ($CONF['maint_fax']) { ?>
 <tr>
  <td align="right">FAX Telephone Number:</td>
    <?php
@@ -456,6 +530,9 @@ function checkIt() {
             name="in_facsimiletelephonenumber"
             value="<?php print $z;?>"></td>
 </tr>
+<?php } ?>
+         
+<?php if ($CONF['maint_pager']) { ?>
 <tr>
  <td align="right">Pager Telephone Number:</td>
    <?php
@@ -465,7 +542,9 @@ function checkIt() {
  <td colspan="5">
    <input type="text" name="in_pager" value="<?php print $z;?>"></td>
 </tr>
-<tr>
+<?php } ?>
+
+<?php if ($CONF['maint_address']) { ?>
 <tr>
  <td align="right">Street Address:</td>
    <?php
@@ -498,6 +577,9 @@ function checkIt() {
  <td><input type="text" size="10" name="in_postalcode"
             value="<?php print $z;?>"></td>
 </tr>
+<?php } ?>
+
+<?php if ($CONF['maint_comments']) { ?>
 <tr>
  <td align="right">Comments:</td>
    <?php
@@ -507,6 +589,9 @@ function checkIt() {
  <td colspan="5"><textarea cols="60" rows="2" wrap="physical"
             name="in_comments"><?php print $z;?></textarea></td>
 </tr>
+<?php } ?>
+
+<?php if ($CONF['maint_app_groups']) { ?>
 <tr>
  <td align="right">Applications:</td>
  <td colspan="5">
@@ -535,6 +620,9 @@ function checkIt() {
    </select>
   </td>
 </tr>
+<?php } ?>
+
+<?php if ($CONF['maint_mail_acct']) { ?>
 <tr>
  <td align="right">Mail Account:</td>
  <td><input type="radio"
@@ -547,6 +635,9 @@ function checkIt() {
             value="N">No
  </td>
 </tr>
+<?php } ?>
+
+<?php if ($CONF['maint_mail_addr']) { ?>
 <tr>
  <td align="right">Mail:</td>
    <?php
@@ -566,7 +657,7 @@ function checkIt() {
           ? 0 : $info[0]["mailalias"]["count"];
   echo '    <input type="hidden" ';
   echo            'name="in_mailalias_cnt" ';
-  echo            'value="' . $ma_cnt . ">\n";
+  echo            'value="' . $ma_cnt . '"' . ">\n";
   if ($ma_cnt>0) {
       for ($i=0; $i<$ma_cnt; $i++) {
           $ma[] = $info[0]["mailalias"][$i];
@@ -598,12 +689,13 @@ function checkIt() {
  <td colspan="5">
   <?php
   if ($entry_found>0) {
-    $maildelivery_cnt = $info[0]["maildelivery"]["count"];
-    echo "    <input type=\"hidden\" "
-         . "name=\"in_maildelivery_cnt\" "
-         . "value=\"$maildelivery_cnt\">\n";
-    for ($i=0; $i<$maildelivery_cnt; $i++) {
-      $this_maildelivery = $info[0]["maildelivery"][$i];
+      $maildelivery_cnt = empty($info[0]["maildelivery"]["count"])
+          ? 0 : $info[0]["maildelivery"]["count"];
+      echo "    <input type=\"hidden\" "
+          . "name=\"in_maildelivery_cnt\" "
+          . "value=\"$maildelivery_cnt\">\n";
+      for ($i=0; $i<$maildelivery_cnt; $i++) {
+          $this_maildelivery = $info[0]["maildelivery"][$i];
   ?>
      <input type="checkbox" CHECKED
             name="in_maildelivery_<?echo $i;?>"
@@ -623,7 +715,9 @@ function checkIt() {
             size="40"
             name="in_new_maildelivery"></td>
 </tr>
+<?php } ?>
 
+<?php if ($CONF['maint_linux']) { ?>
 <tr bgcolor="#660000">
   <td colspan="6" align="center">
    <font color="#FFFFFF"><b>Linux Access</b></font>
@@ -723,42 +817,14 @@ if ( !empty($thisPosix) && $thisPosix>0 ) {
         name="in_posix_new">
  </td>
 </tr>
+<?php } ?>
 
 <tr>
  <td colspan="6">
-
- <table border="0" width="100%">
- <tr>
-
- <?php if ($entry_found>0) { ?>
- <td width="33%">
-  <input type="submit" name="in_button_update" value="Update">
- </td>
- <?php } else { ?>
-   <td>&nbsp;</td>
- <?php } ?>
-
- <?php if ($add_delete_flag>0 && $entry_found>0) { ?>
- <td width="33%" align="center">
-  <input type="submit" name="in_button_delete" value="Delete">
- </td>
- <?php } else { ?>
-   <td>&nbsp;</td>
- <?php } ?>
-
- <?php if ($add_delete_flag>0 && $entry_found==0) { ?>
- <td width="33%" align="right">
-  <input type="submit" name="in_button_add" value="Add">
- </td>
- <?php } else { ?>
-   <td>&nbsp;</td>
- <?php } ?>
-
- </tr>
- </table>
-
+<?php display_update_buttons($entry_found, $add_delete_flag); ?>
  </td>
 </tr>
+
 </table>
 
 <input type="hidden" name="in_xml_data" value="">
