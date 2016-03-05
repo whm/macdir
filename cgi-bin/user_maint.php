@@ -428,10 +428,10 @@ function checkIt() {
       $thisCN = $info[0]["cn"][$i];
   ?>
      <input type="checkbox" CHECKED
-            name="in_cn[<?echo $i;?>]"
+            name="in_cn[<?php echo $i;?>]"
             value="<?php print $thisCN;?>"><?php print "$thisCN\n";?>
      <input type="hidden"
-            name="in_cn_list[<?echo $i;?>]"
+            name="in_cn_list[<?php echo $i;?>]"
             value="<?php print $thisCN;?>">
      <br>
   <?php
@@ -667,10 +667,10 @@ function checkIt() {
       foreach ($ma as $thisMA) {
   ?>
      <input type="checkbox" CHECKED
-            name="in_mailalias_<?echo $i;?>"
+            name="in_mailalias_<?php echo $i;?>"
             value="<?php print $thisMA;?>"><?php print "$thisMA\n";?>
      <input type="hidden"
-            name="in_mailalias_list_<?echo $i;?>"
+            name="in_mailalias_list_<?php echo $i;?>"
             value="<?php print $thisMA;?>">
      <br>
   <?php
@@ -698,11 +698,11 @@ function checkIt() {
           $this_maildelivery = $info[0]["maildelivery"][$i];
   ?>
      <input type="checkbox" CHECKED
-            name="in_maildelivery_<?echo $i;?>"
+            name="in_maildelivery_<?php echo $i;?>"
             value="<?php print $this_maildelivery;?>">
         <?php print "$this_maildelivery\n";?>
      <input type="hidden"
-            name="in_maildelivery_list_<?echo $i;?>"
+            name="in_maildelivery_list_<?php echo $i;?>"
             value="<?php print $this_maildelivery;?>">
      <br>
   <?php
