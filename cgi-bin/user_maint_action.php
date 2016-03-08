@@ -144,11 +144,11 @@ function maildelivery_check ($a_dn, $a_flag, $a_maildelivery) {
     global $ds;
     global $CON;
 
-    $maildelivery_attr['maildelivery'] = $a_maildelivery;
+    $attr = $maildelivery_attr['maildelivery'];
 
     // search for it
-    $aFilter = "(&(objectclass=person)(maildelivery=".$a_maildelivery."))";
-    $aReturn = array ('maildelivery');
+    $aFilter = "(&(objectclass=person)($attr=$a_maildelivery))";
+    $aReturn = array ($attr);
     $sr = @ldap_read ($ds, $a_dn, $aFilter, $aReturn);
     $maildeliveryEntry = ldap_get_entries($ds, $sr);
     $maildelivery_cnt = $maildeliveryEntry["count"];
@@ -166,7 +166,8 @@ function maildelivery_check ($a_dn, $a_flag, $a_maildelivery) {
                 $e = "$err - $err_msg";
                 $_SESSION['in_msg']
                     .= warn_html(
-                        "ldap error removing $a_maildelivery from $a_dn: $e"
+                        "ldap error removing $attr = $a_maildelivery "
+                        . "from $a_dn: $e"
                     );
             } else {
                 $_SESSION['in_msg']
@@ -179,18 +180,18 @@ function maildelivery_check ($a_dn, $a_flag, $a_maildelivery) {
     } else {
         // add it if we don't have it
         if ($maildelivery_cnt==0) {
-            $r = @ldap_mod_add($ds, $a_dn, $maildelivery_attr);
+            $r = @ldap_mod_add($ds, $a_dn, $attr);
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
             if ($err != 0) {
                 $e = "$err - $err_msg";
                 $_SESSION['in_msg']
                     .= warn_html(
-                        "LDAP error adding $a_maildelivery to $a_dn: $e"
+                        "LDAP error adding $attr to $a_dn: $e"
                     );
             } else {
                 $_SESSION['in_msg']
-                    .= ok_html("Common Name $a_maildelivery added to $a_dn");
+                    .= ok_html("$attr = $a_maildelivery added to $a_dn");
             }
         }
     }
@@ -743,8 +744,8 @@ function add_ldap_entry($ds) {
             $_REQUEST['in_uid'],
             $this_uidnumber,
             $this_gidnumber,
-            $OUR[app_add_list],
-            $OUR[app_del_list]
+            $OUR['app_add_list'],
+            $OUR['app_del_list']
         );
     }
 
@@ -803,7 +804,7 @@ function update_ldap_entry($ds) {
     $in_dn = $_REQUEST['in_dn'];
 
     $return_list   = $FLD_LIST;
-    $return_list[] = $krb_attr;
+    $return_list[] = $CON['krb_attr'];
     $sr = @ldap_read(
         $ds,
         $in_dn,
@@ -838,16 +839,11 @@ function update_ldap_entry($ds) {
             continue;
         }
 
-        $val_in = '';
-        $tmp    = $_REQUEST["in_$fld"];
-        if ( !empty($tmp) ) {
-            $val_in  = stripslashes(trim($tmp));
-        }
+        $val_in = empty($_REQUEST["in_$fld"])
+            ? '' : stripslashes(trim($_REQUEST["in_$fld"]));
 
-        $val_ldap = '';
-        if ( !empty($info[0]["$fld"][0]) ) {
-            $val_ldap = trim($info[0]["$fld"][0]);
-        }
+        $val_ldap = empty($info[0]["$fld"][0])
+            ? '' : trim($info[0]["$fld"][0]);
 
         if ( $val_in != $val_ldap ) {
             if ( empty($val_in) ) {
@@ -900,7 +896,7 @@ function update_ldap_entry($ds) {
     }
 
     // -- Make sure every entry has a kerberos principal
-    if ( !empty($info[0][$krb_attr][0]) ) {
+    if ( !empty($info[0][ $CON['krb_attr'] ][0]) ) {
         $krb_oc_add = 1;
         foreach ($info[0]['objectclass'] as $oc) {
             if ($oc==$CON['krb_oc']) {
@@ -910,11 +906,11 @@ function update_ldap_entry($ds) {
         if ($krb_oc_add > 0) {
             $add_data['objectclass'][] = $CON['krb_oc'];
             $_SESSION['in_msg']
-                .= ok_html('objectclass ' . $CON['krb_oc'] . 'added');
+                .= ok_html('objectclass ' . $CON['krb_oc'] . ' added');
         }
         $add_data[ $CON['krb_attr'] ][] = $OUR['principal'];
         $_SESSION['in_msg']
-            .= ok_html($CON['krb_attr'] . ' = ' . $OUR['principal'] . 'added');
+            .= ok_html($CON['krb_attr'] . ' = ' . $OUR['principal'] . ' added');
         $add_cnt++;
     }
 
@@ -964,7 +960,7 @@ function update_ldap_entry($ds) {
     }
 
     // Check mail aliases
-    if ( $_REQUEST['in_mailalias_cn']>0 ) {
+    if ( $_REQUEST['in_mailalias_cnt']>0 ) {
         for ($i=0; $i<$_REQUEST['in_mailalias_cnt']; $i++) {
             mail_alias_check(
                 $_REQUEST['in_dn'],
@@ -993,17 +989,17 @@ function update_ldap_entry($ds) {
         for ($i=0; $i<$_REQUEST['in_cn_cnt']; $i++) {
             common_name_check(
                 $_REQUEST['in_dn'],
-                stripslashes($in_cn[$i]),
-                stripslashes($in_cn_list[$i])
+                stripslashes($_REQUEST["in_cn_$i"]),
+                stripslashes($_REQUEST["in_cn_list_$i"])
             );
         }
     }
 
     // Check mailDelivery
     if ( !empty($_REQUEST['in_new_maildelivery']) ) {
-        $a_maildelivery = strtok($_REQUEST['in_new_maildelivery']);
-        $a_maildelivery = stripslashes(trim($a_maildelivery, ','));
-        while (strlen($a_maildelivery)>0) {
+        $a_maildelivery = strtok($_REQUEST['in_new_maildelivery'], ',');
+        $a_maildelivery = stripslashes(trim($a_maildelivery));
+        while (!empty($a_maildelivery)) {
             maildelivery_check(
                 $_REQUEST['in_dn'],
                 $a_maildelivery,
@@ -1107,8 +1103,8 @@ function update_ldap_entry($ds) {
         $_REQUEST['in_uid'],
         $_REQUEST['in_uidnumber'],
         $_REQUEST['in_gidnumber'],
-        $OUR[app_add_list],
-        $OUR[app_del_list]
+        $OUR['app_add_list'],
+        $OUR['app_del_list']
     );
 
     return;

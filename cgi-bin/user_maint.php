@@ -428,10 +428,10 @@ function checkIt() {
       $thisCN = $info[0]["cn"][$i];
   ?>
      <input type="checkbox" CHECKED
-            name="in_cn[<?php echo $i;?>]"
+            name="in_cn_<?php echo $i;?>"
             value="<?php print $thisCN;?>"><?php print "$thisCN\n";?>
      <input type="hidden"
-            name="in_cn_list[<?php echo $i;?>]"
+            name="in_cn_list_<?php echo $i;?>"
             value="<?php print $thisCN;?>">
      <br>
   <?php
