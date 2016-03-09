@@ -83,118 +83,58 @@ function characterData($parser, $data) {
 }
 
 // --------------------------------------------------------------
-// Update common names as required
+// Update single value of multi-valued attribute
 
-function common_name_check ($a_dn, $a_flag, $a_cn) {
+function multi_check($a_dn, $a_fld, $a_flag, $a_val) {
 
     GLOBAL $CON;
     global $ds;
 
-    $cn_attr['cn'] = $a_cn;
+    $attr_val[$a_fld] = $a_val;
 
     // search for it
-    $aFilter = "(&(objectclass=person)(cn=".$a_cn."))";
-    $aReturn = array ('cn');
-    $sr = @ldap_read ($ds, $a_dn, $aFilter, $aReturn);
-    $cnEntry = ldap_get_entries($ds, $sr);
-    $cn_cnt = $cnEntry["count"];
+    $a_filter = "(&(objectclass=person)($a_fld=$a_val))";
+    $a_return = array ($a_fld);
+    $sr = @ldap_read ($ds, $a_dn, $a_filter, $a_return);
+    $entry = ldap_get_entries($ds, $sr);
+    $entry_cnt = $entry["count"];
 
-    if (strlen($a_flag)==0) {
-
-        $_SESSION['in_msg'] .= "cn_cnt $cn_cnt<br>\n";
+    if (!$a_flag) {
 
         // delete it if we find it
-        if ($cn_cnt>0) {
-            $r = @ldap_mod_del($ds, $a_dn, $cn_attr);
+        if ($entry_cnt) {
+            $r = @ldap_mod_del($ds, $a_dn, $attr_val);
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
             if ($err>0) {
                 $e = "$err - $err_msg";
                 $_SESSION['in_msg'] .=
-                    warn_html("LDAP error removing $a_cn from $a_dn: $e");
+                    warn_html(
+                        "LDAP error removing $a_fld=$a_val from $a_dn: $e");
             } else {
                 $_SESSION['in_msg'] .=
-                    ok_html("Common Name $a_cn removed from $a_dn");
+                    ok_html("$a_fld=$a_val removed from $a_dn");
             }
         }
 
     } else {
         // add it if we don't have it
-        if ($cn_cnt==0) {
-            $r = @ldap_mod_add($ds, $a_dn, $cn_attr);
+        if (!$entry_cnt) {
+            $r = @ldap_mod_add($ds, $a_dn, $attr_val);
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
             if ($err != 0) {
                 $e =  $err - $err_msg;
                 $_SESSION['in_msg']
-                    .= warn_html("LDAP error adding $a_cn to $a_dn: $e");
+                    .= warn_html(
+                        "LDAP error adding $a_fld=$a_val to $a_dn: $e");
             } else {
                 $_SESSION['in_msg']
-                    .= ok_html("Common Name $a_cn added to $a_dn");
+                    .= ok_html("$a_fld=$a_val added to $a_dn");
             }
         }
     }
-}
-
-// --------------------------------------------------------------
-// Update mailDelivery as required
-
-function maildelivery_check ($a_dn, $a_flag, $a_maildelivery) {
-
-    global $ds;
-    global $CON;
-
-    $attr = $maildelivery_attr['maildelivery'];
-
-    // search for it
-    $aFilter = "(&(objectclass=person)($attr=$a_maildelivery))";
-    $aReturn = array ($attr);
-    $sr = @ldap_read ($ds, $a_dn, $aFilter, $aReturn);
-    $maildeliveryEntry = ldap_get_entries($ds, $sr);
-    $maildelivery_cnt = $maildeliveryEntry["count"];
-
-    if (strlen($a_flag)==0) {
-
-        $_SESSION['in_msg'] .= "maildelivery_cnt $maildelivery_cnt<br>\n";
-
-        // delete it if we find it
-        if ($maildelivery_cnt>0) {
-            $r = @ldap_mod_del($ds, $a_dn, $maildelivery_attr);
-            $err = ldap_errno ($ds);
-            $err_msg = ldap_error ($ds);
-            if ($err>0) {
-                $e = "$err - $err_msg";
-                $_SESSION['in_msg']
-                    .= warn_html(
-                        "ldap error removing $attr = $a_maildelivery "
-                        . "from $a_dn: $e"
-                    );
-            } else {
-                $_SESSION['in_msg']
-                    .= ok_html(
-                        "Common Name $a_maildelivery removed from $a_dn"
-                    );
-            }
-        }
-
-    } else {
-        // add it if we don't have it
-        if ($maildelivery_cnt==0) {
-            $r = @ldap_mod_add($ds, $a_dn, $attr);
-            $err = ldap_errno ($ds);
-            $err_msg = ldap_error ($ds);
-            if ($err != 0) {
-                $e = "$err - $err_msg";
-                $_SESSION['in_msg']
-                    .= warn_html(
-                        "LDAP error adding $attr to $a_dn: $e"
-                    );
-            } else {
-                $_SESSION['in_msg']
-                    .= ok_html("$attr = $a_maildelivery added to $a_dn");
-            }
-        }
-    }
+    return;
 }
 
 // --------------------------------------------------------------
@@ -302,79 +242,6 @@ function app_group_check ($a_uid, $a_flag, $a_app) {
                     .= warn_html("LDAP error add $a_uid to $app_dn: $e");
             } else {
                 $_SESSION['in_msg'] .= ok_html("$a_uid added to $a_app");
-            }
-        }
-    }
-}
-
-// --------------------------------------------------------------
-// Check to make sure the dn has a mailAlias for this smtp alias
-
-function mail_alias_check ($a_dn, $a_flag, $a_alias) {
-
-    global $ds;
-    global $CONF;
-
-    if ( empty($_REQUEST['in_dn']) ) {
-        $_SESSION['in_msg'] .= warm_html("No entry to update");
-        return;
-    }
-    $in_dn = $_REQUEST['in_dn'];
-
-    $add_alias = $a_alias;
-    if ( strlen($a_alias) == strlen(str_replace('@','',$a_alias)) ) {
-        $add_alias .= '@' . $CONF['mail_domain'];
-    }
-
-    // search for attributes values to delete
-    $aFilter = "mailAlias=$a_alias";
-    $aRetAttrs = array ('cn');
-    $sr = @ldap_read ($ds, $a_dn, $aFilter, $aRetAttrs);
-    $ml_entry = @ldap_get_entries($ds, $sr);
-    $aCnt = $ml_entry["count"];
-
-    // delete it if we find it
-    if (strlen($a_flag)==0 || $add_alias != $a_alias) {
-        if ($aCnt>0) {
-            $group_attr['mailalias'] = $a_alias;
-            $r = @ldap_mod_del($ds, $a_dn, $group_attr);
-            $err = ldap_errno ($ds);
-            $err_msg = ldap_error ($ds);
-            if ($err>0) {
-                $e = "$err - $err_msg";
-                $_SESSION['in_msg']
-                    .= warn_html(
-                        "LDAP error removing alias $a_alias from $a_dn: $e");
-            } else {
-                $_SESSION['in_msg']
-                    .= ok_html("Mail Alias $a_alias removed from $a_dn");
-            }
-        }
-    }
-
-    // search for attributes values to add
-    $aFilter = "mailAlias=$add_alias";
-    $aRetAttrs = array ('cn');
-    $sr = @ldap_read ($ds, $a_dn, $aFilter, $aRetAttrs);
-    $ml_entry = @ldap_get_entries($ds, $sr);
-    $aCnt = $ml_entry["count"];
-
-    // add it if we need to
-    if (strlen($a_flag)>0 || $add_alias != $a_alias) {
-        if ($aCnt==0) {
-            $add_attr['mailalias'] = $add_alias;
-            $r = @ldap_mod_add($ds, $a_dn, $add_attr);
-            $err = ldap_errno ($ds);
-            $err_msg = ldap_error ($ds);
-            if ($err != 0) {
-                $e = "$err - $err_msg";
-                $_SESSION['in_msg']
-                    .= warn_html(
-                        "LDAP error adding alias $a_alias to $a_dn: $e"
-                    );
-            } else {
-                $_SESSION['in_msg']
-                    .= ok_html("Mail Alias $a_alias added to $a_dn");
             }
         }
     }
@@ -753,21 +620,22 @@ function add_ldap_entry($ds) {
     kp_add($_REQUEST['in_uid']);
 
     // Check mailalias
-    if ($_REQUEST['in_mailalias_cnt']>0) {
-        for ($i=0; $i<$_REQUEST['in_mailalias_cnt']; $i++) {
-            mail_alias_check(
-                $in_dn,
-                $_REQUEST["in_mailalias_$i"],
-                $_REQUEST["in_mailalias_list_$i"]
-            );
-        }
-    }
     if ( !empty($_REQUEST['in_new_mailalias']) ) {
         $a_mailalias
             = trim(strtok($_REQUEST['in_new_mailalias'], ','));
-        while (strlen($a_mailalias)>0) {
-            mail_alias_check ($in_dn, $a_mailalias, $a_mailalias);
+        while ($a_mailalias) {
+            multi_check($in_dn, 'mailAlias', $a_mailalias, $a_mailalias);
             $a_mailalias = trim(strtok(','));
+        }
+    }
+    if ($_REQUEST['in_mailalias_cnt']>0) {
+        for ($i=0; $i<$_REQUEST['in_mailalias_cnt']; $i++) {
+            multi_check(
+                $in_dn,
+                'mailAlias',
+                $_REQUEST["in_mailalias_$i"],
+                $_REQUEST["in_mailalias_list_$i"]
+            );
         }
     }
 
@@ -896,7 +764,7 @@ function update_ldap_entry($ds) {
     }
 
     // -- Make sure every entry has a kerberos principal
-    if ( !empty($info[0][ $CON['krb_attr'] ][0]) ) {
+    if ( empty($info[0][ $CON['krb_attr'] ][0]) ) {
         $krb_oc_add = 1;
         foreach ($info[0]['objectclass'] as $oc) {
             if ($oc==$CON['krb_oc']) {
@@ -960,20 +828,22 @@ function update_ldap_entry($ds) {
     }
 
     // Check mail aliases
-    if ( $_REQUEST['in_mailalias_cnt']>0 ) {
-        for ($i=0; $i<$_REQUEST['in_mailalias_cnt']; $i++) {
-            mail_alias_check(
-                $_REQUEST['in_dn'],
-                $_REQUEST["in_mailalias_$i"],
-                $_REQUEST["in_mailalias_list_$i"]
-            );
-        }
-    }
     if ( !empty($_REQUEST['in_new_mailalias'])>0 ) {
         $a_mailalias = trim(strtok($_REQUEST['in_new_mailalias'], ','));
         while (strlen($a_mailalias)>0) {
-            mail_alias_check ($in_dn, $a_mailalias, $a_mailalias);
+            multi_check($in_dn, 'mailAlias', $a_mailalias, $a_mailalias);
             $a_mailalias = trim(strtok(','));
+        }
+    }
+    if ( $_REQUEST['in_mailalias_cnt']>0 ) {
+        for ($i=0; $i<$_REQUEST['in_mailalias_cnt']; $i++) {
+            $_SESSION['in_msg'] .= ok_html("$i mailAlias");
+            multi_check(
+                $_REQUEST['in_dn'],
+                'mailAlias',
+                $_REQUEST["in_mailalias_$i"],
+                $_REQUEST["in_mailalias_list_$i"]
+            );
         }
     }
 
@@ -981,14 +851,15 @@ function update_ldap_entry($ds) {
     if ( !empty($_REQUEST['in_new_cn']) ) {
         $a_cn = stripslashes(trim(strtok($_REQUEST['in_new_cn'], ',')));
         while ( !empty($a_cn) ) {
-            common_name_check ($_REQUEST['in_dn'], $a_cn, $a_cn);
+            multi_check($_REQUEST['in_dn'], 'cn', $a_cn, $a_cn);
             $a_cn = stripslashes(trim(strtok(',')));
         }
     }
     if ( $_REQUEST['in_cn_cnt']>0 ) {
         for ($i=0; $i<$_REQUEST['in_cn_cnt']; $i++) {
-            common_name_check(
+            multi_check(
                 $_REQUEST['in_dn'],
+                'cn',
                 stripslashes($_REQUEST["in_cn_$i"]),
                 stripslashes($_REQUEST["in_cn_list_$i"])
             );
@@ -1000,8 +871,9 @@ function update_ldap_entry($ds) {
         $a_maildelivery = strtok($_REQUEST['in_new_maildelivery'], ',');
         $a_maildelivery = stripslashes(trim($a_maildelivery));
         while (!empty($a_maildelivery)) {
-            maildelivery_check(
+            multi_check(
                 $_REQUEST['in_dn'],
+                'mailDelivery',
                 $a_maildelivery,
                 $a_maildelivery
             );
@@ -1010,8 +882,9 @@ function update_ldap_entry($ds) {
     }
     if ( $_REQUEST['in_maildelivery_cnt']>0 ) {
         for ($i=0; $i<$_REQUEST['in_maildelivery_cnt']; $i++) {
-            maildelivery_check(
+            multi_check(
                 $_REQUEST['in_dn'],
+                'mailDelivery',
                 stripslashes($_REQUEST["in_maildelivery_$i"]),
                 stripslashes($_REQUEST["in_maildelivery_list_$i"])
             );
