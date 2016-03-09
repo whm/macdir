@@ -837,7 +837,6 @@ function update_ldap_entry($ds) {
     }
     if ( $_REQUEST['in_mailalias_cnt']>0 ) {
         for ($i=0; $i<$_REQUEST['in_mailalias_cnt']; $i++) {
-            $_SESSION['in_msg'] .= ok_html("$i mailAlias");
             multi_check(
                 $_REQUEST['in_dn'],
                 'mailAlias',

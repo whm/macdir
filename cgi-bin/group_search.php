@@ -5,24 +5,13 @@
 // author: Bill MacAllister
 // date: 27-Jan-2016
 
-$title = 'MacAllister Directory Groups';
-$heading = 'MacAllister Directory Groups';
+$title = 'Posix Groups';
+$heading = 'Posix Groups';
+require('inc_init.php');
 require('inc_header.php');
-require('/etc/whm/macdir.php');
-require('inc_bind.php');
-
-// Bail out immediately is user is not logged in.  They should
-// never get here.
-if (! isset($_SERVER['REMOTE_USER'])) {
-    header ("REFRESH: 0; URL=/");
-    exit;
-}
 
 // Bind to the directory
 $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
-
-// clean out the messages
-$msg = '';
 
 // create a form to attribute mapping
 $form["cn"]          = "Group Name";
@@ -85,9 +74,9 @@ if ( ! isset($base_filter) ) {
       <input type="submit" value="Search Directory" name="button">
       </td>
   </tr>
-<?php if ( isset($msg) ) { ?>
+<?php if ( !empty($_SESSION['in_msg']) ) { ?>
   <tr><td align="center" colspan="2">
-      <?php echo $msg; $msg = '';?>
+      <?php echo $_SESSION['in_msg']; $_SESSION['in_msg'] = '';?>
       </td>
   </tr>
 <?php } ?>
