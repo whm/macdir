@@ -3,7 +3,7 @@
 // ----------------------------------------------------------
 // Register Global Fix
 //
-$in_uid  = empty($_REQUEST['in_uid']) ? '' $_REQUEST['in_uid'];
+$in_uid  = empty($_REQUEST['in_uid']) ? '' : $_REQUEST['in_uid'];
 // ----------------------------------------------------------
 //
 // file: phone_maintenance.php

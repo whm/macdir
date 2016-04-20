@@ -10,7 +10,7 @@ function ldap_maillist_admin ($right='email-admin') {
   if ( isset($_SESSION['WEBAUTH_LDAP_PRIVGROUP1']) ) { 
       $cnt = 1;
       while ($cnt > 0) {
-          my $pg = 'WEBAUTH_LDAP_PRIVGROUP'.$cnt;
+          $pg = 'WEBAUTH_LDAP_PRIVGROUP'.$cnt;
           if ( isset($_SESSION[$pg]) ) {
               if ($_SESSION[$pg] == $right) {
                   $admin_access = 2;

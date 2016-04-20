@@ -2,12 +2,12 @@ Source: macdir-simple
 Section: web
 Priority: optional
 Maintainer: Bill MacAllister <bill@ca-zephyr.org>
-Build-Depends: debhelper (>= 8)
+Build-Depends: debhelper (>= 8), php
 Standards-Version: 3.9.4
 
 Package: macdir-simple
 Architecture: all
-Depends: apache2, apache2-mpm-prefork, libapache2-mod-php5
+Depends: apache2, libapache2-mod-php
 Provides: macdir
 Conflicts: macdir
 Replaces: macdir

@@ -140,7 +140,7 @@ ldap_sort($ds, $sr, 'description');
 $info = ldap_get_entries($ds, $sr);
 $ret_cnt = $info["count"];
 if ($ret_cnt) {
-    echo "<table">\n";
+    echo "<table>\n";
     echo "<tr>\n";
     echo " <th>Description</th>\n";
     echo " <th>URL</th>\n";
