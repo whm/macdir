@@ -3,8 +3,9 @@ macdir-simple (3.3) unstable; urgency=medium
   * Add in group search scripts.
   * Remove pam_groups support.
   * Remove samba computer support.
+  * Convert my_links.php to use a responsive design.
 
- -- Bill MacAllister <bill@ca-zephyr.org>  Wed, 27 Jan 2016 18:01:49 -0800
+ -- Bill MacAllister <bill@ca-zephyr.org>  Wed, 20 Apr 2016 10:57:18 -0700
 
 macdir-simple (3.2) unstable; urgency=medium
 

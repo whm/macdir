@@ -3,15 +3,18 @@
 // ----------------------------------------------------------
 // Register Global Fix
 //
-$in_private = empty($_REQUEST['in_private']) ? '' : $_REQUEST['in_private'];
+$in_private = empty($_REQUEST['in_private'])
+    ? '' : $_REQUEST['in_private'];
 $in_button_search = empty($_REQUEST['in_button_search'])
     ? '' : $_REQUEST['in_button_search'];
 $in_commonname = empty($_REQUEST['in_commonname'])
     ? '' : $_REQUEST['in_commonname'];
 $in_description = empty($_REQUEST['in_description'])
     ? '' : $_REQUEST['in_description'];
-$in_password = empty($_REQUEST['in_password']) ? '' : $_REQUEST['in_password'];
-$in_url = empty($_REQUEST['in_url']) ? '' : $_REQUEST['in_url'];
+$in_password = empty($_REQUEST['in_password'])
+    ? '' : $_REQUEST['in_password'];
+$in_url = empty($_REQUEST['in_url'])
+    ? '' : $_REQUEST['in_url'];
 // ----------------------------------------------------------
 //
 # --------------------------------------------
@@ -83,83 +86,32 @@ $this_uid = $_SERVER['REMOTE_USER'];
 
 <p>
 <div align="center">
-<form action="<?php echo $_SERVER['PHP_SELF'];?>" method="POST">
-<table border="0">
+<form name="link_search"
+    action="<?php echo $_SERVER['PHP_SELF'];?>"
+    method="POST">
 
-  <tr>
-    <td>
-      <div align="right">Username:</div>
-    </td>
-    <td><?php echo $this_uid;?></td>
-  </tr>
+    <label for="in_commonname">Name</label>
+    <input type="text" name="in_commonname"
+           value="<?php print $_SESSION['MY_commonname'];?>"
+           placeholder="Fragment of a Name">
+ 
+    <label for="in_description">Description</label>
+    <input type="text" name="in_description"
+           value="<?php print $_SESSION['MY_description'];?>">
 
-  <tr>
-    <td>
-      <div align="right">Common Name:</div>
-    </td>
-    <td>
-      <input type="text"
-             name="in_commonname"
-             value="<?php print $_SESSION['MY_commonname'];?>"
-             size="32">
-    </td>
-  </tr>
+    <label for="in_url">URL</label>
+    <input type="text" name="in_url"
+           value="<?php print $_SESSION['MY_url'];?>">
 
-  <tr>
-    <td>
-      <div align="right">Description:</div>
-    </td>
-    <td>
-      <input type="text"
-             name="in_description"
-             value="<?php print $_SESSION['MY_description'];?>"
-             size="32">
-    </td>
-  </tr>
+    <input type="submit" value="public" name="btn_search_public">
+    <input type="submit" value="private" name="btn_search_private">
+    <input type="submit" value="both" name="btn_search_both">
 
-  <tr>
-    <td>
-      <div align="right">URL:</div>
-    </td>
-    <td>
-      <input type="text"
-             name="in_url"
-             value="<?php print $_SESSION['MY_url'];?>"
-             size="32">
-    </td>
-  </tr>
-
-  <tr>
-    <td>
-      <div align="right">Private:</div>
-    </td>
-    <td>
-      <input type="radio"
-            <?php echo $chk_private_n;?> name="in_private"
-             value="N">Only Public
-      &nbsp;&nbsp;&nbsp;
-      <input type="radio"
-            <?php echo $chk_private_y;?> name="in_private"
-             value="Y">Only Private
-      &nbsp;&nbsp;&nbsp;
-      <input type="radio"
-            <?php echo $chk_private_all;?>  name="in_private"
-             value="ALL">All
-    </td>
-  </tr>
-
-
-  <tr><td align="center" colspan="2">
-      <input type="submit" value="Search Directory" name="in_button_search">
-      </td>
-  </tr>
-<?php if (isset($msg)) { ?>
-  <tr><td align="center" colspan="2">
-      <?php echo $msg;?>
-      </td>
-  </tr>
-<?php } ?>
-</table>
+<?php
+    if (isset($msg)) {
+        echo $msg;
+    }
+?>
 </form>
 
 <p>
@@ -188,7 +140,7 @@ ldap_sort($ds, $sr, 'description');
 $info = ldap_get_entries($ds, $sr);
 $ret_cnt = $info["count"];
 if ($ret_cnt) {
-    echo "<table border=\"1\" cellpadding=\"2\">\n";
+    echo "<table">\n";
     echo "<tr>\n";
     echo " <th>Description</th>\n";
     echo " <th>URL</th>\n";
@@ -220,12 +172,7 @@ if ($ret_cnt) {
     }
     echo "</table>\n";
 } else {
-    echo "<p>\n";
-    echo "<div align=\"center\">\n";
-    echo "<font face=\"Arial, Helvetica, sans-serif\"\n";
-    echo "      size=\"+1\"\n";
-    echo "      color=\"#FF0000\">No entries found.</font>\n";
-    echo "</div>\n";
+    echo '<p class="error">No entries found.</p>' . "\n";
 }
 ?>
 <p>
