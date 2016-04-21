@@ -34,7 +34,8 @@ td:before {
 }
 
 /* Label the data */
-td:nth-of-type(1):before { content: "Description"; }
-td:nth-of-type(2):before { content: "URL"; }
-td:nth-of-type(3):before { content: "Username"; }
-td:nth-of-type(4):before { content: "Password"; }
+td:nth-of-type(1):before { content: "Common Name"; }
+td:nth-of-type(2):before { content: "Email Address"; }
+td:nth-of-type(3):before { content: "Home Phone"; }
+td:nth-of-type(4):before { content: "Work Phone"; }
+td:nth-of-type(5):before { content: "Cell Phone"; }

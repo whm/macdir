@@ -8,7 +8,7 @@
 $title = 'Search for a Person';
 $heading = 'MacAllister Directory';
 require('inc_init.php');
-require('inc_header.php');
+require('inc_header_user_search.php');
 
 // set default for amount of search details to display
 if ( !empty($_REQUEST['in_more_search']) ) {
@@ -74,7 +74,8 @@ if ( empty($base_filter) ) {
 
 ?>
 
-To search for somone just enter some.  If there is more than one match
+To search for somone just enter a fragment of the name.  If there is more
+than one match
 you will be presented with a list to select from.  If your selection
 is too broad you will be presented with only a partial list of matches.
 Anything that you enter into a field is treated as a wild card. For
@@ -84,154 +85,105 @@ matches for Bill and William.
 <p>
 <div align="center">
 <form action="user_search.php">
-<table border="0">
-  <tr>
-    <td>
-      <div align="right">First Name:</div>
-    </td>
-    <td>
-      <input type="text"
-             name="in_firstname"
-             value="<?php print $form_val['in_firstname'];?>"
-             size="32">
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <div align="right">Last Name:</div>
-    </td>
-    <td>
-      <input type="text"
-             name="in_lastname"
-             value="<?php print $form_val['in_lastname'];?>"
-             size="32">
-    </td>
-  </tr>
+    <label for "in_firstname">First Name</label>
+    <input type="text"
+           name="in_firstname"
+           value="<?php print $form_val['in_firstname'];?>"
+           size="32">
+    <br/>
+
+    <label for "in_lastname">Last Name:</label>
+    <input type="text"
+           name="in_lastname"
+           value="<?php print $form_val['in_lastname'];?>"
+           size="32">
+    <br/>
+
 <?php if ($in_more_search == 'yes') { ?>
-  <tr>
-    <td>
-      <div align="right">Title:</div>
-    </td>
-    <td>
-      <input type="text"
-             name="in_title"
-             value="<?php print $form_val['in_title'];?>"
-             size="32">
-    </td>
-  </tr>
+
+    <label for "in_title">Title</label>
+    <input type="text"
+           name="in_title"
+           value="<?php print $form_val['in_title'];?>"
+           size="32">
+    <br/>
 <?php } ?>
-  <tr>
-    <td>
-      <div align="right">Common Name:</div>
-    </td>
-    <td>
-      <input type="text"
-             name="in_commonname"
-             value="<?php print $form_val['in_commonname'];?>"
-             size="32">
-    </td>
-  </tr>
+
+    <label for "in_commonname">Common Name:</label>
+    <input type="text"
+           name="in_commonname"
+           value="<?php print $form_val['in_commonname'];?>"
+           size="32">
+    <br/>
+
 <?php if ($in_more_search == 'yes') { ?>
-  <tr>
-    <td>
-      <div align="right">Postal Address:</div>
-    </td>
-    <td>
-      <input type="text"
-             name="in_postaladdress"
-             value="<?php print $form_val['in_postaladdress'];?>"
-             size="32">
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <div align="right">City:</div>
-    </td>
-    <td>
-      <input type="text"
-             name="in_city"
-             value="<?php print $form_val['in_city'];?>"
-             size="32">
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <div align="right">State:</div>
-    </td>
-    <td>
-      <input type="text"
-             name="in_state"
-             value="<?php print $form_val['in_state'];?>"
-             size="32">
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <div align="right">Telephone Number:</div>
-    </td>
-    <td>
-      <input type="text"
-             name="in_telephone_number"
-             value="<?php print $form_val['in_telephone_number'];?>"
-             size="32">
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <div align="right">Work Telephone Number:</div>
-    </td>
-    <td>
-      <input type="text"
-             name="in_workphone"
-             value="<?php print $form_val['in_workphone'];?>"
-             size="32">
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <div align="right">Cell Phone Number:</div>
-    </td>
-    <td>
-      <input type="text"
-             name="in_cell_number"
-             value="<?php print $form_val['in_cell_number'];?>"
-             size="32">
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <div align="right">eMail:</div>
-    </td>
-    <td>
-      <input type="text"
-             name="in_email"
-             value="<?php print $form_val['in_email'];?>"
-             size="32">
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <div align="right">Mail Distribution List:</div>
-    </td>
-    <td>
-      <input type="text"
-             name="in_maildistributionid"
-             value="<?php print $form_val['in_maildistributionid'];?>"
-             size="32">
-    </td>
-  </tr>
+
+    <label for "in_postaladdress">Postal Address:</label>
+    <input type="text"
+           name="in_postaladdress"
+           value="<?php print $form_val['in_postaladdress'];?>"
+           size="32">
+    <br/>
+
+    <label for "in_city">City:</label>
+    <input type="text"
+           name="in_city"
+           value="<?php print $form_val['in_city'];?>"
+           size="32">
+    <br/>
+
+    <label for "in_state">State:</label>
+    <input type="text"
+           name="in_state"
+           value="<?php print $form_val['in_state'];?>"
+           size="32">
+    <br/>
+
+    <label for "in_telephone_number">Telephone Number:</label>
+    <input type="text"
+           name="in_telephone_number"
+           value="<?php print $form_val['in_telephone_number'];?>"
+           size="32">
+    <br/>
+                                      
+    <label for "in_workphone">Work Telephone Number:</label>
+    <input type="text"
+           name="in_workphone"
+           value="<?php print $form_val['in_workphone'];?>"
+           size="32">
+    <br/>
+                                      
+    <label for "in_cell_number">Cell Phone Number:</label>
+    <input type="text"
+           name="in_cell_number"
+           value="<?php print $form_val['in_cell_number'];?>"
+           size="32">
+    <br/>
+                                      
+    <label for "in_email">>eMail:</label>
+    <input type="text"
+           name="in_email"
+           value="<?php print $form_val['in_email'];?>"
+           size="32">
+    <br/>
+                                      
+    <label for "in_maildistributionid">Mail Distribution List:</label>
+    <input type="text"
+           name="in_maildistributionid"
+           value="<?php print $form_val['in_maildistributionid'];?>"
+           size="32">
+    <br/>
+                                      
 <?php } ?>
-  <tr><td align="center" colspan="2">
-      <input type="submit" value="Search Directory" name="button">
-      </td>
-  </tr>
-<?php if ( !empty($_SESSION['in_msg']) ) { ?>
-  <tr><td align="center" colspan="2">
-      <?php echo $_SESSION['in_msg']; $_SESSION['in_msg'] = '';?>
-      </td>
-  </tr>
-<?php } ?>
-</table>
+<p align="center">
+<input type="submit" value="Search Directory" name="button">
+</p>
+                                     
+<?php
+if ( !empty($_SESSION['in_msg']) ) {
+    echo $_SESSION['in_msg']; $_SESSION['in_msg'] = '';
+}
+?>
 </form>
 
 <p>
@@ -256,7 +208,8 @@ if ( !empty($base_filter) ) {
   $info = ldap_get_entries($ds, $sr);
   $ret_cnt = $info["count"];
   if ($ret_cnt) {
-    echo "<table border=\"1\" cellpadding=\"2\">\n";
+    echo "<table>\n";
+    echo "<thead>\n";
     echo "<tr>\n";
     echo " <th>Common Name</th>\n";
     echo " <th>Email Address</th>\n";
@@ -264,6 +217,8 @@ if ( !empty($base_filter) ) {
     echo " <th>Work Phone</th>\n";
     echo " <th>Cell Phone</th>\n";
     echo "</tr>\n";
+    echo "</thead>\n";
+    echo "<tbody>\n";
     for ($i=0; $i<$info["count"]; $i++) {
       $a_dn     = $info[$i]["dn"];
       $a_dn_url = urlencode($a_dn);
@@ -301,6 +256,7 @@ if ( !empty($base_filter) ) {
       echo " <td>$a_mobile &nbsp;</td>\n";
       echo "</tr>\n";
     }
+    echo "</tbody>\n";
     echo "</table>\n";
   } else {
     echo "<p>\n";
