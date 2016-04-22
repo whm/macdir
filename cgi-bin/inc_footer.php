@@ -1,10 +1,6 @@
- <!-- end of main -->
- </div>
-
-<?php require('inc_menu.php');?>
-
-<!-- end of wrap -->
+<div class="footer">
+     <p>MacAllister Directory Services</p>
 </div>
-
+    
 </body>
 </html>

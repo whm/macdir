@@ -1,10 +1,4 @@
 <?php
-//
-// ----------------------------------------------------------
-// Register Global Fix
-//
-// ----------------------------------------------------------
-//
 # --------------------------------------------
 # file: my_list.php
 # author: Bill MacAllister
@@ -47,20 +41,20 @@ if ("${btn_search_private}${btn_search_public}" == '') {
 }
 
 # set session information
-foreach ($form as $formName => $ldapName) {
-    if ("${btn_search_private}${btn_search_public}" != '') {
-        $_SESSION["MY_$formName"] = empty($_REQUEST["in_${formName}"])
-            ? '' : $_REQUEST["in_${formName}"];
-    } else {
-        $_SESSION["MY_${formName}"] = '';
+if ("${btn_search_private}${btn_search_public}" != '') {
+    foreach ($form as $formName => $ldapName) {
+        $sname = "MY_${formName}";
+        $fname = "in_${formName}";
+        $_SESSION[$sname] = empty($_REQUEST[$fname]) ? '' : $_REQUEST[$fname];
     }
 }
 
 # construct the filter from input data
 $base_filter = '';
 foreach ($form as $formName => $ldapName) {
-    if (!empty($_REQUEST["in_${formName}"])) {
-        $a_val        = $_REQUEST["in_${formName}"];
+    $fname = "in_${formName}";
+    if (!empty($_REQUEST[$fname])) {
+        $a_val        = $_REQUEST[$fname];
         $base_filter .= "($ldapName=*$a_val*)";
     }
 }
@@ -69,40 +63,45 @@ foreach ($form as $formName => $ldapName) {
 // is no input data.
 if ($base_filter == '') {
     foreach ($form as $formName => $ldapName) {
-        if (!empty($_SESSION["MY_$formName"])) {
-            $a_val        = $_SESSION["MY_$formName"];
+        $sname = "MY_${formName}";
+        $fname = "in_${formName}";
+        if (!empty($_SESSION[$sname])) {
+            $a_val        = $_SESSION[$sname];
             $base_filter .= "($ldapName=*$a_val*)";
         }
+    }
+} else {
+    foreach ($form as $formName => $ldapName) {
+        $sname = "MY_${formName}";
+        $fname = "in_${formName}";
+        $_SESSION[$sname] = empty($_REQUEST[$fname]) ? '' : $_REQUEST[$fname];
     }
 }
 
 $this_uid = $_SERVER['REMOTE_USER'];
 ?>
 
-<p>
-<div align="center">
+<div class="row">
+<div class="col-9">
 <form name="link_search"
     action="<?php echo $_SERVER['PHP_SELF'];?>"
     method="POST">
 
-    <p>
     <label for="in_commonname">Name</label>
     <input type="text" name="in_commonname"
            value="<?php print $_SESSION['MY_commonname'];?>"
            placeholder="Fragment of a Name">
-    </p>
+    <br/>
 
-    <p>
     <label for="in_description">Description</label>
     <input type="text" name="in_description"
            value="<?php print $_SESSION['MY_description'];?>">
-    </p>
+    <br/>
 
-    <p>
     <label for="in_url">URL</label>
     <input type="text" name="in_url"
            value="<?php print $_SESSION['MY_url'];?>">
-    </p>
+    <br/>
 
     <p align="center">Search:
     <input type="submit" value="public" name="btn_search_public">
@@ -117,8 +116,6 @@ if ( !empty($_SESSION['in_msg']) ) {
 ?>
 </form>
 
-<p>
-
 <?php
 
 $link_base = "uid=${this_uid},${ldap_user_base}";
@@ -130,7 +127,7 @@ $return_attr = array('cn',
                      'linkuid',
                      'pridecredential',
                      'prideurlprivate');
-$filter = '(&(objectclass=pridelistobject)'.$base_filter.')';
+$filter = '(&(objectclass=pridelistobject)'. $base_filter. ')';
 $sr = ldap_search($ds, $link_base, $filter, $return_attr);
 ldap_sort($ds, $sr, 'description');
 $info = ldap_get_entries($ds, $sr);
@@ -181,8 +178,10 @@ if ($ret_cnt) {
     echo '<p class="error">No entries found.</p>' . "\n";
 }
 ?>
-<p>
 
+</div>
+
+<?php require('inc_menu.php');?>
 </div>
 
 <?php require('inc_footer.php');?>

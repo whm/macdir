@@ -1,6 +1,6 @@
 <?php
 #
-# Generate navigation menu
+# Generate navigation menu that is 2 grid columns wide
 
 $menuLoggedIn = 0;
 if ( isset($_SERVER['REMOTE_USER']) ) {
@@ -52,10 +52,8 @@ if ( isset($_SERVER['REMOTE_USER']) ) {
 ?>
 <!-- Navigation -->
 
-<div id="nav">
+<div class="col-1 menu">
 <ul>
 <?php echo $itemList; ?>
 </ul>
 </div>
-
-<!-- end navigation -->

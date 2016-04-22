@@ -1,5 +1,17 @@
 # Table controls for small screens on the my_links display
 
+/* Set for little screens */
+.col-1 {width: 100%;}
+.col-2 {width: 100%;}
+.col-3 {width: 100%;}
+.col-4 {width: 100%;}
+.col-5 {width: 100%;}
+.col-6 {width: 100%;}
+.col-7 {width: 100%;}
+.col-8 {width: 100%;}
+.col-9 {width: 100%;}
+.col-10 {width: 100%;}
+
 /* Force table to not be like tables anymore */
 table, thead, tbody, th, td, tr {
     display: block;

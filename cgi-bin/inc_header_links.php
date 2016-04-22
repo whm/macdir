@@ -13,11 +13,7 @@ header("Content-Type: text/html; charset=UTF-8");
 </head>
 
 <body>
-<div id="wrap">
 
- <div id="header">
- <h1>MacAllister Directory</h1>
- </div>
-
- <div id="main">
-
+<div class="header">
+    <h1><?php print $heading; ?></h1>
+</div>
