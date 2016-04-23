@@ -5,8 +5,8 @@
 // author: Bill MacAllister
 // date: 14-Oct-2002
 
-$title = 'Search for a Person';
-$heading = 'MacAllister Directory';
+$title   = 'Search for a Person';
+$heading = 'Search for a Person';
 require('inc_init.php');
 require('inc_header_user_search.php');
 
@@ -74,6 +74,9 @@ if ( empty($base_filter) ) {
 
 ?>
 
+<div class="row">
+<div class="col-10">
+<p>
 To search for somone just enter a fragment of the name.  If there is more
 than one match
 you will be presented with a list to select from.  If your selection
@@ -81,9 +84,13 @@ is too broad you will be presented with only a partial list of matches.
 Anything that you enter into a field is treated as a wild card. For
 example entering &quot;ill&quot; for the first name will return
 matches for Bill and William.
+</p>
+</div>
+</div>
 
-<p>
-<div align="center">
+<div class="row">
+<div class="col-9">
+
 <form action="user_search.php">
     <label for "in_firstname">First Name</label>
     <input type="text"
@@ -181,12 +188,12 @@ matches for Bill and William.
                                      
 <?php
 if ( !empty($_SESSION['in_msg']) ) {
-    echo $_SESSION['in_msg']; $_SESSION['in_msg'] = '';
+    echo $_SESSION['in_msg'];
+    echo "<br/>\n";
+    $_SESSION['in_msg'] = '';
 }
 ?>
 </form>
-
-<p>
 
 <?php
 if ( !empty($base_filter) ) {
@@ -259,16 +266,13 @@ if ( !empty($base_filter) ) {
     echo "</tbody>\n";
     echo "</table>\n";
   } else {
-    echo "<p>\n";
-    echo "<div align=\"center\">\n";
-    echo "<font face=\"Arial, Helvetica, sans-serif\"\n";
-    echo "      size=\"+1\"\n";
-    echo "      color=\"#FF0000\">No entries found.</font>\n";
+    echo '<div align="center">' . "\n";
+    echo "No entries found.\n";
     echo "</div>\n";
   }
 }
 ?>
-<p>
+
 <?php
 if (isset($_SERVER['REMOTE_USER'])) {
     if ($in_more_search == 'yes') {
@@ -280,8 +284,10 @@ if (isset($_SERVER['REMOTE_USER'])) {
     }
 }
 ?>
-<p>
 
+</div>
+
+<?php require('inc_menu.php');?>
 </div>
 
 <?php require('inc_footer.php');?>
