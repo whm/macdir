@@ -1,0 +1,99 @@
+/* ------------------------------------------------------------ */
+/* Style for small screen displays                              */
+/* ------------------------------------------------------------ */
+
+html {
+    font-family: sans-serif;
+}
+
+body {
+    background-color: #ffffcc;
+}
+
+.row:after {
+    content: "";
+    clear: both;
+    display: block;
+}
+
+[class*="col-"] {
+    float: left;
+    padding: 5px;
+}
+
+.header {
+    background-color: #ffffcc;
+    color: #660000;
+    padding: 0px;
+}
+.menu ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+.menu li {
+    padding: 8px;
+    margin-bottom: 7px;
+    background-color :#ffffcc;
+    color: #660000;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
+.menu li:hover {
+    background-color: #ffff99;
+}
+
+.footer {
+    background-color: #ffffcc;
+    color: #660000;
+    text-align: center;
+    font-size: 12px;
+    padding: 15px;
+}
+
+/* Set for little screens */
+.col-1 {width: 100%;}
+.col-2 {width: 100%;}
+.col-3 {width: 100%;}
+.col-4 {width: 100%;}
+.col-5 {width: 100%;}
+.col-6 {width: 100%;}
+.col-7 {width: 100%;}
+.col-8 {width: 100%;}
+.col-9 {width: 100%;}
+.col-10 {width: 100%;}
+
+/* ------------------------------------------------------------ */
+/* Force table to not be like tables anymore                    */
+/* ------------------------------------------------------------ */
+
+table, thead, tbody, th, td, tr {
+    display: block;
+}
+
+/* Hide table headers (but not display: none;, for accessibility) */
+thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+}
+
+tr { border: 1px solid #ccc; }
+
+td {
+    /* Behave  like a "row" */
+    border: none;
+    border-bottom: 1px solid #eee;
+    position: relative;
+    padding-left: 50%;
+}
+
+td:before {
+    /* Now like a table header */
+    position: absolute;
+    /* Top/left values mimic padding */
+    top: 6px;
+    left: 6px;
+    width: 45%;
+    padding-right: 10px;
+    white-space: nowrap;
+}
