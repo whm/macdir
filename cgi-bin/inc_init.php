@@ -20,6 +20,13 @@ function ok_html ($txt) {
 }
 
 # --------------------------------------------------------------
+# If input string is zero length non-breakable white space
+function nbsp_html ($txt) {
+    $return_txt = empty(trim($txt)) ? '&nbsp;' : $txt;
+    return $return_txt;
+}
+
+# --------------------------------------------------------------
 # Bind to the directory and die if there is an error
 
 function macdir_bind ($this_server, $bind_type) {
@@ -111,30 +118,28 @@ $this_user    = '';
 if ( isset($_SERVER['REMOTE_USER']) ) {
     $this_user  = $_SERVER['REMOTE_USER'];
     if (empty($_SERVER['WEBAUTH_LDAP_CZPRIVILEGEGROUP1'])) {
-        if ($_SERVER['WEBAUTH_LDAP_CZPRIVILEGEGROUP']=='ldap:admin') {
-            $ldap_admin = 1;
-        }
         if ($_SERVER['WEBAUTH_LDAP_CZPRIVILEGEGROUP']=='ldap:phoneadmin') {
             $phone_admin = 1;
+        }
+        if ($_SERVER['WEBAUTH_LDAP_CZPRIVILEGEGROUP']=='ldap:admin') {
+            $ldap_admin = 1;
         }
     } else {
         $i = 1;
         while(!empty($_SERVER["WEBAUTH_LDAP_CZPRIVILEGEGROUP$i"])) {
-            if ($_SERVER["WEBAUTH_LDAP_CZPRIVILEGEGROUP$i"]=='ldap:admin') {
-                $ldap_admin = 1;
-            }
             if ($_SERVER["WEBAUTH_LDAP_CZPRIVILEGEGROUP$i"]=='ldap:phoneadmin')
             {
                 $phone_admin = 1;
             }
+            if ($_SERVER["WEBAUTH_LDAP_CZPRIVILEGEGROUP$i"]=='ldap:admin') {
+                $ldap_admin = 1;
+            }
             $i++;
-            if ($ldap_admin==1 && $phone_admin==1) {
-                break;
-            }
-            if ($i>32767) {
-                exit('Problem setting admin privs');
-            }
         }
+    }
+    // Make the privilege state unambiguous
+    if ($ldap_admin > 0) {
+        $ldap_phone = 0;
     }
 }
 

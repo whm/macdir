@@ -150,26 +150,23 @@ if ($ret_cnt) {
         $a_maint_link
             = '<a href="my_links_maint.php' . '?in_cn=' . $a_cn_url . '">'
             . '<img src="/macdir-images/icon-edit.png" border="0"></a>';
-        if (!empty($info[$i]["prideurl"])) {
+        $a_desc    = empty($info[$i]["description"][0])
+            ? '' : $info[$i]["description"][0];
+
+        if (!empty($info[$i]["prideurl"][0])) {
             $a_href_url
                 = '<a href="' . htmlentities($info[$i]["prideurl"][0])
                 . '" target="_BLANK">'
                 . $info[$i]["prideurl"][0] . '</a>';
         } else {
-            $a_href_url = '';
+            $a_href_url = '&nbsp;';
         }
-        $a_desc    = empty($info[$i]["description"][0])
-            ? '' : $info[$i]["description"][0];
-        $a_linkuid = empty($info[$i]["linkuid"][0])
-            ? '' : $info[$i]["linkuid"][0];
-        $a_cred    = empty($info[$i]["pridecredential"][0])
-            ? "" : $info[$i]["pridecredential"][0];
 
         echo "<tr>\n";
         echo " <td>${a_maint_link}${a_desc}</td>\n";
         echo " <td>${a_href_url}</td>\n";
-        echo " <td>${a_linkuid}</td>\n";
-        echo " <td>${a_cred}</td>\n";
+        echo ' <td>' . nbsp_html($info[$i]["linkuid"][0]) . "</td>\n";
+        echo ' <td>' . nbsp_html($info[$i]["pridecredential"][0]) . "</td>\n";
         echo "</tr>\n";
     }
     echo "</tbody>\n";

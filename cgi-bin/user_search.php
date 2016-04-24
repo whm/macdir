@@ -232,15 +232,11 @@ if ( !empty($base_filter) ) {
       $a_cn     = $info[$i]["cn"][0];
       $a_uid    = $info[$i]["uid"][0];
 
-      $a_mail      = (empty($info[$i]["mail"][0])
-                     ? '' : $info[$i]["mail"][0]);
-      $a_mobile    = (empty($info[$i]["mobile"][0])
-                     ? '' : $info[$i]["mobile"][0]);
-      $a_workphone = (empty($info[$i]["workphone"][0])
-                     ? '' : $info[$i]["workphone"][0]);
-      $a_phone     = (empty($info[$i]["telephonenumber"][0])
-                     ? '' : $info[$i]["telephonenumber"][0]);
-      $a_maint_link = '';
+      $a_mail      = nbsp_html($info[$i]["mail"][0]);
+      $a_mobile    = nbsp_html($info[$i]["mobile"][0]);
+      $a_workphone = nbsp_html($info[$i]["workphone"][0]);
+      $a_phone     = nbsp_html($info[$i]["telephonenumber"][0]);
+      $a_maint_link = '&nbsp;';
       if ($ldap_admin>0) {
         $a_maint_link = '<a href="user_maint.php'
             . '?in_uid=' . $a_uid
@@ -250,24 +246,24 @@ if ( !empty($base_filter) ) {
             . '?in_uid=' . $a_uid
             . '"><img src="/macdir-images/icon-edit.png" border="0"></a>';
       }
-      $detail_link = '';
+      $detail_link = '&nbsp;';
       if ( isset($_SERVER['REMOTE_USER']) ) {
           $detail_link = "<a href=\"user_details.php?in_dn=$a_dn_url\">"
               . '<img src="/macdir-images/icon-view-details.png" border="0"</a>';
       }
       echo "<tr>\n";
       echo " <td>$a_maint_link$detail_link&nbsp;$a_cn</td>\n";
-      echo " <td><a href=\"mailto:$a_mail\">$a_mail</a>&nbsp;</td>\n";
-      echo " <td>$a_phone &nbsp;</td>\n";
-      echo " <td>$a_workphone &nbsp;</td>\n";
-      echo " <td>$a_mobile &nbsp;</td>\n";
+      echo " <td>$a_mail</td>\n";
+      echo " <td>$a_phone</td>\n";
+      echo " <td>$a_workphone</td>\n";
+      echo " <td>$a_mobile</td>\n";
       echo "</tr>\n";
     }
     echo "</tbody>\n";
     echo "</table>\n";
   } else {
     echo '<div align="center">' . "\n";
-    echo "No entries found.\n";
+    echo warn_html('No entries found.');
     echo "</div>\n";
   }
 }
