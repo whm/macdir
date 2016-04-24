@@ -7,7 +7,7 @@ Standards-Version: 3.9.4
 
 Package: macdir-simple
 Architecture: all
-Depends: apache2, libapache2-mod-php
+Depends: apache2
 Provides: macdir
 Conflicts: macdir
 Replaces: macdir
