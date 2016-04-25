@@ -19,6 +19,18 @@ if ( !empty($_REQUEST['in_more_search']) ) {
           ? 'no' : $_SESSION['SEAR_more_search'];
 }
 $_SESSION['SEAR_more_search'] = $in_more_search;
+$more_label = '';
+if (!empty($_SERVER['REMOTE_USER'])) {
+    if ($in_more_search == 'yes') {
+        $more_label
+            = '<a href="' . $_SERVER['PHP_SELF'] . '?in_more_search=no">'
+            . "Display Less Search Criteria</a>\n";
+    } else {
+        $more_label
+            = '<a href="' . $_SERVER['PHP_SELF'] . '?in_more_search=yes">'
+            . "Display More Search Criteria</a>\n";
+    }
+}
 
 // create a form to attribute mapping
 $form["firstname"]          = "givenname";
@@ -92,7 +104,7 @@ matches for Bill and William.
 <div class="col-9">
 
 <form action="user_search.php">
-    <label for "in_firstname">First Name</label>
+    <label for "in_firstname">First Name:</label>
     <input type="text"
            name="in_firstname"
            value="<?php print $form_val['in_firstname'];?>"
@@ -152,40 +164,41 @@ matches for Bill and William.
            value="<?php print $form_val['in_telephone_number'];?>"
            size="32">
     <br/>
-                                      
+
     <label for "in_workphone">Work Telephone Number:</label>
     <input type="text"
            name="in_workphone"
            value="<?php print $form_val['in_workphone'];?>"
            size="32">
     <br/>
-                                      
+
     <label for "in_cell_number">Cell Phone Number:</label>
     <input type="text"
            name="in_cell_number"
            value="<?php print $form_val['in_cell_number'];?>"
            size="32">
     <br/>
-                                      
-    <label for "in_email">>eMail:</label>
+
+    <label for "in_email">eMail:</label>
     <input type="text"
            name="in_email"
            value="<?php print $form_val['in_email'];?>"
            size="32">
     <br/>
-                                      
+
     <label for "in_maildistributionid">Mail Distribution List:</label>
     <input type="text"
            name="in_maildistributionid"
            value="<?php print $form_val['in_maildistributionid'];?>"
            size="32">
     <br/>
-                                      
+
 <?php } ?>
-<p align="center">
-<input type="submit" value="Search Directory" name="button">
+<p>
+<label for="btn_search"><?php echo $more_label;?></label>
+<input type="submit" value="Search Directory" name="in_button_search">
 </p>
-                                     
+
 <?php
 if ( !empty($_SESSION['in_msg']) ) {
     echo $_SESSION['in_msg'];
@@ -266,18 +279,6 @@ if ( !empty($base_filter) ) {
     echo warn_html('No entries found.');
     echo "</div>\n";
   }
-}
-?>
-
-<?php
-if (isset($_SERVER['REMOTE_USER'])) {
-    if ($in_more_search == 'yes') {
-        print '<a href="' . $_SERVER['PHP_SELF'] . '?in_more_search=no">';
-        print "Display Less Search Criteria</a>\n";
-    } else {
-        print '<a href="' . $_SERVER['PHP_SELF'] . '?in_more_search=yes">';
-        print "Display More Search Criteria</a>\n";
-    }
 }
 ?>
 

@@ -62,6 +62,12 @@ body {
 .col-9 {width: 89%;}
 .col-10 {width: 100%;}
 
+label {
+    display: inline-block;
+    width: 210px;
+    text-align: right;
+}
+
 /* ------------------------------------------------------------ */
 /* Generic table controls                                       */
 /* ------------------------------------------------------------ */

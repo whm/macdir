@@ -9,6 +9,7 @@ $title = 'Posix Groups';
 $heading = 'Posix Groups';
 require('inc_init.php');
 require('inc_header.php');
+require('/etc/whm/macdir.php');
 
 // Bind to the directory
 $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
@@ -55,32 +56,32 @@ if ( ! isset($base_filter) ) {
 }
 ?>
 
-<p>
-<div align="center">
+<div class="row">
+<div class="col-9">
+
 <form action="group_search.php">
-<table border="0">
-<?php foreach ($form as $attr => $title) { ?>
-  <tr>
-    <td><div align="right"><?php print $title;?>:</div></td>
-    <td>
-      <input type="text"
-             name="in_<?php print $attr; ?>"
-             value="<?php print $_SESSION["GROUP_$attr"];?>"
-             size="32">
-    </td>
-  </tr>
+<?php
+    foreach ($form as $attr => $title) {
+        $this_attr = "in_${attr}";
+        $this_val
+        = empty($_SESSION["GROUP_${attr}"]) ? '' : $_SESSION["GROUP_${attr}"];
+?>
+
+    <label for="<?php print $this_attr;?>"><?php print $title;?>:</label>
+    <input type="text"
+           name="in_<?php print $attr; ?>"
+           value="<?php print $this_val;?>">
+    <br/>
 <?php } ?>
-  <tr><td align="center" colspan="2">
-      <input type="submit" value="Search Directory" name="button">
-      </td>
-  </tr>
-<?php if ( !empty($_SESSION['in_msg']) ) { ?>
-  <tr><td align="center" colspan="2">
-      <?php echo $_SESSION['in_msg']; $_SESSION['in_msg'] = '';?>
-      </td>
-  </tr>
+
+<p>
+<input type="submit" value="Search Directory" name="button">
+</p>
+
+<?php
+    if ( !empty($_SESSION['in_msg']) ) { ?>
+      <p><?php print $_SESSION['in_msg']; $_SESSION['in_msg'] = '';?></p>
 <?php } ?>
-</table>
 </form>
 
 <p>
@@ -104,8 +105,8 @@ if ( isset($base_filter) && strlen($base_filter)>0) {
         for ($i=0; $i<$info["count"]; $i++) {
             if ($header_set == 0) {
                 $header_set = 1;
-                echo "<table border=\"1\" cellpadding=\"2\">\n";
-                echo "<tr>\n";
+                print "<table>\n";
+                print "<tr>\n";
                 foreach ($form as $attr => $title) {
                     print " <th>$title</th>\n";
                 }
@@ -135,17 +136,14 @@ if ( isset($base_filter) && strlen($base_filter)>0) {
             print "</table>\n";
         }
     } else {
-        print "<p>\n";
-        print "<div align=\"center\">\n";
-        print "<font face=\"Arial, Helvetica, sans-serif\"\n";
-        print "      size=\"+1\"\n";
-        print "      color=\"#FF0000\">No entries found.</font>\n";
-        print "</div>\n";
+        print '<p>' . warn_html('No entries found') . "<p>\n";
     }
 }
 ?>
-<p>
 
+</div>
+
+<?php require('inc_menu.php');?>
 </div>
 
 <?php require('inc_footer.php');?>

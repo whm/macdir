@@ -22,13 +22,14 @@ $menuItem['my_links.php'] = array('title' => 'My Links',
 $menuItem['my_links_maint.php'] = array('title' => 'Links Maint',
                                         'login' => 'user');
 
-$menuItem['group_search.php'] = array ('title' => 'Groups', 'login' => 'admin');
+$menuItem['group_search.php'] = array ('title' => 'Groups',
+                                       'login' => 'admin');
 
-$menuItem['apps.php'] = array ('title' => 'Apps',
-                               'login' => 'admin');
-
-$menuItem['app_access_maint.php'] = array('title' => 'App Access',
-                                          'login' => 'admin');
+#$menuItem['apps.php'] = array ('title' => 'Apps',
+#                               'login' => 'admin');
+#
+#$menuItem['app_access_maint.php'] = array('title' => 'App Access',
+#                                          'login' => 'admin');
 
 $itemList = '';
 
