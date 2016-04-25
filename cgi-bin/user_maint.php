@@ -8,11 +8,12 @@
 // description: This form is for updating phone information for people
 //              listed in the LDAP Directory.
 
-$title = 'User Maintenance';
+$title   = 'User Maintenance';
 $heading = 'User Maintenance';
 
 require('inc_init.php');
 require('inc_header.php');
+require('/etc/whm/macdir.php');
 
 ##############################################################################
 # Subroutines
@@ -59,7 +60,7 @@ function display_update_buttons (
 }
 
 ##############################################################################
-# Main routine
+# Initializatrion
 ##############################################################################
 
 // Bind to the directory
@@ -82,7 +83,7 @@ $thisUID         = '';
 $thisDN          = '';
 $ldap_filter     = '';
 
-if (empty($_REQUEST['in_uid'])) {
+if (empty($_REQUEST['in_uid']) || !empty($_REQUEST['in_button_reset'])) {
     $in_uid = '';
 } else {
     $in_uid = $_REQUEST['in_uid'];
@@ -159,52 +160,20 @@ if (!empty($ldap_filter)) {
   }
 
 }
-
 ?>
 
-<table border="0" width="100%">
-<tr><td align="center" width="90%">
-
-<form name="user_maint_find"
-      method="post"
-      action="<?php print $_SERVER['PHP_SELF']; ?>">
-<table border="0" width="100%">
-<tr>
-  <td align="right" width="50%">UID:</td>
-  <td width="50%"><input type="text"
-             name="in_uid"
-             value="<?php print $in_uid;?>">
-  </td>
-</tr>
-<tr>
-  <td colspan="2" align="center">
-    <input type="submit" name="in_button_find" value="Lookup">
-  </td>
-</tr>
 <?php
-if (isset($msg)) {
-  echo "<tr>\n";
-  echo "  <td colspan=\"2\" align=\"center\">$msg</td>\n";
-  echo "</tr>\n";
-  $msg = '';
-}
-if ( !empty($_SESSION['in_msg']) ) {
-    echo "<tr>\n";
-    echo "  <td colspan=\"2\" align=\"center\">".$_SESSION['in_msg']."</td>\n";
-    echo "</tr>\n";
-    $_SESSION['in_msg'] = '';
-}
+##############################################################################
+# Java Script Routines
+##############################################################################
 ?>
-</table>
-</form>
-
-</td>
-<td align="center" width="10%">
 
 <script language="JavaScript">
 
-// ------------------------------------
-// Set mail fields
+/* --------------- */
+/* Set mail fields */
+/* --------------- */
+
 function set_mail () {
     var f;
     f = document.user_maint;
@@ -224,8 +193,10 @@ function set_mail () {
     f.in_new_maildelivery.value = t;
 }
 
-// ------------------------------------
-// Unset mail fields
+/* ----------------- */
+/* Unset mail fields */
+/* ----------------- */
+
 function unset_mail () {
  var f;
  var i;
@@ -337,16 +308,39 @@ function checkIt() {
 
 </script>
 
-<form name="reset"
+<?php 
+##############################################################################
+# Main Routine
+##############################################################################
+?>
+
+<form name="user_maint_find"
       method="post"
       action="<?php print $_SERVER['PHP_SELF']; ?>">
-<input type="hidden" name="in_uid" value="">
-<input type="submit" name="reset" value="Reset">
-</form>
 
-</td>
-</tr>
-</table>
+    <label for="in_uid">UID:</label>
+    <input type="text"
+             name="in_uid"
+             value="<?php print $in_uid;?>">
+    <br/>
+
+    <input type="submit" name="in_button_find"  value="Lookup">
+    <input type="submit" name="in_button_reset" value="Reset">
+</form>
+<br/>
+    
+<?php
+if (isset($msg)) {
+  echo "<p>$msg</p>\n";
+  $msg = '';
+}
+if ( !empty($_SESSION['in_msg']) ) {
+    echo "<p>" . $_SESSION['in_msg'] . "</p>\n";
+    echo "</tr>\n";
+    $_SESSION['in_msg'] = '';
+}
+?>
+</form>
 
 <p>
 <form name="user_maint"
@@ -833,5 +827,9 @@ if ( !empty($thisPosix) && $thisPosix>0 ) {
 
 <?php
  ldap_close($ds);
- require ('inc_footer.php');
 ?>
+
+<?php require('inc_menu.php');?>
+</div>
+
+<?php require('inc_footer.php');?>

@@ -3,7 +3,7 @@
 # file: my_list.php
 # author: Bill MacAllister
 
-$title = "Search My Links";
+$title   = "Search My Links";
 $heading = "Search My Links";
 
 require('inc_init.php');
