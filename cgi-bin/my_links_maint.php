@@ -1,27 +1,24 @@
 <?php
 //
-// ----------------------------------------------------------
-// Register Global Fix
-//
-$in_cn = empty($_REQUEST['in_cn']) ? '' : $_REQUEST['in_cn'];
-// ----------------------------------------------------------
-//
-# file: my_links_maint.php
-# author: Bill MacAllister
+// file: my_links_maint.php
+// author: Bill MacAllister
 
-$title = 'Link Maintenance';
+$title   = 'Link Maintenance';
 $heading = 'Link Maintenance';
 
 require('inc_init.php');
-require('/etc/whm/macdir.php');
 require('inc_header.php');
+require('/etc/whm/macdir.php');
 
 $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
-if (isset($in_cn)) {
-    
+if (empty($_REQUEST['in_cn']) || !empty($_REQUEST['in_button_reset'])) {
+    $in_cn = '';
+} else {
+    $in_cn = $_REQUEST['in_cn'];
+
     $return_attr = array();
-    $link_base = 'uid='.$_SERVER['REMOTE_USER'].','.$ldap_user_base;
+    $link_base = 'uid='.$_SERVER['REMOTE_USER'] . ',' . $ldap_user_base;
     $link_filter = "(&(objectclass=pridelistobject)(cn=$in_cn))";
     $sr = @ldap_search ($ds, $link_base, $link_filter, $return_attr);
     $info = @ldap_get_entries($ds, $sr);
@@ -56,7 +53,7 @@ function checkIt() {
     var f;
     var i;
     var outData = "";
-  
+
     EmptyField = "";
     f = document.maint;
 
@@ -69,148 +66,116 @@ function checkIt() {
     }
 
     return true;
-    
+
 }
 
 </script>
 
+<?php
+##############################################################################
+# Main Routine
+##############################################################################
+?>
+
+<div class="row">
+<div class="col-9">
+
 <form name="maint_find"
       method="post"
       action="<?php print $_SERVER['PHP_SELF']; ?>">
-<table border="0" width="100%">
-<tr>
-  <td align="right" width="50%">Common Name:</td>
-  <td width="50%"><input type="text"
+
+    <label for "in_cn">Common Name:</label>
+    <input type="text"
              name="in_cn"
              value="<?php print $in_cn;?>">
-  </td>
-</tr>
-<tr>
-  <td colspan="2" align="center">
+    <p>
     <input type="submit" name="in_button_find" value="Lookup">
-  </td>
-</tr>
+    <input type="submit" name="in_button_reset" value="Reset">
+    </p>
+</form>
 <?php
 if (isset($msg)) {
-  echo "<tr>\n";
-  echo "  <td colspan=\"2\" align=\"center\">$msg</td>\n";
-  echo "</tr>\n";
+  echo "<p>$msg</td>\n";
   $msg = '';
 }
-if (isset($_SESSION['in_msg'])) {
+if (!empty($_SESSION['in_msg'])) {
     echo "<tr>\n";
-    echo "  <td colspan=\"2\" align=\"center\">".$_SESSION['in_msg']."</td>\n";
-    echo "</tr>\n";
+    echo '<p>' . $_SESSION['in_msg'] . "</p>\n";
     $_SESSION['in_msg'] = '';
 }
 ?>
-</table>
-</form>
-
 <form name="maint"
       method="post"
       action="my_links_maint_action.php"
       onsubmit="return checkIt()">
 
-<table border="1" cellpadding="2" align="center">
+    <label for="in_description">Description:</label>
+    <input type="text" name="in_description" size="60"
+             value="<?php echo nbsp_html($info[0]['description'][0]);?>">
+    <br/>
 
-<tr>
-  <td colspan="2" align="right">
-    <a href="<?php echo $_SERVER['PHP_SELF'];?>">Reset</a>
-  </td>
-</tr>
-
-<tr>
-  <td align="right">Description:</td>
-  <td><input type="text" name="in_description" size="60"
-             value="<?php echo $info[0]['description'][0];?>">
-  </td>
-</tr>
-
-<tr>
-  <td align="right">Common Name:</td>
-  <td>
-<?php if ( isset($info[0]['cn'][0]) ) { ?>
- <input type="hidden" name="in_cn" value="<?php echo $info[0]['cn'][0];?>">
- <?php echo $info[0]['cn'][0];?>
+    <label for "in_cn">Common Name:</label>
+<?php if ( !empty($info[0]['cn'][0]) ) { ?>
+    <input type="hidden" name="in_cn" value="<?php echo $info[0]['cn'][0];?>">
+    <?php echo $info[0]['cn'][0];?>
 <?php } else { ?>
-<input type="text" name="in_cn" value="">
+    <input type="text" name="in_cn" value="">
 <?php } ?>
-  </td>
-</tr>
+    <br/>
 
-<tr>
- <td align="right">View:</td>
-    <td> 
-      <input type="radio" 
-            <?php echo $chk_prideurlprivate_n;?> name="in_prideurlprivate" 
-             value="N">Public
-      &nbsp;&nbsp;&nbsp;
-      <input type="radio" 
-            <?php echo $chk_prideurlprivate_y;?> name="in_prideurlprivate" 
-             value="Y">Private
-    </td>
-</tr>
+    <label for="in_prideurlprivate">Visibility:</label>
+    <input type="radio"
+           <?php echo $chk_prideurlprivate_n;?> name="in_prideurlprivate"
+           value="N">Public
+    &nbsp;&nbsp;&nbsp;
+    <input type="radio"
+           <?php echo $chk_prideurlprivate_y;?> name="in_prideurlprivate"
+           value="Y">Private
+    <br/>
 
-<tr>
- <td align="right">URL:</td>
- <td>
-   <input type="text" size="50" name="in_prideurl" 
-          value="<?php print $info[0]['prideurl'][0];?>">
- </td>
-</tr>
+    <label for "in_prideurl">URL:</label>
+    <input type="text" size="50" name="in_prideurl"
+           value="<?php echo nbsp_html($info[0]['prideurl'][0]);?>">
+    <br/>
 
-<tr>
- <td align="right">Username:</td>
- <td>
-   <input type="text" size="50" name="in_linkuid" 
-          value="<?php print $info[0]['linkuid'][0];?>">
- </td>
-</tr>
+    <label for="in_linkuid">Username:</label>
+    <input type="text" size="50" name="in_linkuid"
+           value="<?php echo nbsp_html($info[0]['linkuid'][0]);?>">
+    <br/>
 
-<tr>
- <td align="right">Password:</td>
- <td>
-   <input type="text" size="50" name="in_pridecredential" 
-          value="<?php print $info[0]['pridecredential'][0];?>">
- </td>
-</tr>
+    <label for="in_pridecredential">Password:</label>
+    <input type="text" size="50" name="in_pridecredential"
+           value="<?php echo nbsp_html($info[0]['pridecredential'][0]);?>">
+    <br/>
 
-<tr>
- <td colspan="2">
+<?php if ( !empty($info[0]['cn'][0]) ) {?>
 
- <table border="0" width="100%">
- <tr>
-
- <?php if ( isset($info[0]['cn'][0]) ) {?>
-
- <td width="50%">
+ <p>
   <input type="submit" name="in_button_update" value="Update">
- </td>
- <td width="50%" align="right">
   <input type="submit" name="in_button_delete" value="Delete">
- </td>
+ </p>
 
 <?php } else { ?>
 
- <td align="center">
+ <p>
   <input type="submit" name="in_button_add" value="Add">
- </td>
+ </p>
 
 <?php } ?>
 
-</tr>
- </table>
-
- </td>
-</tr>
-</table>
-
+<?php if (!empty($info[0]['dn'])) { ?>
 <input type="hidden" name="in_dn" value="<?php echo $info[0]['dn'];?>">
+<?php } ?>
 
 </form>
 
 <?php
  ldap_close($ds);
- require ('inc_footer.php');
 ?>
+
+</div>
+
+<?php require('inc_menu.php');?>
+</div>
+
+<?php require('inc_footer.php');?>

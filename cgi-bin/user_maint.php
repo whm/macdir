@@ -55,7 +55,7 @@ function display_update_buttons (
  </tr>
  </table>
 <?php
- 
+
  return;
 }
 
@@ -308,11 +308,14 @@ function checkIt() {
 
 </script>
 
-<?php 
+<?php
 ##############################################################################
 # Main Routine
 ##############################################################################
 ?>
+
+<div class="row">
+<div class="col-9">
 
 <form name="user_maint_find"
       method="post"
@@ -328,7 +331,7 @@ function checkIt() {
     <input type="submit" name="in_button_reset" value="Reset">
 </form>
 <br/>
-    
+
 <?php
 if (isset($msg)) {
   echo "<p>$msg</p>\n";
@@ -525,7 +528,7 @@ if ( !empty($_SESSION['in_msg']) ) {
             value="<?php print $z;?>"></td>
 </tr>
 <?php } ?>
-         
+
 <?php if ($CONF['maint_pager']) { ?>
 <tr>
  <td align="right">Pager Telephone Number:</td>
@@ -828,6 +831,8 @@ if ( !empty($thisPosix) && $thisPosix>0 ) {
 <?php
  ldap_close($ds);
 ?>
+
+</div>
 
 <?php require('inc_menu.php');?>
 </div>
