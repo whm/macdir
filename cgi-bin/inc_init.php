@@ -27,6 +27,13 @@ function nbsp_html ($txt) {
 }
 
 # --------------------------------------------------------------
+# Test if a variable is set and if not return an empty string
+function set_val ($txt) {
+    $return_txt = empty(trim($txt)) ? '' : $txt;
+    return $return_txt;
+}
+
+# --------------------------------------------------------------
 # Bind to the directory and die if there is an error
 
 function macdir_bind ($this_server, $bind_type) {

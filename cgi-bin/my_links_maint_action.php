@@ -62,7 +62,7 @@ if (!empty($_REQUEST['in_button_add'])) {
             foreach ($fld_list as $fld) {
                 $val = stripslashes(trim($_REQUEST["in_$fld"]));
                 if (!empty($val)) {
-                    $_SESSION['in_msg'] .= ok_html("adding $fld = $val");
+                    $_SESSION['in_msg'] .= ok_html("Adding $fld = $val");
                     $ldap_entry[$fld][0] = $val;
                 }
             }
@@ -128,11 +128,11 @@ if (!empty($_REQUEST['in_button_add'])) {
                         $err_msg = ldap_error ($ds);
                         $tmp_err = error_reporting($old_err);
                         $_SESSION['in_msg']
-                            .= ok_html("$fld: $val_ldap deleted");
+                            .= ok_html("$fld = $val_ldap deleted");
                         if ($err>0) {
                             $_SESSION['in_msg']
-                                .= warn_html('LDAP error deleting '
-                                . "attribute $fld: $err - $err_msg");
+                                .= warn_html('LDAP error deleting attribute '
+                                . "$fld = $val_ldap : $err - $err_msg");
                         }
 
                     }
@@ -147,12 +147,14 @@ if (!empty($_REQUEST['in_button_add'])) {
                     $err = ldap_errno ($ds);
                     $err_msg = ldap_error ($ds);
                     if ($err == 0) {
-                        $_SESSION['in_msg'] .= ok_html("$fld replaced");
+                        $_SESSION['in_msg']
+                            .= ok_html("$fld replaced with $in_val");
                     } else {
                         // add
                         $add_cnt++;
                         $add_data["$fld"][] = $val_in;
-                        $_SESSION['in_msg'] .= ok_html("$fld added");
+                        $_SESSION['in_msg']
+                            .= ok_html("Added $fld = $in_val");
                     }
                 }
             }

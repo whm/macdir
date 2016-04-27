@@ -99,7 +99,6 @@ if (isset($msg)) {
   $msg = '';
 }
 if (!empty($_SESSION['in_msg'])) {
-    echo "<tr>\n";
     echo '<p>' . $_SESSION['in_msg'] . "</p>\n";
     $_SESSION['in_msg'] = '';
 }
@@ -111,7 +110,7 @@ if (!empty($_SESSION['in_msg'])) {
 
     <label for="in_description">Description:</label>
     <input type="text" name="in_description" size="60"
-             value="<?php echo nbsp_html($info[0]['description'][0]);?>">
+             value="<?php echo set_val($info[0]['description'][0]);?>">
     <br/>
 
     <label for "in_cn">Common Name:</label>
@@ -135,17 +134,17 @@ if (!empty($_SESSION['in_msg'])) {
 
     <label for "in_prideurl">URL:</label>
     <input type="text" size="50" name="in_prideurl"
-           value="<?php echo nbsp_html($info[0]['prideurl'][0]);?>">
+           value="<?php echo set_val($info[0]['prideurl'][0]);?>">
     <br/>
 
     <label for="in_linkuid">Username:</label>
     <input type="text" size="50" name="in_linkuid"
-           value="<?php echo nbsp_html($info[0]['linkuid'][0]);?>">
+           value="<?php echo set_val($info[0]['linkuid'][0]);?>">
     <br/>
 
     <label for="in_pridecredential">Password:</label>
     <input type="text" size="50" name="in_pridecredential"
-           value="<?php echo nbsp_html($info[0]['pridecredential'][0]);?>">
+           value="<?php echo set_val($info[0]['pridecredential'][0]);?>">
     <br/>
 
 <?php if ( !empty($info[0]['cn'][0]) ) {?>
