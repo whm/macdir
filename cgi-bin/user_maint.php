@@ -205,6 +205,16 @@ function unset_mail () {
  f.in_new_maildelivery.value = '';
 }
 
+/* -------------------- */
+/* Set posix attributes */
+/* -------------------- */
+function set_posix () {
+ var f;
+ var i;
+ f = document.user_maint;
+ this_home = '/home/' + f.in_uid.value;
+}
+
 /* ----------------- */
 /* Verify input data */
 /* ----------------- */
@@ -719,7 +729,7 @@ if ( !empty($_SESSION['in_msg']) ) {
    <input name="in_linux_add"
           type="checkbox"
           value="Y"
-          onclick="setPosix();">
+          onclick="set_posix();">
  </td>
 </tr>
 <tr>
