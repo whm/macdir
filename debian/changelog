@@ -1,3 +1,10 @@
+macdir-simple (3.4) unstable; urgency=medium
+
+  * Correct handling of login shell.
+  * Provide default for home directory.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Sat, 14 May 2016 11:16:16 -0700
+
 macdir-simple (3.3) unstable; urgency=medium
 
   * Add in group search scripts.

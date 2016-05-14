@@ -777,17 +777,19 @@ if ( !empty($_SESSION['in_msg']) ) {
  <td align="right">Login Shell:</td>
  <td colspan="5">
  <?php
-$login_shells = array('sh', 'bash', 'csh', 'tcsh', 'ksh');
+$login_shells = array('bash', 'csh', 'ksh', 'sh', 'tcsh');
 $ldap_shell = empty($info[0]["loginshell"][0])
     ? '/bin/bash' : $info[0]["loginshell"][0];
-foreach ($sh as $shell) {
-    if (strpos($ldap_shell, $$sh) > 0) {
+foreach ($login_shells as $sh) {
+    $sh_file = "/bin/$sh";
+    if ($sh_file == $ldap_shell) {
         $chk = 'CHECKED';
     } else {
         $chk = '';
     }
-    print '  <input type="radio" ' . $chk . ">\n";
-    print '   name="in_loginshell" value="/bin/' . $sh . '">' . $sh . "<br>\n";
+    print '  <input type="radio" ' . $chk . "\n";
+    print '   name="in_loginshell" value="' . $sh_file . '">' . $sh . "<br>\n";
+}
 ?>
  </td>
 </tr>
