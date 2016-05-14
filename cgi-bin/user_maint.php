@@ -236,15 +236,6 @@ function checkIt() {
     }
   }
 
-  var login_shell_set = false;
-  if (f.in_loginshell.length == 1) {
-      if (f.in_loginshell.checked) {login_shell_set = true;}
-  } else if (f.in_loginshell.length > 1) {
-    for (i=0; i<f.in_loginshell.length; i++) {
-      if (f.in_loginshell[i].checked) {login_shell_set = true;}
-    }
-  }
-
   if (f.in_uidnumber.value != EmptyField) {
     if (f.in_gidnumber.value == EmptyField) {
       alert ("Please enter an GID Number!");
@@ -773,27 +764,22 @@ if ( !empty($_SESSION['in_msg']) ) {
             value="<?php print $z;?>"></td>
 </tr>
 <tr>
- <?php $this_shell = '';
-       $ls_bin_sh=$ls_bin_bash=$ls_bin_csh=$ls_bin_tcsh=$ls_bin_ksh='';
-       if (isset($info[0]["loginshell"][0])) {
-         $this_shell = $info[0]["loginshell"][0];
-       }
-       $name = 'ls'.$this_shell;
-       $name = str_replace ('/','_',$name);
-       $$name = 'CHECKED';
- ?>
  <td align="right">Login Shell:</td>
  <td colspan="5">
-     <input type="radio" <?php echo $ls_bin_sh;?>
-            name="in_loginshell" value="/bin/sh">Bourne Shell<br>
-     <input type="radio" <?php echo $ls_bin_bash;?>
-            name="in_loginshell" value="/bin/bash">Bash Shell<br>
-     <input type="radio" <?php echo $ls_bin_csh;?>
-            name="in_loginshell" value="/bin/csh">c Shell<br>
-     <input type="radio" <?php echo $ls_bin_tcsh;?>
-            name="in_loginshell" value="/bin/tcsh">tcsh Shell<br>
-     <input type="radio" <?php echo $ls_bin_ksh;?>
-            name="in_loginshell" value="/bin/ksh">Korn Shell
+ <?php
+$login_shells = array('sh', 'bash', 'csh', 'tcsh', 'ksh');
+$ldap_shell = empty($info[0]["loginshell"][0])
+    ? '/bin/bash' : $info[0]["loginshell"][0];
+foreach ($sh as $shell) {
+    if (strpos($ldap_shell, $$sh) > 0) {
+        $chk = 'CHECKED';
+    } else {
+        $chk = '';
+    }
+    print '  <input type="radio" ' . $chk . ">\n";
+    print '   name="in_loginshell" value="/bin/' . $sh . '">' . $sh . "<br>\n";
+?>
+ </td>
 </tr>
 <tr>
  <td align="right">Groups:</td>
