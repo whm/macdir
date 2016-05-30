@@ -221,89 +221,89 @@ function set_posix () {
 
 function checkIt() {
 
-  var f;
-  var i;
-  var outData = "";
+    var f;
+    var i;
+    var outData = "";
 
-  EmptyField = "";
-  f = document.user_maint;
+    EmptyField = "";
+    f = document.user_maint;
 
-  var nondigit = /\D/;
-  var anumber = /^\d*\.?\d*$/;
+    var nondigit = /\D/;
+    var anumber = /^\d*\.?\d*$/;
 
-  if (f.in_uid.value == EmptyField) {
-    alert ("Please enter a UID");
-    return false;
-  }
-  if (f.in_sn.value == EmptyField) {
-    alert ("Please enter a Surname.");
-    return false;
-  }
-  if (f.in_cn_cnt == null) {
-    if (f.in_new_cn.value == EmptyField) {
-      alert ("Please enter at least one common name.");
-      return false;
+    if (f.in_uid.value == EmptyField) {
+        alert ("Please enter a UID");
+        return false;
     }
-  }
+    if (f.in_sn.value == EmptyField) {
+        f.in_sn.value = f.in_uid.value;
+    }
+    if (f.in_cn_cnt == null) {
+        if (f.in_new_cn.value == EmptyField) {
+            f.in_new_cn.value = f.in_uid.value;
+        }
+    }
 
-  if (f.in_uidnumber.value != EmptyField) {
-    if (f.in_gidnumber.value == EmptyField) {
-      alert ("Please enter an GID Number!");
-      return false;
-    }
-    var text = f.in_uidnumber.value;
-    var result = text.match(nondigit);
-    if (result != null) {
-      alert ("UID Number is not a number!");
-      return false;
-    }
-    var text = f.in_gidnumber.value;
-    var result = text.match(nondigit);
-    if (result != null) {
-      alert ("GID Number is not a number!");
-      return false;
+    if (f.in_uidnumber.value != EmptyField) {
+        var text = f.in_uidnumber.value;
+        var result = text.match(nondigit);
+        if (result != null) {
+            alert ("UID Number is not a number!");
+            return false;
+        }
+        if (f.in_gidnumber.value == EmptyField) {
+            alert ("Please enter an GID Number!");
+            return false;
+        }
+        var text = f.in_gidnumber.value;
+        var result = text.match(nondigit);
+        if (result != null) {
+            alert ("GID Number is not a number!");
+            return false;
+        }
     }
     if (f.in_homedirectory.value == EmptyField) {
-      alert ("Please pick a home directory!");
-      return false;
+        f.in_homedirectory.value = '/home/' + f.in_uid.value;
     }
     var is_not_set = true;
     for (i=0; i<f.in_loginshell.length; i++) {
-      if (f.in_loginshell[i].checked) {is_not_set = false;}
+        if (f.in_loginshell[i].checked) {
+            is_not_set = false;
+        }
     }
     if (!login_shell_set) {
-      alert ("Please pick a login shell!");
-      return false;
+        alert ("Please pick a login shell!");
+        return false;
     }
-  }
-  /* posix group checks */
-  var posix_cnt = 0;
-  if (f.in_posix.length > 1) {
-    for (i=0; i<f.in_posix.length; i++) {
-      outData += "<posixgroup>";
-      outData += "<text>"+f.in_posix[i].value+"</text>";
-      if (f.in_posix[i].checked) {
-          outData += "<checked>Y</checked>";
-          posix_cnt++;
-      } else {
-          outData += "<checked>N</checked>";
-      }
-      outData += "</posixgroup>";
-    }
-  } else if (f.in_posix.value != EmptyField) {
-    outData += "<posixgroup>";
-    outData += "<text>"+f.in_posix.value+"</text>";
-    if (f.in_posix.checked) {
-      outData += "<checked>Y</checked>";
-      posix_cnt++;
-    } else {
-      outData += "<checked>N</checked>";
-    }
-    outData += "</posixgroup>";
-  }
 
-  if (outData.length>0) {f.in_xml_data.value = "<xml>"+outData+"</xml>";}
-  return true;
+    /* posix group checks */
+    var posix_cnt = 0;
+    if (f.in_posix.length > 1) {
+        for (i=0; i<f.in_posix.length; i++) {
+            outData += "<posixgroup>";
+            outData += "<text>"+f.in_posix[i].value+"</text>";
+            if (f.in_posix[i].checked) {
+                outData += "<checked>Y</checked>";
+                posix_cnt++;
+            } else {
+                outData += "<checked>N</checked>";
+            }
+            outData += "</posixgroup>";
+        }
+    } else if (f.in_posix.value != EmptyField) {
+        outData += "<posixgroup>";
+        outData += "<text>"+f.in_posix.value+"</text>";
+        if (f.in_posix.checked) {
+            outData += "<checked>Y</checked>";
+            posix_cnt++;
+        } else {
+            outData += "<checked>N</checked>";
+        }
+        outData += "</posixgroup>";
+    }
+
+    if (outData.length>0) {f.in_xml_data.value = "<xml>"+outData+"</xml>";}
+    return true;
 
 }
 

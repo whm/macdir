@@ -1108,7 +1108,7 @@ header ("REFRESH: 0; URL=$a_url");
 
 <html>
 <head>
-<title>MacAllister LDAP Directory Maintenance</title>
+<title>LDAP Directory Maintenance</title>
 </head>
 <body>
 <a href="<?php echo $a_url;?>">Back to User Maintenance</a>
