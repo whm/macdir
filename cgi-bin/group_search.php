@@ -9,7 +9,6 @@ $title = 'Posix Groups';
 $heading = 'Posix Groups';
 require('inc_init.php');
 require('inc_header.php');
-require('/etc/whm/macdir.php');
 
 // Bind to the directory
 $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');

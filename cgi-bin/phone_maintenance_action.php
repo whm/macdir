@@ -23,7 +23,6 @@ session_register("in_msg");
 $_SESSION['in_msg'] = '';
 
 require('inc_init.php');
-require('/etc/whm/macdir.php');
 
 $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 

@@ -15,7 +15,6 @@ $title = 'MacAllister Directory Search Details';
 $heading = "A Person's Details";
 
 require('inc_init.php');
-require('/etc/whm/macdir.php');
 require ('inc_header.php');
 
 $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');

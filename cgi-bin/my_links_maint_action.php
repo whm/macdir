@@ -19,7 +19,6 @@ $in_dn = empty($_REQUEST['in_dn']) ? '' : $_REQUEST['in_dn'];
 $in_cn = empty($_REQUEST['in_cn']) ? '' : $_REQUEST['in_cn'];
 
 require('inc_init.php');
-require('/etc/whm/macdir.php');
 
 $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 

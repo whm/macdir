@@ -18,7 +18,6 @@ $title = 'Application Access Maintenance';
 $heading = 'Application Access Maintenance';
 
 require('inc_init.php');
-require('/etc/whm/macdir.php');
 
 // -----------------------------------------------------
 // get a list of application groups to be managed

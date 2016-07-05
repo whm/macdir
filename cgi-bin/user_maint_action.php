@@ -6,7 +6,6 @@
 // author: Bill MacAllister
 
 require('inc_init.php');
-require ('/etc/whm/macdir.php');
 
 // --------------------------------------------------------------
 // Find a unique UID for use Linux

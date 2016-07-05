@@ -14,7 +14,6 @@ $title = 'Contact Maintenance';
 $heading = 'Contact Maintenance';
 
 require('inc_init.php');
-require('/etc/whm/macdir.php');
 require('inc_header.php');
 
 $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');

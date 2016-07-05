@@ -13,7 +13,6 @@ $heading = 'User Maintenance';
 
 require('inc_init.php');
 require('inc_header.php');
-require('/etc/whm/macdir.php');
 
 ##############################################################################
 # Subroutines

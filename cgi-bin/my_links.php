@@ -8,7 +8,6 @@ $heading = "Search My Links";
 
 require('inc_init.php');
 require('inc_header_my_links.php');
-require('/etc/whm/macdir.php');
 
 $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 

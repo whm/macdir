@@ -6,7 +6,6 @@ $heading = 'Employee Directory';
 
 require('inc_init.php');
 require('inc_header.php');
-require('/etc/whm/macdir.php');
 
 $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 ?>

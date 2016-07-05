@@ -19,7 +19,6 @@ $in_uid  = empty($_REQUEST['in_uid']) ? '' : $_REQUEST['in_uid'];
 
 // bind to the ldap directory
 require('inc_init.php');
-require('/etc/whm/macdir.php');
 
 $dirServer = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 

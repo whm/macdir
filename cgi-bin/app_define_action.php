@@ -19,8 +19,7 @@ $in_button_delete = empty($_REQUEST['in_button_delete'])
 // -------------------------------------------------------------
 // main routine
 
-require ('/etc/whm/macdir.php');
-require('inc_bind.php');
+require('inc_init.php');
 $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 $_SESSION['in_msg'] = '';
