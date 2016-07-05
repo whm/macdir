@@ -17,10 +17,8 @@ require('inc_config.php');
 $title = 'Application Access Maintenance';
 $heading = 'Application Access Maintenance';
 
-require ('inc_header.php');
+require('inc_init.php');
 require('/etc/whm/macdir.php');
-require('inc_bind.php');
-$ds = macdir_bind($ldap_server, 'GSSAPI');
 
 // -----------------------------------------------------
 // get a list of application groups to be managed

@@ -1,3 +1,9 @@
+macdir-simple (3.5) unstable; urgency=medium
+
+  * Adjust the configuration defaults to be more generic.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Mon, 04 Jul 2016 20:12:02 -0700
+
 macdir-simple (3.4) unstable; urgency=medium
 
   * Correct handling of login shell.
