@@ -5,6 +5,21 @@
 
 $title   = 'Link Maintenance';
 $heading = 'Link Maintenance';
+?>
+<script language="JavaScript">
+// ------------------------------------
+// Check password entry
+function check_password () {
+ var f;
+ var i;
+ f = document.maint;
+ if (f.in_pridecredential.value != f.in_verify.value) {
+    alert ("Password entry and Verify entry don't match");
+    return false;
+ }
+}
+</script>
+<?php
 
 require('inc_init.php');
 require('inc_header.php');
@@ -142,7 +157,10 @@ if (!empty($_SESSION['in_msg'])) {
     <br/>
 
     <label for="in_pridecredential">Password:</label>
-    <input type="text" size="50" name="in_pridecredential"
+    <input type="password" size="50" name="in_pridecredential"
+           value="<?php echo set_val($info[0]['pridecredential'][0]);?>">
+    <label for="in_pridecredential">Verify Password:</label>
+    <input type="password" size="50" name="in_verify"
            value="<?php echo set_val($info[0]['pridecredential'][0]);?>">
     <br/>
 

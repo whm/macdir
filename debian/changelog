@@ -1,3 +1,9 @@
+macdir-simple (3.6) unstable; urgency=medium
+
+  * Update input of password on the links maintenance page.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Wed, 27 Dec 2017 10:32:26 -0800
+
 macdir-simple (3.5) unstable; urgency=medium
 
   * Adjust the configuration defaults to be more generic.
