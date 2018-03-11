@@ -1,6 +1,8 @@
 macdir-simple (3.7) UNRELEASED; urgency=medium
 
   * Set max-width for my links pages.
+  * Display password as it is input.
+  * Break display of passwords and urls on white space.
 
  -- Bill MacAllister <bill@ca-zephyr.org>  Sat, 10 Mar 2018 16:11:25 -0800
 

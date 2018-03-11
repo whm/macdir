@@ -5,21 +5,6 @@
 
 $title   = 'Link Maintenance';
 $heading = 'Link Maintenance';
-?>
-<script language="JavaScript">
-// ------------------------------------
-// Check password entry
-function check_password () {
- var f;
- var i;
- f = document.maint;
- if (f.in_pridecredential.value != f.in_verify.value) {
-    alert ("Password entry and Verify entry don't match");
-    return false;
- }
-}
-</script>
-<?php
 
 require('inc_init.php');
 require('inc_header.php');
@@ -156,12 +141,14 @@ if (!empty($_SESSION['in_msg'])) {
            value="<?php echo set_val($info[0]['linkuid'][0]);?>">
     <br/>
 
+    <?php $this_pw = set_val($info[0]['pridecredential'][0]);?>
     <label for="in_pridecredential">Password:</label>
     <input type="password" size="50" name="in_pridecredential"
-           value="<?php echo set_val($info[0]['pridecredential'][0]);?>">
-    <label for="in_pridecredential">Verify Password:</label>
-    <input type="password" size="50" name="in_verify"
-           value="<?php echo set_val($info[0]['pridecredential'][0]);?>">
+      onkeyUp="document.getElementById('printbox').innerHTML = this.value"
+      value="<?php echo $this_pw;?>"/>
+    <div class="printbox" id="printbox" align="center">
+        <?php echo $this_pw;?>
+    </div>
     <br/>
 
 <?php if ( !empty($info[0]['cn'][0]) ) {?>

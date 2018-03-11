@@ -152,20 +152,35 @@ if ($ret_cnt) {
         $a_desc    = empty($info[$i]["description"][0])
             ? '' : $info[$i]["description"][0];
 
+        $a_url_list = '&nbsp;';
         if (!empty($info[$i]["prideurl"][0])) {
-            $a_href_url
-                = '<a href="' . htmlentities($info[$i]["prideurl"][0])
-                . '" target="_BLANK">'
-                . $info[$i]["prideurl"][0] . '</a>';
-        } else {
-            $a_href_url = '&nbsp;';
+            $url_list = explode(' ', $info[$i]["prideurl"][0]);
+            $a_br = '';
+            $a_url_list = '';
+            foreach ($url_list as $u) {
+                $a_url_list .= $a_br
+                    . '<a href="' . htmlentities($u) . '" target="_BLANK">'
+                    . $u . '</a>';
+                $a_br = "<br/>\n";
+            }
+        }
+
+        $a_pw_list = '&nbsp;';
+        if (!empty($info[$i]["pridecredential"][0])) {
+            $pw_list = explode(' ', $info[$i]["pridecredential"][0]);
+            $a_br = '';
+            $a_pw_list = '';
+            foreach ($pw_list as $pw) {
+                $a_pw_list .= $a_br . $pw;
+                $a_br = "<br/>\n";
+            }
         }
 
         echo "<tr>\n";
         echo " <td>${a_maint_link}${a_desc}</td>\n";
-        echo " <td>${a_href_url}</td>\n";
+        echo " <td>${a_url_list}</td>\n";
         echo ' <td>' . nbsp_html($info[$i]["linkuid"][0]) . "</td>\n";
-        echo ' <td>' . nbsp_html($info[$i]["pridecredential"][0]) . "</td>\n";
+        echo " <td>${a_pw_list}</td>\n";
         echo "</tr>\n";
     }
     echo "</tbody>\n";
