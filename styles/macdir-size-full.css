@@ -8,6 +8,7 @@ html {
 
 body {
     background-color: #ffffcc;
+    max-width: 1000px;
 }
 
 .row:after {

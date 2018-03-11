@@ -1,3 +1,9 @@
+macdir-simple (3.7) UNRELEASED; urgency=medium
+
+  * Set max-width for my links pages.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Sat, 10 Mar 2018 16:11:25 -0800
+
 macdir-simple (3.6) unstable; urgency=medium
 
   * Update input of password on the links maintenance page.
