@@ -156,7 +156,7 @@ $now = date ('Y-m-d H:i:s');
 $in_date_last_maint = $now;
 
 // No spaces allowed in the identifier
-$in_uid = preg_replace (" ","",$in_uid);
+$in_uid = preg_replace ('/\s+/g', '', $in_uid);
 
 // set update message area
 $_SESSION['s_msg'] = '';
