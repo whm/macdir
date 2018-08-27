@@ -800,14 +800,14 @@ function update_ldap_entry($ds) {
             $add_data['objectclass'][] = 'shadowAccount';
             $_SESSION['in_msg'] .= ok_html('posixAccount added');
             $_SESSION['in_msg'] .= ok_html('shadowAccount added');
-            if ($this_uidnumber == 0) {
+            if (empty($this_uidnumber) || $this_uidnumber == 0) {
                 $this_uidnumber = $CONF['ldap_uidnumber_base'];
             }
             $this_uidnumber = get_an_id($this_uidnumber, 'uidnumber');
             $add_data["uidnumber"][] = $this_uidnumber;
             $_SESSION['in_msg']
                 .= ok_html("Adding uidNumber = $this_uidnumber");
-            if ($this_gidnumber == 0) {
+            if (empty($this_gidnumber) || $this_gidnumber == 0) {
                 $this_gidnumber = $this_uidnumber;
             }
             $this_gidnumber = get_an_id($this_gidnumber, 'gidnumber');
