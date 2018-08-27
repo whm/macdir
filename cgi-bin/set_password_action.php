@@ -92,7 +92,7 @@ function ldap_set_password ($uid, $pwField, $newPw) {
     if ($pwField == 'sambantpassword' || $pwField == 'sambalmpassword') {
         $objClass = 'sambaSamAccount';
     } else {
-        $newPw = '{crypt}'.crypt($newPw);
+        $newPw = '{crypt}'.password_hash($newPw);
     }
 
     // look for any user attributes for this object class
