@@ -1,6 +1,7 @@
 macdir-simple (3.8) unstable; urgency=medium
 
   * Update to newer version of PHP.
+  * Replace depreciated use of ereg_replace.
 
  -- Bill MacAllister <bill@ca-zephyr.org>  Mon, 27 Aug 2018 08:12:00 +0000
 
