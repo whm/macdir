@@ -7,7 +7,7 @@ Standards-Version: 4.1.2
 
 Package: macdir-simple
 Architecture: all
-Depends: ${misc:Depends}, apache2
+Depends: ${misc:Depends}, apache2, libapache2-mod-php, php-ldap
 Provides: macdir
 Conflicts: macdir
 Replaces: macdir
