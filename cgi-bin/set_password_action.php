@@ -92,7 +92,7 @@ function ldap_set_password ($uid, $pwField, $newPw) {
     if ($pwField == 'sambantpassword' || $pwField == 'sambalmpassword') {
         $objClass = 'sambaSamAccount';
     } else {
-        $newPw = '{crypt}'.password_hash($newPw);
+        $newPw = '{crypt}'.password_hash($newPw, PASSWORD_DEFAULT);
     }
 
     // look for any user attributes for this object class
@@ -156,7 +156,7 @@ $now = date ('Y-m-d H:i:s');
 $in_date_last_maint = $now;
 
 // No spaces allowed in the identifier
-$in_uid = preg_replace ('/\s+/g', '', $in_uid);
+$in_uid = preg_replace ('/\s+/', '', $in_uid);
 
 // set update message area
 $_SESSION['s_msg'] = '';
