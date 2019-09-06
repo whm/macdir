@@ -58,6 +58,37 @@ function macdir_bind ($this_server, $bind_type) {
     return $ldap;
 }
 
+# --------------------------------------------------------------
+# Encode a string
+
+function macdir_encode ($str) {
+    global $CONF;
+    $shared_key = $CONF['shared_key'];
+    $nonce      = random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
+    $en_str     = sodium_crypto_secretbox($str, $nonce, $shared_key);
+    $en_str_b64 = base64_encode($nonce . $en_str);
+    return $en_str_b64;
+}
+
+# --------------------------------------------------------------
+# Decode a string
+
+function macdir_decode ($nonce_str_b64) {
+    global $CONF;
+    $shared_key = $CONF['shared_key'];
+    $nonce_str  = base64_decode($nonce_str_b64);
+    $nonce      = mb_substr($nonce_str,
+                            0,
+                            SODIUM_CRYPTO_SECRETBOX_NONCEBYTES,
+                            '8bit');
+    $str        = mb_substr($nonce_str,
+                            SODIUM_CRYPTO_SECRETBOX_NONCEBYTES,
+                            null,
+                            '8bit');
+    $plain_text = sodium_crypto_secretbox_open($str, $nonce, $key);
+    return $plain_text;
+}
+
 ##############################################################################
 # Main Init Routine
 ##############################################################################
