@@ -37,7 +37,7 @@ function set_val ($txt) {
 # Bind to the directory and die if there is an error
 
 function macdir_bind ($this_server, $bind_type) {
-    
+
     # Bind to the directory Server
     $ldap = ldap_connect("ldap://$this_server");
     if($ldap) {
@@ -63,9 +63,9 @@ function macdir_bind ($this_server, $bind_type) {
 
 function macdir_encode ($str) {
     global $CONF;
-    $shared_key = $CONF['shared_key'];
+    $key        = $CONF['key'];
     $nonce      = random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
-    $en_str     = sodium_crypto_secretbox($str, $nonce, $shared_key);
+    $en_str     = sodium_crypto_secretbox($str, $nonce, $key);
     $en_str_b64 = base64_encode($nonce . $en_str);
     return $en_str_b64;
 }
@@ -75,7 +75,7 @@ function macdir_encode ($str) {
 
 function macdir_decode ($nonce_str_b64) {
     global $CONF;
-    $shared_key = $CONF['shared_key'];
+    $key        = $CONF['key'];
     $nonce_str  = base64_decode($nonce_str_b64);
     $nonce      = mb_substr($nonce_str,
                             0,
@@ -100,7 +100,6 @@ if (file_exists('/etc/macdir/config.php')) {
     require('/etc/macdir/config.php');
 }
 
-
 $CONF = array();
 $CONF['manager_mailbox'] = empty($ldap_manager_mailbox)
     ? 'bill@ca-zephyr.org' : $manager_mailbox;
@@ -112,13 +111,13 @@ $CONF['mail_domain']    = empty($mail_domain) ? '' : $maildomain;
 $CONF['mailbox_domain'] = empty($mailbox_domain) ? '' : $mailbox_domain;
 $CONF['ldap_base']      = empty($ldap_base) ? 'dc=example,dc=com' : $ldap_base;
 $CONF['ldap_app_base']  = empty($ldap_app_base)
-    ? 'ou=applications,' . $CONF['ldap_base'] : $ldap_group_base; 
+    ? 'ou=applications,' . $CONF['ldap_base'] : $ldap_group_base;
 $CONF['ldap_group_base'] = empty($ldap_group_base)
-    ? 'ou=groups,' . $CONF['ldap_base'] : $ldap_group_base; 
+    ? 'ou=groups,' . $CONF['ldap_base'] : $ldap_group_base;
 $CONF['ldap_uidnumber_base'] = empty($ldap_uidnumber_base)
     ? 4000 : $ldap_uidnumber_base;
 $CONF['ldap_user_base'] = empty($ldap_user_base)
-    ? 'ou=people,' . $CONF['ldap_base'] : $ldap_user_base; 
+    ? 'ou=people,' . $CONF['ldap_base'] : $ldap_user_base;
 $CONF['ldap_server'] = empty($ldap_server) ? 'localhost' : $ldap_server;
 $CONF['ldap_title'] = empty($ldap_title)   ? 'LDAP Directory' : $ldap_title;
 
@@ -126,6 +125,9 @@ $CONF['k5start'] = empty($k5start)
     ? '/usr/bin/k5start -f /etc/keytab/macdir.keytab -U' : $k5start;
 $CONF['kdcmaster'] = empty($kdcmaster) ? 'portola.ca-zephyr.org' : $kdcmaster;
 $CONF['krb_realm'] = empty($krb_realm) ? 'CA-ZEPHYR.ORG' : $krb_realm;
+
+$CONF['key_file']   = empty($key_file) ? '/etc/macdir/linkkey.txt' : $key_file;
+$CONF['key_prefix'] = empty($key_prefix) ? 'PREFIX:' : $key_prefix;
 
 $CONF['maint_address']    = empty($maint_address) ? 1 : $maint_address;
 $CONF['maint_app_groups'] = empty($maint_app_groups) ? 0 : $maint_app_groups;
@@ -140,6 +142,14 @@ $CONF['maint_pager']      = empty($mail_pager) ? 0 : $maint_pager;
 $CONF['maint_phone']      = empty($maint_phone) ? 1 : $maint_phone;
 $CONF['maint_title']      = empty($maint_title) ? 0 : $maint_title;
 $CONF['maint_workphone']  = empty($maint_workphone) ? 1 : $maint_workphone;
+
+if (!empty($key)) {
+  unset($key);
+} 
+if (file_exists($CONF['key_file'])) {
+    require($CONF['key_file']);
+}
+$CONF['key'] = empty($key) ? '' : $key;
 
 // Some constants
 $CON = array();
@@ -177,4 +187,3 @@ if ( isset($_SERVER['REMOTE_USER']) ) {
         $ldap_phone = 0;
     }
 }
-

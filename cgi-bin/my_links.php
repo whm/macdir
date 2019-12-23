@@ -171,6 +171,13 @@ if ($ret_cnt) {
             $a_br = '';
             $a_pw_list = '';
             foreach ($pw_list as $pw) {
+                $this_pat = '/^' . $CONF['key_prefix'] . '(.*)/';
+                if (!empty($CONF['key'])
+                    && preg_match($this_pat, $pw, $m))
+                {
+                    $this_epw = $m[1];
+                    $pw = macdir_decode($this_epw);
+                }
                 $a_pw_list .= $a_br . $pw;
                 $a_br = "<br/>\n";
             }

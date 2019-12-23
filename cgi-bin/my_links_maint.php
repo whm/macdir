@@ -141,7 +141,14 @@ if (!empty($_SESSION['in_msg'])) {
            value="<?php echo set_val($info[0]['linkuid'][0]);?>">
     <br/>
 
-    <?php $this_pw = set_val($info[0]['pridecredential'][0]);?>
+    <?php
+        $this_pw = set_val($info[0]['pridecredential'][0]);
+        $this_pat = '/^' . $CONF['key_prefix'] . '(.*)/';
+        if (!empty($CONF['key']) && preg_match($this_pat, $this_pw, $m)) {
+            $this_epw = $m[1];
+            $this_pw = macdir_decode($this_epw);
+        }
+    ?>
     <label for="in_pridecredential">Password:</label>
     <input type="password" size="50" name="in_pridecredential"
       onkeyUp="document.getElementById('printbox').innerHTML = this.value"

@@ -60,6 +60,9 @@ if (!empty($_REQUEST['in_button_add'])) {
 
             foreach ($fld_list as $fld) {
                 $val = stripslashes(trim($_REQUEST["in_$fld"]));
+                if ($fld == 'pridecredential' && !empty($CONF['key'])) {
+                    $val = $CONF['key_prefix'] . macdir_encode($val);
+                }
                 if (!empty($val)) {
                     $_SESSION['in_msg'] .= ok_html("Adding $fld = $val");
                     $ldap_entry[$fld][0] = $val;
@@ -111,6 +114,9 @@ if (!empty($_REQUEST['in_button_add'])) {
             $tmp = $_REQUEST["in_$fld"];
             if (!empty($tmp)) {
                 $val_in  = stripslashes(trim($tmp));
+            }
+            if (!empty($val_in) && $fld == 'pridecredential') {
+                $val_in = $CONF['key_prefix'] . macdir_encode($val_in);
             }
 
             $val_ldap = empty($info[0]["$fld"][0])

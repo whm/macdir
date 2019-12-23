@@ -11,8 +11,8 @@ $in_uid = empty($_REQUEST['in_uid']) ? '' : $_REQUEST['in_uid'];
 # file: user_details.php
 # author: Bill MacAllister
 
-$title = 'MacAllister Directory Search Details';
-$heading = "A Person's Details";
+$title = 'Directory Search Details';
+$heading = "Details";
 
 require('inc_init.php');
 require('inc_header_user_search.php');
@@ -85,9 +85,11 @@ if ($entry = ldap_first_entry ($ds, $sr)) {
     }
     
     $in_uid = $user_attr['uid'];
-    echo "<p>\n";
-    echo '<h1 class="person">' . $user_attr['cn'] . '</h1>';
-    echo "\n";
+    echo '<div class="header">' .  "\n";
+    echo '<h2 class="person">' . $user_attr['cn'] . "</h2>\n";
+    echo '</div>' . "\n";
+    echo '<div class="row">' . "\n";
+    echo '<div class="col-9">' . "\n";
     echo "<blockquote>\n";
     echo "<table border=\"0\">\n";
     
@@ -113,7 +115,12 @@ if ($entry = ldap_first_entry ($ds, $sr)) {
 
     echo "</table>\n";
     echo "</blockquote>\n";
-    
+
+    echo "</div>\n";
+    require('inc_menu.php');
+    echo "</div>\n";
+
+    echo "</div>\n";
     echo "<table width=\"100%\" border=\"0\">\n";
     echo "<tr>\n";
     echo "    <td align=\"right\"><a href=\"$dump_url\">";
@@ -170,7 +177,6 @@ if ($entry = ldap_first_entry ($ds, $sr)) {
 }
 ?>
 
-<?php require('inc_menu.php');?>
 
 <!-- end of document body -->
 <?php require ('inc_footer.php');?>

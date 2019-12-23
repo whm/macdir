@@ -1,0 +1,185 @@
+=head1 NAME
+
+macdir_init - the initialization file for MacDir scripts
+
+=head1 DESCRIPTION
+
+The configuration file used by the MacDir scripts is a simple PHP
+script file that defines variables that override the defaults.  The
+configuration file is /etc/macdir/config.php.
+
+=head1 CONFIGURATION VARIABLES
+
+=over 4
+
+=item manager_mailbox
+
+A RFC822 address.  Email is sent to this address for all updates.  The
+default is bill@ca-zephyr.org.
+
+=item imap_host
+
+The host name of a Cyrus IMAP server.  The IMAP support has not been
+tested in recent builds and is probably suffering from bit rot.
+
+=item imap_mgr_pass
+
+The password for the imap_mgr_usr Cyrus user.
+
+=item imap_mgr_usr
+
+The name of a Cyrus user that has admin access to the server.
+
+=item mail_domain
+
+This is part of the Cyrus IMAP support.
+
+=item mailbox_domain
+
+This is part of the Cyrus IMAP support.
+
+=item ldap_base
+
+The base distinguised name for the directory.  The default is
+'dc=example,dc=com'.
+
+=item ldap_app_base
+
+The base distinguised name for application entries in the directory.
+The default is 'ou=application,<ldap_base>'.
+
+=item ldap_group_base
+
+The base distinguished name for posix group entries in the directory.
+The default is 'ou=groups,<ldap_base>'.
+
+=item ldap_uidnumber_base
+
+The base number to start a search to find and unused uidnumber when
+generating a uidnumber.  The default is 4000.
+
+=item ldap_user_base
+
+The base distinguished name for user entries in the directory.  The
+default is 'ou=people,<ldap_base>'.
+
+=item ldap_server
+
+The DNS name of the ldap server.  The default is 'localhost'.
+
+=item ldap_title
+
+A descriptive name for the directory.  The default is 'LDAP Directory'.
+
+=item k5start
+
+The command line that creates a Kerberos ticket cache.  The default is
+'/usr/bin/k5start -f /etc/keytab/macdir.keytab -U'.
+
+=item krb_realm
+
+The Kerberos realm.  The default is 'CA-ZEPHYR.ORG'.
+
+=item key_file
+
+The file name that holds the key that is used to encrypt private
+user link entries.  The default is '/etc/macdir/linkkey.txt'.
+
+=item key_prefix
+
+The prefix that is used to identify user link secrets as encyrpted.
+The default is 'PREFIX:'.
+
+=item key
+
+The key that is used to encrypt link secrets.  This value can only be
+defined in the key_file.  There is not default value.
+
+=item maint_address
+
+A boolean that controls whether the user maintenance script 
+manages the user's address.  The default is 1.
+
+=item maint_app_groups
+
+A boolean that controls whether the user maintenance script manages a
+user's application group membership.  The default is 0.
+
+=item main_cell
+
+A boolean that controls wheter the user maintenance script manages a
+user's cell phone number.  The default is 0.
+
+=item maint_comments
+
+A boolean that controls wheter the user maintenance script manages a
+user entire's comments.  The default is 1.
+
+=item maint_fax
+
+A boolean that controls wheter the user maintenance script manages a
+user's fax number.  The default is 0.
+
+=item maint_linux
+
+A boolean that controls wheter the user maintenance script manages a
+user's posix account attributes.  The default is 1.
+
+=item maint_mail_acct
+
+A boolean that controls wheter the user maintenance script manages a
+user's Cyrus IMAP Account.  The default is 0.
+
+=item maint_mail_addr
+
+A boolean that controls wheter the user maintenance script manages a
+user's email address.  This includes the mail addresss, mail aliases,
+and delivery address.  The default is 1.
+
+=item maint_nickname
+
+A boolean that controls wheter the user maintenance script manages a
+user's nicknames.  The default is 0.
+
+=item maint_pager
+
+A boolean that controls wheter the user maintenance script manages a
+user's pager number.  The default is 0.
+
+=item maint_phone
+
+A boolean that controls wheter the user maintenance script manages a
+user's telephone number.  The default is 1.
+
+=item maint_title
+
+A boolean that controls wheter the user maintenance script manages a
+user's title.  The default is 0.
+
+=item maint_workphone
+
+A boolean that controls wheter the user maintenance script manages a
+user's work telephone number.  The default is 0.
+
+=item key_file
+
+The file name that holds the key that is used to encrypt private
+user link entries.  The default is '/etc/macdir/linkkey.txt'.
+
+=item key_prefix
+
+The prefix that is used to identify user link secrets as encyrpted.
+The default is 'PREFIX:'.
+
+=back
+
+=head1 AUTHORS
+
+Bill MacAllister <bill@ca-zephyr.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2019 Bill MacAllister <bill@ca-zephyr.org>.
+
+This program is free software; you may redistribute it and/or modify it
+under the same terms as Perl itself.

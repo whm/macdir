@@ -1,7 +1,19 @@
 #!/usr/bin/make -f
 
+PACKAGE := $(shell dh_listpackages)
+VERSION := $(shell dpkg-parsechangelog | grep ^Version: | cut -d' ' -f2 \
+                | cut -d- -f1)
+
 %:
 	dh $@
 
 override_dh_auto_test:
 	cd tests; make verbose
+
+override_dh_auto_install:
+	mkdir -p debian/$(PACKAGE)/usr/share/man/man1
+	set -e; for pod in `ls doc` ; do \
+	    pod2man --release=$(VERSION) --section 1 \
+		--center=$(PACKAGE) doc/$${pod} \
+		> debian/$(PACKAGE)/usr/share/man/man1/$$pod.1 ; \
+	done

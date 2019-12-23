@@ -3,6 +3,7 @@ macdir-simple (4.0) UNRELEASED; urgency=medium
   * Add encrypt and descrypt routines to be used to store secrets.
   * Correct display errors in user details and user dump pages.
   * Correct error in adding group entry during user updates.
+  * Add documentation for the configuration file.
 
  -- Bill MacAllister <bill@ca-zephyr.org>  Mon, 23 Dec 2019 09:18:51 +0000
 
