@@ -715,9 +715,9 @@ if ( !empty($_SESSION['in_msg']) ) {
 <?php } ?>
 
 <?php if ($CONF['maint_linux']) { ?>
-<tr bgcolor="#660000">
+<tr>
   <td colspan="6" align="center">
-   <font color="#FFFFFF"><b>Linux Access</b></font>
+   <font color="#0000FF"><b>Linux Access</b></font>
   </td>
 </tr>
 

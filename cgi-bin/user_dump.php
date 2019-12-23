@@ -1,11 +1,5 @@
 <?php 
-//
-// ----------------------------------------------------------
-// Register Global Fix
-//
-$in_uid = empty($_REQUEST['in_uid']) ? '' : $_REQUEST['in_uid'];
-// ----------------------------------------------------------
-//
+// Dump a user entry given a DN
 
 $title = 'MacAllister Directory Search Details';
 $heading = 'MacAllister Directory';
@@ -14,18 +8,19 @@ require('inc_init.php');
 require('inc_header.php');
 
 $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
+
+$base_dn = $_REQUEST['dn'];
+$filter = '(objectclass=person)';
+$dn_array = ldap_explode_dn ($dn, 1);
+$in_uid = $dn_array[0];
+$details_url = 'user_details.php?in_dn=' . urlencode($base_dn);             
 ?>
 
 <!-- Main body of document -->
 <div align="center">
-<a href="user_details.php">Return to User Display</a>
+<a href="<?php echo $details_url; ?>">Return to User Display</a>
 </div>
 <?php
-
-$base_dn = $dn;
-$filter = '(objectclass=person)';
-$dn_array = ldap_explode_dn ($dn, 1);
-$in_uid = $dn_array[0];
 
 $sr = ldap_read($ds, $base_dn, $filter);  
 if ($entry = ldap_first_entry ($ds, $sr)) {

@@ -81,30 +81,35 @@ if ($entry = ldap_first_entry ($ds, $sr)) {
         $err_level = error_reporting (E_ERROR | E_PARSE);
         $vals = ldap_get_values ($ds, $entry, $attrs[$i]);
         error_reporting ($err_level);
-        $this[$this_attr] = $vals[0];
+        $user_attr[$this_attr] = $vals[0];
     }
     
-    $in_uid = $this['uid'];
+    $in_uid = $user_attr['uid'];
     echo "<p>\n";
-    echo '<h1 class="person">' . $this['cn'] . '</h1>';
+    echo '<h1 class="person">' . $user_attr['cn'] . '</h1>';
     echo "\n";
     echo "<blockquote>\n";
     echo "<table border=\"0\">\n";
     
-    prt_row('Given Name:',$this['givenName']);
-    prt_row('Surname:',   $this['sn']);
-    prt_row('Title:',     $this['title']);
-    prt_row('Location:',  $this['location']);
-    prt_row('Address:',   $this['postalAddress']);
+    prt_row('Given Name:',$user_attr['givenName']);
+    prt_row('Surname:',   $user_attr['sn']);
+    prt_row('Title:',     $user_attr['title']);
+    prt_row('Location:',  $user_attr['location']);
     $comma = ',';
-    if (strlen($this['l'])==0) {$comma='';}
-    prt_row('', $this['l'].$comma.' '.$this['st'].' '.$this['postalCode']);
-    prt_row('eMail:',           $this['mail']);
-    prt_row('Telephone:',       $this['telephoneNumber']);
-    prt_row('Work Telephone:',  $this['workPhone']);
-    prt_row('MobileTelephone:', $this['mobile']);
-    prt_row('Pager:',           $this['pager']);
-    prt_row('Notes:',           $this['comments']);
+    if (empty($user_attr['l'])) {
+      $comma='';
+    }
+    prt_row('Address:',
+            $user_attr['postalAddress'] . "\n"
+            . $user_attr['l'] . $comma . ' '
+            . $user_attr['st'] . ' '
+            . $user_attr['postalCode']);
+    prt_row('eMail:',           $user_attr['mail']);
+    prt_row('Telephone:',       $user_attr['telephoneNumber']);
+    prt_row('Work Telephone:',  $user_attr['workPhone']);
+    prt_row('MobileTelephone:', $user_attr['mobile']);
+    prt_row('Pager:',           $user_attr['pager']);
+    prt_row('Notes:',           $user_attr['comments']);
 
     echo "</table>\n";
     echo "</blockquote>\n";

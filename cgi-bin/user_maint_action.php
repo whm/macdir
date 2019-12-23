@@ -549,6 +549,7 @@ function add_ldap_entry($ds) {
 
         // create a posix group for this user
         if ($posix_cnt==0) {
+            $this_gidnumber                = $_REQUEST['in_uidnumber'];
             $posix_attrs['objectclass'][0] = 'top';
             $posix_attrs['objectclass'][1] = 'posixGroup';
             $posix_attrs['cn'][0]          = $_REQUEST['in_uid'];
@@ -600,7 +601,9 @@ function add_ldap_entry($ds) {
         if ( !empty($_REQUEST['in_posix_new']) ) {
             $thisGroup = trim(strtok($_REQUEST['in_posix_new'], ','));
             while (strlen($thisGroup)>0) {
-                posix_group_check ($in_uid, $thisGroup, $thisGroup);
+                posix_group_check ($_REQUEST['in_uid'],
+                                   $thisGroup,
+                                   $thisGroup);
                 $thisGroup = trim(strtok(','));
             }
         }
@@ -916,7 +919,8 @@ function update_ldap_entry($ds) {
             $posix_attrs['memberUid'][0]   = $_REQUEST['in_uid'];
             $posix_attrs['gidNumber'][0]   = $this_gidnumber;
             $posix_attrs['description'][0] = "User's personal group";
-            $posix_dn = "cn=$in_uid," . $CONF['ldap_group_base'];
+            $posix_dn = 'cn=' . $_REQUEST['in_uid']
+                      . ',' . $CONF['ldap_group_base'];
             $r = @ldap_add($ds, $posix_dn, $posix_attrs);
             $err = ldap_errno ($ds);
             $err_msg = ldap_error ($ds);
