@@ -15,7 +15,7 @@ $title = 'MacAllister Directory Search Details';
 $heading = "A Person's Details";
 
 require('inc_init.php');
-require ('inc_header.php');
+require('inc_header_user_search.php');
 
 $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
@@ -169,6 +169,8 @@ if ($entry = ldap_first_entry ($ds, $sr)) {
     echo "</div>\n";
 }
 ?>
+
+<?php require('inc_menu.php');?>
 
 <!-- end of document body -->
 <?php require ('inc_footer.php');?>
