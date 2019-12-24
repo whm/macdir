@@ -145,9 +145,21 @@ $CONF['maint_workphone']  = empty($maint_workphone) ? 1 : $maint_workphone;
 
 if (!empty($key)) {
   unset($key);
-} 
+}
 if (file_exists($CONF['key_file'])) {
     require($CONF['key_file']);
+    if (!empty($key)) {
+        $key_len = strlen($key);
+        if ($key_len > SODIUM_CRYPTO_SECRETBOX_KEYBYTES) {
+            $key = left($key, SODIUM_CRYPTO_SECRETBOX_KEYBYTES);
+        } elseif ($key_len < SODIUM_CRYPTO_SECRETBOX_KEYBYTES) {
+            $_SESSION['in_msg']
+                .= warn_html('Invalid key length.  Minimum length is '
+                . SODIUM_CRYPTO_SECRETBOX_KEYBYTES . '.  '
+                . 'Key IGNORED.');
+            unset($key);
+       }
+   }
 }
 $CONF['key'] = empty($key) ? '' : $key;
 

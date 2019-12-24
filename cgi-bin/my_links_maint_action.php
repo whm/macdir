@@ -51,10 +51,10 @@ if (!empty($_REQUEST['in_button_add'])) {
             // add the new entry
 
             $ldap_entry["objectclass"][] = "top";
-            $_SESSION['in_msg'] .= ok_html('adding objectClass = top');
+            $_SESSION['in_msg'] .= ok_html('Adding objectClass = top');
             $ldap_entry["objectclass"][] = "pridelistobject";
             $_SESSION['in_msg']
-                .= ok_html("adding objectClass = pridelistobject");
+                .= ok_html("Adding objectClass = pridelistobject");
             $ldap_entry["cn"][] = $in_cn;
             $_SESSION['in_msg'] .= ok_html("Adding cn = $in_cn");
 
@@ -64,7 +64,11 @@ if (!empty($_REQUEST['in_button_add'])) {
                     $val = $CONF['key_prefix'] . macdir_encode($val);
                 }
                 if (!empty($val)) {
-                    $_SESSION['in_msg'] .= ok_html("Adding $fld = $val");
+                    if ($fld == 'pridecredential') {
+                        $_SESSION['in_msg'] .= ok_html("Adding $fld");
+                    } else {
+                        $_SESSION['in_msg'] .= ok_html("Adding $fld = $val");
+                    }
                     $ldap_entry[$fld][0] = $val;
                 }
             }
@@ -152,8 +156,13 @@ if (!empty($_REQUEST['in_button_add'])) {
                     $err = ldap_errno ($ds);
                     $err_msg = ldap_error ($ds);
                     if ($err == 0) {
-                        $_SESSION['in_msg']
-                            .= ok_html("$fld replaced with $in_val");
+                        if ($fld == 'pridecredential') {
+                            $_SESSION['in_msg']
+                                .= ok_html("$fld replaced");
+                        } else {
+                            $_SESSION['in_msg']
+                                .= ok_html("$fld replaced with $in_val");
+                        }
                     } else {
                         // add
                         $add_cnt++;
@@ -175,7 +184,7 @@ if (!empty($_REQUEST['in_button_add'])) {
             $err_msg = ldap_error ($ds);
             if ($err != 0) {
                 $_SESSION['in_msg']
-                    .= warn_html('ldap error adding attributes: '
+                    .= warn_html('LDAP error adding attributes: '
                     . "$err - $err_msg");
             }
         }

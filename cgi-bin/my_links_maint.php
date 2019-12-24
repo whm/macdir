@@ -25,9 +25,10 @@ if (empty($_REQUEST['in_cn']) || !empty($_REQUEST['in_button_reset'])) {
     if ($ret_cnt == 1) {
         $entry_found = 1;
     } elseif ($retcnt > 1) {
-        $msg .= "More than on entry found for $ldap_filter search.\n";
+        $_SESSION['in_msg']
+            .= warn_html("More than on entry found for $ldap_filter search.");
     } else {
-        $msg .= "No entry found.\n";
+        $_SESSION['in_msg'] .= warn_html('No entry found.');
     }
 
     $chk_prideurlprivate_y = $chk_prideurlprivate_n = '';
@@ -93,10 +94,6 @@ function checkIt() {
     </p>
 </form>
 <?php
-if (isset($msg)) {
-  echo "<p>$msg</td>\n";
-  $msg = '';
-}
 if (!empty($_SESSION['in_msg'])) {
     echo '<p>' . $_SESSION['in_msg'] . "</p>\n";
     $_SESSION['in_msg'] = '';
