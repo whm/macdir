@@ -1,4 +1,4 @@
-macdir-simple (4.0) UNRELEASED; urgency=medium
+macdir-simple (4.0) unstable; urgency=medium
 
   * Add encrypt and descrypt routines to be used to store secrets.
   * Correct display errors in user details and user dump pages.
