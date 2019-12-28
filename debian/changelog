@@ -1,3 +1,10 @@
+macdir-simple (4.1) unstable; urgency=medium
+
+  * Add access controls to links maintenance.  This allows users to
+    share secrets.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Sat, 28 Dec 2019 07:20:30 +0000
+
 macdir-simple (4.0) unstable; urgency=medium
 
   * Add encrypt and descrypt routines to be used to store secrets.

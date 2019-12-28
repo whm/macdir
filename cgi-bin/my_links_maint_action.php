@@ -4,6 +4,25 @@
 // author: Bill MacAllister
 
 // -------------------------------------------------------------
+// Check to see if a uid exists
+
+function is_uid($uid) {
+    global $ds;
+    global $ldap_user_base;
+
+    $found = 0;
+    
+    $return_attr = array('objectclass');
+    $uid_filter = "(&(objectclass=person)(uid=$uid))";
+    $sr = @ldap_search ($ds, $ldap_user_base, $uid_filter, $return_attr);
+    $info = @ldap_get_entries($ds, $sr);
+    if ($info["count"] > 0) {
+        $found = 1;
+    }
+    return $found;
+}
+
+// -------------------------------------------------------------
 // main routine
 
 // This array describes the "simple" attributes.  That is attributes
@@ -73,6 +92,24 @@ if (!empty($_REQUEST['in_button_add'])) {
                 }
             }
 
+            // Access control processing
+            if (!empty($_REQUEST['in_new_readuid'])) {
+                $uid_list = explode(',', $in_readuid);
+                foreach ($uid_list as $access_uid) {
+                    if (is_uid($access_uid)) {
+                        $ldap_entry["prideReadUid"][] = $access_uid;
+                    }
+                }
+            }
+            if (!empty($_REQUEST['in_new_writeuid'])) {
+                $uid_list = explode(',', $in_writeuid);
+                foreach ($uid_list as $access_uid) {
+                    if (is_uid($access_uid)) {
+                        $ldap_entry["prideWriteUid"][] = $access_uid;
+                    }
+                }
+            }
+            
             // add data to directory
             $this_dn = "cn=$in_cn,$link_base";
             if (@ldap_add($ds, $this_dn, $ldap_entry)) {

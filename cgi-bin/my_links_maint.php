@@ -154,6 +154,20 @@ if (!empty($_SESSION['in_msg'])) {
         <?php echo $this_pw;?>
     </div>
     <br/>
+    
+    <label for="in_new_readuid">Add Read Access:</label>
+    <input type="text" size="50" name="in_new_readuid">
+    <br/>
+    
+    <?php if (count($info[0]['prideReadUid']) > 0) { ?>
+    <label for="in_readuid">Read Access:</label>
+    <?php   for ($i=0; $i<count($info[0]['prideReadUid']); $i++) { ?>
+    <input type="checkbox"
+           name="in_readuid"
+           value="<?php echo $info[0]['prideReadUid'][$i];?>">
+    </input>
+    <?php } ?>
+    <?php } ?>
 
 <?php if ( !empty($info[0]['cn'][0]) ) {?>
 
