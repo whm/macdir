@@ -153,20 +153,31 @@ if (!empty($_SESSION['in_msg'])) {
     <div class="printbox" id="printbox" align="center">
         <?php echo $this_pw;?>
     </div>
-    <br/>
-    
-    <label for="in_new_readuid">Add Read Access:</label>
-    <input type="text" size="50" name="in_new_readuid">
-    <br/>
-    
-    <?php if (count($info[0]['prideReadUid']) > 0) { ?>
-    <label for="in_readuid">Read Access:</label>
-    <?php   for ($i=0; $i<count($info[0]['prideReadUid']); $i++) { ?>
-    <input type="checkbox"
-           name="in_readuid"
-           value="<?php echo $info[0]['prideReadUid'][$i];?>">
-    </input>
-    <?php } ?>
+
+    <?php
+    $access_attrs = ['Read', 'Write'];
+    foreach ($access_attrs as $a) {
+      $a_new_var = 'in_new_' . strtolower($a);
+      $a_attr = strtolower("pride${a}Uid");
+    ?>
+      <br/>
+      <label for="<?php echo $a_new_var; ?>"><?php echo $a; ?> Access:</label>
+      <input type="text" size="50" name="<?php echo $a_new_var; ?>">
+
+      <?php if ($info[0][$a_attr]['count'] > 0) {
+        for ($i=0; $i<$info[0][$a_attr]['count']; $i++) {
+          $a_var = 'in_' . strtolower($a) . "uid_${i}";
+          $v = $info[0][$a_attr][$i];
+      ?>
+          <br/>
+          <label for="$a_var">&nbsp;</label>
+          <input type="checkbox"
+                 name="<?php echo $a_var; ?>"
+                 value="<?php echo $v;?>">
+                   <?php echo "$v";?>
+          </input>
+        <?php } ?>
+      <?php } ?>
     <?php } ?>
 
 <?php if ( !empty($info[0]['cn'][0]) ) {?>

@@ -93,19 +93,21 @@ if (!empty($_REQUEST['in_button_add'])) {
             }
 
             // Access control processing
-            if (!empty($_REQUEST['in_new_readuid'])) {
-                $uid_list = explode(',', $in_readuid);
-                foreach ($uid_list as $access_uid) {
-                    if (is_uid($access_uid)) {
-                        $ldap_entry["prideReadUid"][] = $access_uid;
-                    }
-                }
-            }
-            if (!empty($_REQUEST['in_new_writeuid'])) {
-                $uid_list = explode(',', $in_writeuid);
-                foreach ($uid_list as $access_uid) {
-                    if (is_uid($access_uid)) {
-                        $ldap_entry["prideWriteUid"][] = $access_uid;
+            $access_ids = ['Read', 'Write'];
+            foreach ($access_ids as $a) {
+                $in_list = 'in_new_' . strtolower($a);
+                $in_attr = "pride${a}Uid";
+                if (!empty($_REQUEST[$in_a])) {
+                    $uid_list = explode(',', $_REQUEST[$in_list]);
+                    foreach ($uid_list as $access_uid) {
+                        if (is_uid($access_uid)) {
+                            $ldap_entry[$attr][] = $access_uid;
+                            $_SESSION['in_msg']
+                                .= ok_html("Adding $attr = $access_uid"); 
+                        } else {
+                            $_SESSION['in_msg']
+                                .= warn_html("ERROR: Invalid UID $access_uid"); 
+                        }
                     }
                 }
             }
