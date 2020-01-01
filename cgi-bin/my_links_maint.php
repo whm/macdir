@@ -157,24 +157,35 @@ if (!empty($_SESSION['in_msg'])) {
     <?php
     $access_attrs = ['Read', 'Write'];
     foreach ($access_attrs as $a) {
-      $a_new_var = 'in_new_' . strtolower($a);
       $a_attr = strtolower("pride${a}Uid");
+      $a_new_var = 'in_new_' . strtolower($a);
+      $a_old_cnt = empty($info[0][$a_attr]['count'])
+                 ? 0 : $info[0][$a_attr]['count'];
+      $a_old_var = 'in_' . strtolower($a) . 'uid_cnt';
     ?>
       <br/>
+      <input type="hidden"
+             name="<?php echo $a_old_var; ?>"
+         value="<?php echo $a_old_cnt; ?>">
       <label for="<?php echo $a_new_var; ?>"><?php echo $a; ?> Access:</label>
       <input type="text" size="50" name="<?php echo $a_new_var; ?>">
 
       <?php if ($info[0][$a_attr]['count'] > 0) {
         for ($i=0; $i<$info[0][$a_attr]['count']; $i++) {
-          $a_var = 'in_' . strtolower($a) . "uid_${i}";
+          $a_var     = 'in_' . strtolower($a) . "uid_${i}";
+          $a_var_cur = 'in_' . strtolower($a) . "uid_current_${i}";
           $v = $info[0][$a_attr][$i];
       ?>
           <br/>
           <label for="$a_var">&nbsp;</label>
-          <input type="checkbox"
+          <input type="checkbox" CHECKED
                  name="<?php echo $a_var; ?>"
                  value="<?php echo $v;?>">
                    <?php echo "$v";?>
+          </input>
+          <input type="hidden"
+                 name="<?php echo $a_var_cur; ?>"
+                 value="<?php echo $v;?>">
           </input>
         <?php } ?>
       <?php } ?>
