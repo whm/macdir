@@ -811,6 +811,40 @@ if ( !empty($thisPosix) && $thisPosix>0 ) {
         name="in_posix_new">
  </td>
 </tr>
+<tr>
+ <td align="right">Privilege Groups:</td>
+ <td colspan="5">
+  <?php
+  $pg_cnt = empty($info[0]["czprivilegegroup"]["count"])
+          ? 0 : $info[0]["czprivilegegroup"]["count"];
+  echo '    <input type="hidden" ';
+  echo            'name="in_czprivilegegroup_cnt" ';
+  echo            'value="' . $pg_cnt . '"' . ">\n";
+  if ($pg_cnt>0) {
+      for ($i=0; $i<$pg_cnt; $i++) {
+          $ma[] = $info[0]["czprivilegegroup"][$i];
+      }
+      sort($ma);
+      $i = 0;
+      foreach ($pg as $thisPG) {
+  ?>
+     <input type="checkbox" CHECKED
+            name="in_czprivilegegroup_<?php echo $i;?>"
+            value="<?php print $thisPG;?>"><?php print "$thisPG\n";?>
+     <input type="hidden"
+            name="in_czprivilegegroup_list_<?php echo $i;?>"
+            value="<?php print $thisPG;?>">
+     <br>
+  <?php
+      // end of for loop
+          $i++;
+      }
+    }
+?>
+     <input type="text"
+            size="40"
+            name="in_new_czprivilegegroup"></td>
+</tr>
 <?php } ?>
 
 <tr>

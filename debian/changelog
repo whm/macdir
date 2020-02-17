@@ -1,3 +1,9 @@
+macdir-simple (4.2) unstable; urgency=medium
+
+  * Add maintenance for czPrivilegeGroup to user maintenance.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Mon, 17 Feb 2020 06:45:25 +0000
+
 macdir-simple (4.1) unstable; urgency=medium
 
   * Add access controls to links maintenance.  This allows users to
