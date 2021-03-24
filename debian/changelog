@@ -1,3 +1,9 @@
+macdir-simple (4.3) unstable; urgency=medium
+
+  * Move back to using the master branch for package builds.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Wed, 24 Mar 2021 00:03:42 +0000
+
 macdir-simple (4.2) unstable; urgency=medium
 
   * Add maintenance for czPrivilegeGroup to user maintenance.
