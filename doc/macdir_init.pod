@@ -55,8 +55,18 @@ The default value is 'prideUrl'.
 
 =item attr_link_write
 
-The name for the attribute that hols the UID that has write access to a
+The name for the attribute that holds the UID that has write access to a
 personal link entry.  The default is 'prideWriteUID'.
+
+=item attr_mailalias
+
+The name for the attribute that holds email addresses.  The default is
+'mailAlias'.
+
+=item attr_maildelivery
+
+The name for the attribute that holds email addresses.  The default is
+'mailDelivery'.
 
 =item imap_host
 

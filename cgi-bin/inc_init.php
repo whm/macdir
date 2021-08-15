@@ -1,4 +1,4 @@
-><?php
+<?php
 #
 # This include defines common used subroutines and performs some
 # initialization.
@@ -188,6 +188,10 @@ $CONF['attr_link_url'] = isset($attr_link_url)
     ? strtolower($attr_link_url) : 'prideurl';
 $CONF['attr_link_visibility'] = isset($attr_link_visibility)
     ? strtolower($attr_link_visibility) : 'prideurlprivate';
+$CONF['attr_mailalias'] = isset($attr_mailalias)
+    ? strtolower($attr_mailalias) : 'mailalias';
+$CONF['attr_maildelivery'] = isset($attr_maildelivery)
+    ? strtolower($attr_maildelivery) : 'maildelivery';
 
 # Controls for updating Cyrus IMAP.  Not tested in a long time and
 # not documented.

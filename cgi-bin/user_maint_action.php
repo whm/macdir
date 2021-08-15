@@ -491,7 +491,7 @@ function add_ldap_entry($ds) {
     while ( !empty($a_maildelivery) ) {
         $_SESSION['in_msg']
             .= ok_html("Adding mailDelivery = $a_maildelivery");
-        $ldap_entry["mailDelivery"][] = $a_maildelivery;
+        $ldap_entry[ $CONF['attr_maildelivery'] ][] = $a_maildelivery;
         $a_maildelivery = strtok(',');
     }
 
@@ -622,7 +622,10 @@ function add_ldap_entry($ds) {
         $a_mailalias
             = trim(strtok($_REQUEST['in_new_mailalias'], ','));
         while ($a_mailalias) {
-            multi_check($in_dn, 'mailAlias', $a_mailalias, $a_mailalias);
+            multi_check($in_dn,
+                        $CONF['attr_mailalias'],
+                        $a_mailalias,
+                        $a_mailalias);
             $a_mailalias = trim(strtok(','));
         }
     }
@@ -630,7 +633,7 @@ function add_ldap_entry($ds) {
         for ($i=0; $i<$_REQUEST['in_mailalias_cnt']; $i++) {
             multi_check(
                 $in_dn,
-                'mailAlias',
+                $CONF['attr_mailalias'],
                 $_REQUEST["in_mailalias_$i"],
                 $_REQUEST["in_mailalias_list_$i"]
             );
@@ -829,7 +832,10 @@ function update_ldap_entry($ds) {
     if ( !empty($_REQUEST['in_new_mailalias'])>0 ) {
         $a_mailalias = trim(strtok($_REQUEST['in_new_mailalias'], ','));
         while (strlen($a_mailalias)>0) {
-            multi_check($in_dn, 'mailAlias', $a_mailalias, $a_mailalias);
+            multi_check($in_dn,
+                        $CONF['attr_mailalias'],
+                        $a_mailalias,
+                        $a_mailalias);
             $a_mailalias = trim(strtok(','));
         }
     }
@@ -837,7 +843,7 @@ function update_ldap_entry($ds) {
         for ($i=0; $i<$_REQUEST['in_mailalias_cnt']; $i++) {
             multi_check(
                 $_REQUEST['in_dn'],
-                'mailAlias',
+                $CONF['attr_mailalias'],
                 $_REQUEST["in_mailalias_$i"],
                 $_REQUEST["in_mailalias_list_$i"]
             );
@@ -870,7 +876,7 @@ function update_ldap_entry($ds) {
         while (!empty($a_maildelivery)) {
             multi_check(
                 $_REQUEST['in_dn'],
-                'mailDelivery',
+                $CONF['attr_maildelivery'],
                 $a_maildelivery,
                 $a_maildelivery
             );
@@ -881,7 +887,7 @@ function update_ldap_entry($ds) {
         for ($i=0; $i<$_REQUEST['in_maildelivery_cnt']; $i++) {
             multi_check(
                 $_REQUEST['in_dn'],
-                'mailDelivery',
+                $CONF['attr_maildelivery'],
                 stripslashes($_REQUEST["in_maildelivery_$i"]),
                 stripslashes($_REQUEST["in_maildelivery_list_$i"])
             );

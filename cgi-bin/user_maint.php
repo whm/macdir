@@ -651,14 +651,15 @@ if ( !empty($_SESSION['in_msg']) ) {
  <td align="right">Mail Aliases:</td>
  <td colspan="5">
   <?php
-  $ma_cnt = empty($info[0]["mailalias"]["count"])
-          ? 0 : $info[0]["mailalias"]["count"];
+  $attr = $CONF['attr_mailalias'];
+  $ma_cnt = empty($info[0][$attr]["count"])
+          ? 0 : $info[0][$attr]["count"];
   echo '    <input type="hidden" ';
   echo            'name="in_mailalias_cnt" ';
   echo            'value="' . $ma_cnt . '"' . ">\n";
   if ($ma_cnt>0) {
       for ($i=0; $i<$ma_cnt; $i++) {
-          $ma[] = $info[0]["mailalias"][$i];
+          $ma[] = $info[0][$attr][$i];
       }
       sort($ma);
       $i = 0;
@@ -687,13 +688,14 @@ if ( !empty($_SESSION['in_msg']) ) {
  <td colspan="5">
   <?php
   if ($entry_found>0) {
-      $maildelivery_cnt = empty($info[0]["maildelivery"]["count"])
-          ? 0 : $info[0]["maildelivery"]["count"];
+      $attr = $CONF['attr_maildelivery'];
+      $maildelivery_cnt = empty($info[0][$attr]["count"])
+          ? 0 : $info[0][$attr]["count"];
       echo "    <input type=\"hidden\" "
           . "name=\"in_maildelivery_cnt\" "
           . "value=\"$maildelivery_cnt\">\n";
       for ($i=0; $i<$maildelivery_cnt; $i++) {
-          $this_maildelivery = $info[0]["maildelivery"][$i];
+          $this_maildelivery = $info[0][$attr][$i];
   ?>
      <input type="checkbox" CHECKED
             name="in_maildelivery_<?php echo $i;?>"
