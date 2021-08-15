@@ -488,7 +488,16 @@ function add_ldap_entry($ds) {
         $a_cn = strtok(',');
     }
 
-    // create mailDelivery entries
+    // create mail alias entries
+    $a_mailalias = strtok($_REQUEST['in_new_mailalias'], ',');
+    while ( !empty($a_mailalias) ) {
+        $attr =  $CONF['attr_mailalias'];
+        $_SESSION['in_msg'] .= ok_html("Adding $attr = $a_mailalias");
+        $ldap_entry[$attr][] = $a_mailalias;
+        $a_mailalias = strtok(',');
+    }
+
+    // create mail delivery entries
     $a_maildelivery = strtok($_REQUEST['in_new_maildelivery'], ',');
     while ( !empty($a_maildelivery) ) {
         $attr =  $CONF['attr_maildelivery'];
@@ -496,7 +505,7 @@ function add_ldap_entry($ds) {
         $ldap_entry[$attr][] = $a_maildelivery;
         $a_maildelivery = strtok(',');
     }
-
+    
     // see if we need posix objectclasses
     if ($posix_entry) {
         $ldap_entry['objectclass'][] = 'posixAccount';
@@ -618,29 +627,6 @@ function add_ldap_entry($ds) {
 
     // add the kerberos principal
     kp_add($_REQUEST['in_uid']);
-
-    // Check mailalias
-    if ( !empty($_REQUEST['in_new_mailalias']) ) {
-        $a_mailalias
-            = trim(strtok($_REQUEST['in_new_mailalias'], ','));
-        while ($a_mailalias) {
-            multi_check($in_dn,
-                        $CONF['attr_mailalias'],
-                        $a_mailalias,
-                        $a_mailalias);
-            $a_mailalias = trim(strtok(','));
-        }
-    }
-    if ($_REQUEST['in_mailalias_cnt']>0) {
-        for ($i=0; $i<$_REQUEST['in_mailalias_cnt']; $i++) {
-            multi_check(
-                $in_dn,
-                $CONF['attr_mailalias'],
-                $_REQUEST["in_mailalias_$i"],
-                $_REQUEST["in_mailalias_list_$i"]
-            );
-        }
-    }
 
     // notify the administrator
     if ( !empty($CONF['manager_mailbox']) ) {
