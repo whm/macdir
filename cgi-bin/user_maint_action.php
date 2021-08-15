@@ -442,6 +442,8 @@ function add_ldap_entry($ds) {
     $_SESSION['in_msg'] .= ok_html('Adding objectClass = top');
     $ldap_entry["objectclass"][] = 'person';
     $_SESSION['in_msg'] .= ok_html('Adding objectClass = person');
+    $ldap_entry["objectclass"][] = 'inetOrgPerson';
+    $_SESSION['in_msg'] .= ok_html('Adding objectClass = inetOrgPerson');
     $ldap_entry["objectclass"][] = $CONF['oc_person'];
     $_SESSION['in_msg'] .= ok_html('Adding objectClass = '
                            . $CONF['oc_person']);
