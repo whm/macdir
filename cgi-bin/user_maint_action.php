@@ -489,9 +489,9 @@ function add_ldap_entry($ds) {
     // create mailDelivery entries
     $a_maildelivery = strtok($_REQUEST['in_new_maildelivery'], ',');
     while ( !empty($a_maildelivery) ) {
-        $_SESSION['in_msg']
-            .= ok_html("Adding mailDelivery = $a_maildelivery");
-        $ldap_entry[ $CONF['attr_maildelivery'] ][] = $a_maildelivery;
+        $attr =  $CONF['attr_maildelivery'];
+        $_SESSION['in_msg'] .= ok_html("Adding $attr = $a_maildelivery");
+        $ldap_entry[$attr][] = $a_maildelivery;
         $a_maildelivery = strtok(',');
     }
 
@@ -512,7 +512,7 @@ function add_ldap_entry($ds) {
         }
         $this_gidnumber = get_an_id($this_gidnumber, 'gidnumber');
         $ldap_entry["gidnumber"][] = $this_gidnumber;
-        $_SESSION['in_msg'] .= ok_html("adding gidNumber = $this_gidnumber");
+        $_SESSION['in_msg'] .= ok_html("Adding gidNumber = $this_gidnumber");
     }
 
     // add data to directory
