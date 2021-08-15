@@ -54,8 +54,9 @@ function display_links($edit_flag, $title, $info) {
             ? '' : $info[$i]["description"][0];
 
         $a_url_list = '&nbsp;';
-        if (!empty($info[$i]["prideurl"][0])) {
-            $url_list = explode(' ', $info[$i]["prideurl"][0]);
+        $a_url_attr = $CONF['attr_link_url'];
+        if (array_key_exists($a_url_attr, $info[$i])) {
+            $url_list = explode(' ', $info[$i][$a_url_attr][0]);
             $a_br = '';
             $a_url_list = '';
             foreach ($url_list as $u) {
@@ -67,8 +68,9 @@ function display_links($edit_flag, $title, $info) {
         }
 
         $a_pw_list = '&nbsp;';
-        if (!empty($info[$i]["pridecredential"][0])) {
-            $pw_list = explode(' ', $info[$i]["pridecredential"][0]);
+        $a_pw_attr = $CONF['attr_cred'];
+        if (array_key_exists($a_pw_attr, $info[$i])) {
+            $pw_list = explode(' ', $info[$i][$a_pw_attr][0]);
             $a_br = '';
             $a_pw_list = '';
             foreach ($pw_list as $pw) {
@@ -89,10 +91,16 @@ function display_links($edit_flag, $title, $info) {
         } else {
             $a_desc_link = $a_desc . ' (' . uid_from_dn($info[$i]['dn']) . ')';
         }
+        $a_attr_uid = $CONF['attr_link_uid'];
+        if (array_key_exists($a_attr_uid, $info[$i])) {
+            $a_uid = $info[$i][$a_attr_uid][0];
+        } else {
+            $a_uid = '';
+        }
         echo "<tr>\n";
         echo " <td>$a_desc_link</td>\n";
         echo " <td>${a_url_list}</td>\n";
-        echo ' <td>' . nbsp_html($info[$i]["linkuid"][0]) . "</td>\n";
+        echo ' <td>' . nbsp_html($a_uid) . "</td>\n";
         echo " <td>${a_pw_list}</td>\n";
         echo "</tr>\n";
     }
@@ -109,12 +117,12 @@ $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 # create a form to attribute mapping
 $form["commonname"]  = "cn";
 $form["description"] = "description";
-$form["password"]    = "pridecredential";
-$form["url"]         = "prideurl";
+$form["password"]    = $CONF['attr_cred'];
+$form["url"]         = $CONF['attr_link_url'];
 
 # Define search types and set the default search
-$public_filter  = '(!(prideurlprivate=Y))';
-$private_filter = '(prideurlprivate=Y)';
+$public_filter  = '(!(' . $CONF['attr_link_visibility'] . '=Y))';
+$private_filter = '(' . $CONF['attr_link_visibility'] . '=Y)';
 $class_filter   = $public_filter;
 
 # Set the search type
@@ -214,13 +222,13 @@ if ( !empty($_SESSION['in_msg']) ) {
 
 $link_base = "uid=${this_uid},${ldap_user_base}";
 $base_filter .= $class_filter;
-$filter = '(&(objectclass=pridelistobject)'. $base_filter. ')';
+$filter = '(&(objectclass=' . $CONF['oc_link'] . ')'. $base_filter. ')';
 $return_attr = array('cn',
                      'description',
-                     'prideurl',
-                     'linkuid',
-                     'pridecredential',
-                     'prideurlprivate');
+                     $CONF['attr_cred'],
+                     $CONF['attr_link_url'],
+                     $CONF['attr_link_uid'],
+                     $CONF['attr_link_visibility']);
 $sr = ldap_search($ds, $link_base, $filter, $return_attr);
 ldap_sort($ds, $sr, 'description');
 $info = ldap_get_entries($ds, $sr);
@@ -233,9 +241,10 @@ if ($ret_cnt) {
 
 if (!empty($_SERVER['WEBAUTH_USER'])) {
     $u           = $_SERVER['WEBAUTH_USER'];
-    $link_filter = "(|(prideReadUid=${u})(prideWriteUid=${u}))";
+    $link_filter = '(|(' . $CONF['attr_link_read'] . "=${u})"
+                 . '(' . $CONF['attr_link_write'] . "=${u}))";
     $filter      = '(&'
-                 . '(objectclass=pridelistobject)'
+                 . '(objectclass=' . $CONF['oc_link'] . ')'
                  . $base_filter
                  . $link_filter
                  . ')';

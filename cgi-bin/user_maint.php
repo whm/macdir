@@ -141,7 +141,7 @@ if (!empty($ldap_filter)) {
     asort ($thisPosix);
 
     // application groups for this user
-    $aFilter = "(&(objectclass=prideApplication)(memberUid=$thisUID))";
+    $aFilter = '(&(objectclass='  . $CONF['oc_app']. ")(memberUid=$thisUID))";
     $aRetAttrs = array ('cn','description');
     $old_err = error_reporting(E_ERROR | E_PARSE);
     $sr = ldap_search ($ds, $ldap_base, $aFilter, $aRetAttrs);
@@ -581,7 +581,8 @@ if ( !empty($_SESSION['in_msg']) ) {
  <td align="right">Comments:</td>
    <?php
      $z = '';
-     if (isset($info[0]["comments"][0])) {$z = $info[0]["comments"][0];}
+     $attr = $CONF['attr_comment'];
+     if (isset($info[0][$attr][0])) {$z = $info[0][$attr][0];}
    ?>
  <td colspan="5"><textarea cols="60" rows="2" wrap="physical"
             name="in_comments"><?php print $z;?></textarea></td>

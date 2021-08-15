@@ -1,3 +1,12 @@
+macdir-simple (4.4) unstable; urgency=medium
+
+  * Updates to support an alternate set of attributes.  This generally
+    means moving hardcoded custom attributes into the configuration
+    file.
+  * Document the configuration file with and example configuration file.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Sun, 15 Aug 2021 01:33:10 +0000
+
 macdir-simple (4.3) unstable; urgency=medium
 
   * Move back to using the master branch for package builds.

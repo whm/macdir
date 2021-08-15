@@ -101,47 +101,106 @@ if (file_exists('/etc/macdir/config.php')) {
 }
 
 $CONF = array();
-$CONF['manager_mailbox'] = empty($ldap_manager_mailbox)
-    ? 'bill@ca-zephyr.org' : $manager_mailbox;
+$CONF['manager_mailbox'] = isset($ldap_manager_mailbox)
+    ?  $ldap_manager_mailbox : 'bill@ca-zephyr.org';
 
-$CONF['imap_host']      = empty($imap_host) ? '' : $imap_host;
-$CONF['imap_mgr_pass']  = empty($imap_mgr_pass) ? '' : $imap_mgr_pass;
-$CONF['imap_mgr_user']  = empty($imap_mgr_user) ? '' : $imap_mgr_user;
-$CONF['mail_domain']    = empty($mail_domain) ? '' : $maildomain;
-$CONF['mailbox_domain'] = empty($mailbox_domain) ? '' : $mailbox_domain;
-$CONF['ldap_base']      = empty($ldap_base) ? 'dc=example,dc=com' : $ldap_base;
-$CONF['ldap_app_base']  = empty($ldap_app_base)
-    ? 'ou=applications,' . $CONF['ldap_base'] : $ldap_group_base;
-$CONF['ldap_group_base'] = empty($ldap_group_base)
-    ? 'ou=groups,' . $CONF['ldap_base'] : $ldap_group_base;
-$CONF['ldap_uidnumber_base'] = empty($ldap_uidnumber_base)
-    ? 4000 : $ldap_uidnumber_base;
-$CONF['ldap_user_base'] = empty($ldap_user_base)
-    ? 'ou=people,' . $CONF['ldap_base'] : $ldap_user_base;
-$CONF['ldap_server'] = empty($ldap_server) ? 'localhost' : $ldap_server;
-$CONF['ldap_title'] = empty($ldap_title)   ? 'LDAP Directory' : $ldap_title;
+$CONF['ldap_base'] = isset($ldap_base)
+    ?  $ldap_base : 'dc=example,dc=com';
+$CONF['ldap_app_base'] = isset($ldap_app_base)
+    ?  $ldap_group_base : 'ou=applications,' . $CONF['ldap_base'];
+$CONF['ldap_group_base'] = isset($ldap_group_base)
+    ?  $ldap_group_base : 'ou=groups,' . $CONF['ldap_base'];
+$CONF['ldap_uidnumber_base'] = isset($ldap_uidnumber_base)
+    ?  $ldap_uidnumber_base : 4000;
+$CONF['ldap_user_base'] = isset($ldap_user_base)
+    ?  $ldap_user_base : 'ou=people,' . $CONF['ldap_base'];
+$CONF['ldap_server'] = isset($ldap_server)
+    ?  $ldap_server : 'localhost';
+$CONF['ldap_title'] = isset($ldap_title)
+    ?  $ldap_title : 'LDAP Directory';
 
-$CONF['k5start'] = empty($k5start)
-    ? '/usr/bin/k5start -f /etc/keytab/macdir.keytab -U' : $k5start;
-$CONF['kdcmaster'] = empty($kdcmaster) ? 'portola.ca-zephyr.org' : $kdcmaster;
-$CONF['krb_realm'] = empty($krb_realm) ? 'CA-ZEPHYR.ORG' : $krb_realm;
+$CONF['k5start'] = isset($k5start)
+    ?  $k5start : '/usr/bin/k5start -f /etc/keytab/macdir.keytab -U';
+$CONF['kdcmaster'] = isset($kdcmaster)
+    ?  $kdcmaster : 'portola.ca-zephyr.org';
+$CONF['krb_realm'] = isset($krb_realm)
+    ?  $krb_realm : 'CA-ZEPHYR.ORG';
 
-$CONF['key_file']   = empty($key_file) ? '/etc/macdir/linkkey.txt' : $key_file;
-$CONF['key_prefix'] = empty($key_prefix) ? 'PREFIX:' : $key_prefix;
+$CONF['key_file'] = isset($key_file)
+    ?  $key_file : '/etc/macdir/linkkey.txt';
+$CONF['key_prefix'] = isset($key_prefix)
+    ? ' : $key_prefix : 'PREFI;
 
-$CONF['maint_address']    = empty($maint_address) ? 1 : $maint_address;
-$CONF['maint_app_groups'] = empty($maint_app_groups) ? 0 : $maint_app_groups;
-$CONF['maint_cell']       = empty($maint_cell) ? 0 : $maint_cell;
-$CONF['maint_comments']   = empty($maint_fax) ? 1 : $maint_comments;
-$CONF['maint_fax']        = empty($maint_fax) ? 0 : $maint_fax;
-$CONF['maint_linux']      = empty($maint_linux) ? 1 : $maint_linux;
-$CONF['maint_mail_acct']  = empty($maint_mail_acct) ? 0 : $maint_mail_acct;
-$CONF['maint_mail_addr']  = empty($maint_mail_addr) ? 1 : $maint_mail_addr;
-$CONF['maint_nickname']   = empty($maint_nickname) ? 0 : $maint_nickname;
-$CONF['maint_pager']      = empty($mail_pager) ? 0 : $maint_pager;
-$CONF['maint_phone']      = empty($maint_phone) ? 1 : $maint_phone;
-$CONF['maint_title']      = empty($maint_title) ? 0 : $maint_title;
-$CONF['maint_workphone']  = empty($maint_workphone) ? 1 : $maint_workphone;
+# Maintenance controls defining what fields/attributes to update.
+$CONF['maint_address'] = isset($maint_address)
+    ?  $maint_address : 1;
+$CONF['maint_app_groups'] = isset($maint_app_groups)
+    ?  $maint_app_groups : 0;
+$CONF['maint_cell'] = isset($maint_cell)
+    ?  $maint_cell : 0;
+$CONF['maint_comments'] = isset($maint_fax)
+    ?  $maint_comments : 1;
+$CONF['maint_fax'] = isset($maint_fax)
+    ?  $maint_fax : 0;
+$CONF['maint_linux'] = isset($maint_linux)
+    ?  $maint_linux : 1;
+$CONF['maint_mail_acct'] = isset($maint_mail_acct)
+    ?  $maint_mail_acct : 0;
+$CONF['maint_mail_addr'] = isset($maint_mail_addr)
+    ?  $maint_mail_addr : 1;
+$CONF['maint_nickname'] = isset($maint_nickname)
+    ?  $maint_nickname : 0;
+$CONF['maint_pager'] = isset($maint_pager)
+    ?  $maint_pager : 0;
+$CONF['maint_phone'] = isset($maint_phone)
+    ?  $maint_phone : 1;
+$CONF['maint_title'] = isset($maint_title)
+    ?  $maint_title : 0;
+$CONF['maint_workphone']  = isset($maint_workphone)
+    ?  $maint_workphone : 1;
+
+# Objectclasses
+$CONF['oc_app'] = isset($oc_app)
+    ?  strtolower($oc_app) : 'prideapplication';
+$CONF['oc_person'] = isset($oc_person)
+    ?  strtolower($oc_person) : 'pridePerson';
+$CONF['oc_krb'] = isset($oc_krb)
+    ?  strtolower($oc_krb) : 'krb5principal';
+$CONF['oc_link'] = isset($oc_link)
+    ?  strtolower($oc_link) : 'pridelistobject';
+
+# Attributes
+$CONF['attr_app'] = isset($attr_app)
+    ?  strtolower($attr_app) : 'prideapplication';
+$CONF['attr_comment'] = isset($attr_comment)
+    ?  strtolower($attr_comment) : 'comments';
+$CONF['attr_cred'] = isset($attr_cred)
+    ?  strtolower($attr_cred) : 'pridecredential';
+$CONF['attr_krb'] = isset($attr_krb)
+    ?  strtolower($attr_krb) : 'krb5principalname';
+$CONF['attr_link_read'] = isset($attr_link_read)
+    ?  strtolower($attr_link_read) : 'pridereaduid';
+$CONF['attr_link_uid'] = isset($attr_link_uid)
+    ?  strtolower($attr_link_uid) : 'linkuid';
+$CONF['attr_link_write'] = isset($attr_link_read)
+    ?  strtolower($attr_link_write) : 'pridewriteuid';
+$CONF['attr_link_url'] = isset($attr_link_url)
+    ?  strtolower($attr_link_url) : 'prideurl';
+$CONF['attr_link_visibility'] = isset($attr_link_visibility)
+    ?  strtolower($attr_link_visibility) : 'prideurlprivate';
+
+# Controls for updating Cyrus IMAP.  Not tested in a long time and
+# not documented.
+$CONF['imap_host'] = isset($imap_host)
+    ?  $imap_host : '';
+$CONF['imap_mgr_pass'] = isset($imap_mgr_pass)
+    ?  $imap_mgr_pass : '';
+$CONF['imap_mgr_user'] = isset($imap_mgr_user)
+    ?  $imap_mgr_user : '';
+$CONF['mail_domain'] = isset($mail_domain)
+    ?  $maildomain : '';
+$CONF['mailbox_domain'] = isset($mailbox_domain)
+    ?  $mailbox_domain : '';
 
 if (!empty($key)) {
   unset($key);
@@ -161,12 +220,7 @@ if (file_exists($CONF['key_file'])) {
        }
    }
 }
-$CONF['key'] = empty($key) ? '' : $key;
-
-// Some constants
-$CON = array();
-$CON['krb_oc']    = 'krb5Principal';
-$CON['krb_attr']  = 'krb5principalname';
+$CONF['key'] = isset($key) ? $key : '';
 
 // figure out the access level
 $ldap_admin   = 0;

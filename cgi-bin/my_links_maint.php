@@ -18,7 +18,7 @@ if (empty($_REQUEST['in_cn']) || !empty($_REQUEST['in_button_reset'])) {
 
     $return_attr = array();
     $link_base = 'uid='.$_SERVER['REMOTE_USER'] . ',' . $ldap_user_base;
-    $link_filter = "(&(objectclass=pridelistobject)(cn=$in_cn))";
+    $link_filter = '(&(objectclass=' . $CONF['oc_link'] . ")(cn=$in_cn))";
     $sr = @ldap_search ($ds, $link_base, $link_filter, $return_attr);
     $info = @ldap_get_entries($ds, $sr);
     $ret_cnt = $info["count"];
@@ -31,11 +31,11 @@ if (empty($_REQUEST['in_cn']) || !empty($_REQUEST['in_button_reset'])) {
         $_SESSION['in_msg'] .= warn_html('No entry found.');
     }
 
-    $chk_prideurlprivate_y = $chk_prideurlprivate_n = '';
-    if ($info[0]['prideurlprivate'][0] == 'N') {
-        $chk_prideurlprivate_n = 'CHECKED';
+    $chk_linkprivate_y = $chk_linkprivate_n = '';
+    if ($info[0][ $CONF['attr_link_visibility'] ][0] == 'N') {
+        $chk_linkprivate_n = 'CHECKED';
     } else {
-        $chk_prideurlprivate_y = 'CHECKED';
+        $chk_linkprivate_y = 'CHECKED';
     }
 
 }
@@ -118,36 +118,36 @@ if (!empty($_SESSION['in_msg'])) {
 <?php } ?>
     <br/>
 
-    <label for="in_prideurlprivate">Visibility:</label>
+    <label for="in_linkprivate">Visibility:</label>
     <input type="radio"
-           <?php echo $chk_prideurlprivate_n;?> name="in_prideurlprivate"
+           <?php echo $chk_linkprivate_n;?> name="in_linkprivate"
            value="N">Public
     &nbsp;&nbsp;&nbsp;
     <input type="radio"
-           <?php echo $chk_prideurlprivate_y;?> name="in_prideurlprivate"
+           <?php echo $chk_linkprivate_y;?> name="in_linkprivate"
            value="Y">Private
     <br/>
 
-    <label for "in_prideurl">URL:</label>
-    <input type="text" size="50" name="in_prideurl"
-           value="<?php echo set_val($info[0]['prideurl'][0]);?>">
+    <label for "in_linkurl">URL:</label>
+    <input type="text" size="50" name="in_linkurl"
+         value="<?php echo set_val($info[0][ $CONF['attr_link_url'] ][0]);?>">
     <br/>
 
     <label for="in_linkuid">Username:</label>
     <input type="text" size="50" name="in_linkuid"
-           value="<?php echo set_val($info[0]['linkuid'][0]);?>">
+         value="<?php echo set_val($info[0][ $CONF['attr_link_url'] ][0]);?>">
     <br/>
 
     <?php
-        $this_pw = set_val($info[0]['pridecredential'][0]);
+        $this_pw = set_val($info[0][ $CONF['attr_cred'] ][0]);
         $this_pat = '/^' . $CONF['key_prefix'] . '(.*)/';
         if (!empty($CONF['key']) && preg_match($this_pat, $this_pw, $m)) {
             $this_epw = $m[1];
             $this_pw = macdir_decode($this_epw);
         }
     ?>
-    <label for="in_pridecredential">Password:</label>
-    <input type="password" size="50" name="in_pridecredential"
+    <label for="in_credential">Password:</label>
+    <input type="password" size="50" name="in_credential"
       onkeyUp="document.getElementById('printbox').innerHTML = this.value"
       value="<?php echo $this_pw;?>"/>
     <div class="printbox" id="printbox" align="center">
@@ -155,9 +155,9 @@ if (!empty($_SESSION['in_msg'])) {
     </div>
 
     <?php
-    $access_attrs = ['Read', 'Write'];
+    $access_attrs = ['read', 'write'];
     foreach ($access_attrs as $a) {
-      $a_attr = strtolower("pride${a}Uid");
+      $a_attr = strtolower($CONF["attr_link_${a}"]);
       $a_new_var = 'in_new_' . strtolower($a);
       $a_old_cnt = empty($info[0][$a_attr]['count'])
                  ? 0 : $info[0][$a_attr]['count'];

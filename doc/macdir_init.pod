@@ -12,10 +12,51 @@ configuration file is /etc/macdir/config.php.
 
 =over 4
 
-=item manager_mailbox
+=item attr_appt
 
-A RFC822 address.  Email is sent to this address for all updates.  The
-default is bill@ca-zephyr.org.
+The name for attributes that define applications.  This attribute is
+depreciated in favor or privilege group attributes and posixGroups.
+The default is 'prideApplication'.
+
+=item attr_comment
+
+The name for a comment attribute.  The default is 'comments'.
+
+=item attr_cred
+
+Then name for an attribute that holds a secret.  If the attribute values
+are encrypted using the key_file configuration property.  The default
+is 'prideCredential'.
+
+=item attr_krb
+
+The name for the attribute that holds a Kerberos principal.  The default
+is 'krb5PrincipalName'.
+
+=item attr_link_visibility
+
+The name for the attribute that holds a visibility setting for the attr_cred
+attribute.  The default is 'prideUrlPrivate'.
+
+=item attr_link_read
+
+The name for the attributes that hold the UID that has read access to a
+personal link entry.  The default is 'prideReadUID'.
+
+=item attr_link_uid
+
+The name for the attribute that holds the unique identifier for a
+personal link entry.  The default is 'linkuid'.
+
+=item attr_link_url
+
+The name for the attribute that holds a URL for a personal link entry.
+The default value is 'prideUrl'.
+
+=item attr_link_write
+
+The name for the attribute that hols the UID that has write access to a
+personal link entry.  The default is 'prideWriteUID'.
 
 =item imap_host
 
@@ -30,23 +71,34 @@ The password for the imap_mgr_usr Cyrus user.
 
 The name of a Cyrus user that has admin access to the server.
 
-=item mail_domain
+=item k5start
 
-This is part of the Cyrus IMAP support.
+The command line that creates a Kerberos ticket cache.  The default is
+'/usr/bin/k5start -f /etc/keytab/macdir.keytab -U'.
 
-=item mailbox_domain
+=item key_file
 
-This is part of the Cyrus IMAP support.
+The file name that holds the key that is used to encrypt personal link
+credentials.  The default is '/etc/macdir/linkkey.txt'.
 
-=item ldap_base
+=item key_prefix
 
-The base distinguised name for the directory.  The default is
-'dc=example,dc=com'.
+The prefix that is used to identify personal link credentials as encyrpted.
+The default is 'PREFIX:'.
+
+=item krb_realm
+
+The Kerberos realm.  The default is 'CA-ZEPHYR.ORG'.
 
 =item ldap_app_base
 
 The base distinguised name for application entries in the directory.
 The default is 'ou=application,<ldap_base>'.
+
+=item ldap_base
+
+The base distinguised name for the directory.  The default is
+'dc=example,dc=com'.
 
 =item ldap_group_base
 
@@ -71,29 +123,13 @@ The DNS name of the ldap server.  The default is 'localhost'.
 
 A descriptive name for the directory.  The default is 'LDAP Directory'.
 
-=item k5start
+=item mail_domain
 
-The command line that creates a Kerberos ticket cache.  The default is
-'/usr/bin/k5start -f /etc/keytab/macdir.keytab -U'.
+This is part of the Cyrus IMAP support.
 
-=item krb_realm
+=item mailbox_domain
 
-The Kerberos realm.  The default is 'CA-ZEPHYR.ORG'.
-
-=item key_file
-
-The file name that holds the key that is used to encrypt private
-user link entries.  The default is '/etc/macdir/linkkey.txt'.
-
-=item key_prefix
-
-The prefix that is used to identify user link secrets as encyrpted.
-The default is 'PREFIX:'.
-
-=item key
-
-The key that is used to encrypt link secrets.  This value can only be
-defined in the key_file.  There is not default value.
+This is part of the Cyrus IMAP support.
 
 =item maint_address
 
@@ -105,7 +141,7 @@ manages the user's address.  The default is 1.
 A boolean that controls whether the user maintenance script manages a
 user's application group membership.  The default is 0.
 
-=item main_cell
+=item maint_cell
 
 A boolean that controls wheter the user maintenance script manages a
 user's cell phone number.  The default is 0.
@@ -161,15 +197,30 @@ user's title.  The default is 0.
 A boolean that controls wheter the user maintenance script manages a
 user's work telephone number.  The default is 0.
 
-=item key_file
+=item manager_mailbox
 
-The file name that holds the key that is used to encrypt private
-user link entries.  The default is '/etc/macdir/linkkey.txt'.
+A RFC822 address.  Email is sent to this address for all updates.  The
+default is 'bill@ca-zephyr.org'.
 
-=item key_prefix
+=item oc_app
 
-The prefix that is used to identify user link secrets as encyrpted.
-The default is 'PREFIX:'.
+The name of the objectclass for application entries.  The default is
+'prideApplication'.
+
+=item oc_link
+
+The name of the objectclass for personal link entries.  The default is
+'prideListObject'.
+
+=item oc_person
+
+The name of the objectclass for person entries.  The default is
+'pridePerson'.
+
+=item oc_krb
+
+The name of the objectclass for entries that hold Kerberos principals.  The
+default is 'krb5Principal'.
 
 =back
 
@@ -179,7 +230,7 @@ Bill MacAllister <bill@ca-zephyr.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2019 Bill MacAllister <bill@ca-zephyr.org>.
+Copyright 2019-2021 Bill MacAllister <bill@ca-zephyr.org>.
 
 This program is free software; you may redistribute it and/or modify it
 under the same terms as Perl itself.

@@ -83,12 +83,12 @@ function multi_check($a_dn, $a_fld, $a_flag, $a_val) {
 // that have a simple value.
 $fld_list = array();
 array_push ($fld_list, 'description');
-array_push ($fld_list, 'prideurl');
-array_push ($fld_list, 'prideurlprivate');
-array_push ($fld_list, 'linkuid');
-array_push ($fld_list, 'pridecredential');
+array_push ($fld_list, 'labeleduri');
+array_push ($fld_list, $CONF['attr_link_url']);
+array_push ($fld_list, $CONF['attr_link_uid']);
+array_push ($fld_list, $CONF['attr_cred']);
 
-$access_ids = ['Read', 'Write'];
+$access_ids = ['read', 'write'];
 
 $in_dn = empty($_REQUEST['in_dn']) ? '' : $_REQUEST['in_dn'];
 $in_cn = empty($_REQUEST['in_cn']) ? '' : $_REQUEST['in_cn'];
@@ -98,7 +98,7 @@ require('inc_init.php');
 $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 $link_base = 'uid=' . $_SERVER['REMOTE_USER'] . ',' . $ldap_user_base;
-$link_filter = "(&(objectclass=pridelistobject)(cn=$in_cn))";
+$link_filter = '(&(objectclass=' . $CONF['oc_link'] . ")(cn=$in_cn))";
 
 if (!empty($_REQUEST['in_button_add'])) {
 
@@ -127,19 +127,19 @@ if (!empty($_REQUEST['in_button_add'])) {
 
             $ldap_entry["objectclass"][] = "top";
             $_SESSION['in_msg'] .= ok_html('Adding objectClass = top');
-            $ldap_entry["objectclass"][] = "pridelistobject";
+            $ldap_entry["objectclass"][] = $CONF['oc_link'];
             $_SESSION['in_msg']
-                .= ok_html("Adding objectClass = pridelistobject");
+                .= ok_html('Adding objectClass = ' . $CONF['oc_link']);
             $ldap_entry["cn"][] = $in_cn;
             $_SESSION['in_msg'] .= ok_html("Adding cn = $in_cn");
 
             foreach ($fld_list as $fld) {
                 $val = stripslashes(trim($_REQUEST["in_$fld"]));
-                if ($fld == 'pridecredential' && !empty($CONF['key'])) {
+                if ($fld == $CONF['attr_cred'] && !empty($CONF['key'])) {
                     $val = $CONF['key_prefix'] . macdir_encode($val);
                 }
                 if (!empty($val)) {
-                    if ($fld == 'pridecredential') {
+                    if ($fld == $CONF['attr_cred']) {
                         $_SESSION['in_msg'] .= ok_html("Adding $fld");
                     } else {
                         $_SESSION['in_msg'] .= ok_html("Adding $fld = $val");
@@ -162,7 +162,7 @@ if (!empty($_REQUEST['in_button_add'])) {
             // Add any access controls
             foreach ($access_ids as $a) {
                 $in_list = 'in_new_' . strtolower($a);
-                $in_attr = "pride${a}Uid";
+                $in_attr = $CONF["attr_link_${a}"];
                 $a_user = trim(strtok($_REQUEST[$in_list], ','));
                 while ($a_user) {
                     if (is_uid($a_user)) {
@@ -210,7 +210,7 @@ if (!empty($_REQUEST['in_button_add'])) {
             if (!empty($tmp)) {
                 $val_in  = stripslashes(trim($tmp));
             }
-            if (!empty($val_in) && $fld == 'pridecredential') {
+            if (!empty($val_in) && $fld == $CONF['attr_cred']) {
                 $val_in = $CONF['key_prefix'] . macdir_encode($val_in);
             }
 
@@ -247,7 +247,7 @@ if (!empty($_REQUEST['in_button_add'])) {
                     $err = ldap_errno ($ds);
                     $err_msg = ldap_error ($ds);
                     if ($err == 0) {
-                        if ($fld == 'pridecredential') {
+                        if ($fld == $CONF['attr_cred']) {
                             $_SESSION['in_msg']
                                 .= ok_html("$fld replaced");
                         } else {
@@ -283,7 +283,7 @@ if (!empty($_REQUEST['in_button_add'])) {
         foreach ($access_ids as $a) {
             // add new
             $in_list = 'in_new_' . strtolower($a);
-            $in_attr = "pride${a}Uid";
+            $in_attr = $CONF["attr_link_${a}"];
         $a_user = trim(strtok($_REQUEST[$in_list], ','));
             while ($a_user) {
                 if (is_uid($a_user)) {

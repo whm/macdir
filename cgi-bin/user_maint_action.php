@@ -86,7 +86,7 @@ function characterData($parser, $data) {
 
 function multi_check($a_dn, $a_fld, $a_flag, $a_val) {
 
-    GLOBAL $CON;
+    GLOBAL $CONF;
     global $ds;
 
     $attr_val[$a_fld] = $a_val;
@@ -202,7 +202,7 @@ function app_group_check ($a_uid, $a_flag, $a_app) {
     $group_attr['memberUid'] = $a_uid;
 
     // search for it
-    $aFilter = "(&(objectclass=prideApplication)";
+    $aFilter = '(&(objectclass=' . $CONF['attr_app'] . ')';
     $aFilter .= "(cn=$a_app)";
     $aFilter .= "(memberUid=$a_uid))";
     $aRetAttrs = array ('cn');
@@ -277,7 +277,6 @@ function find_kp ($uid) {
 
 function kp_add ($uid) {
 
-    global $CON;
     global $CONF;
 
     $kp = find_kp($uid);
@@ -306,7 +305,6 @@ function kp_add ($uid) {
 
 function kp_delete ($uid) {
 
-    global $CON;
     global $CONF;
 
     $kp = find_kp($uid);
@@ -379,7 +377,7 @@ function init_globals() {
     # that have a simple value.
     global $FLD_LIST;
     $FLD_LIST = array();
-    array_push ($FLD_LIST, 'comments');
+    array_push ($FLD_LIST, $CONF['attr_comment']);
     array_push ($FLD_LIST, 'facsimiletelephonenumber');
     array_push ($FLD_LIST, 'gidnumber');
     array_push ($FLD_LIST, 'givenname');
@@ -411,7 +409,6 @@ function init_globals() {
 
 function add_ldap_entry($ds) {
 
-    global $CON;
     global $CONF;
     global $FLD_LIST;
     global $OUR;
@@ -445,17 +442,16 @@ function add_ldap_entry($ds) {
     $_SESSION['in_msg'] .= ok_html('Adding objectClass = top');
     $ldap_entry["objectclass"][] = 'person';
     $_SESSION['in_msg'] .= ok_html('Adding objectClass = person');
-    $ldap_entry["objectclass"][] = 'czPerson';
-    $_SESSION['in_msg'] .= ok_html('Adding objectClass = czPerson');
-    $ldap_entry["objectclass"][] = 'pridePerson';
-    $_SESSION['in_msg'] .= ok_html('Adding objectClass = pridePerson');
-    $ldap_entry["objectclass"][] = $CON['krb_oc'];
-    $_SESSION['in_msg'] .= ok_html('Adding objectClass = ' . $CON['krb_oc']);
+    $ldap_entry["objectclass"][] = $CONF['oc_person'];
+    $_SESSION['in_msg'] .= ok_html('Adding objectClass = '
+                           . $CONF['oc_person']);
+    $ldap_entry["objectclass"][] = $CONF['oc_krb'];
+    $_SESSION['in_msg'] .= ok_html('Adding objectClass = ' . $CONF['oc_krb']);
 
     // Add kerberos principal name
-    $ldap_entry[ $CON['krb_attr'] ][] = $OUR['principal'];
+    $ldap_entry[ $CONF['attr_krb'] ][] = $OUR['principal'];
     $_SESSION['in_msg']
-        .= ok_html('Adding ' . $CON['krb_attr'] . ' = ' . $OUR['principal']);
+        .= ok_html('Adding ' . $CONF['attr_krb'] . ' = ' . $OUR['principal']);
 
     // Create posix entry only when asked to
     $posix_entry = 0;
@@ -660,7 +656,6 @@ function add_ldap_entry($ds) {
 
 function update_ldap_entry($ds) {
 
-    global $CON;
     global $CONF;
     global $FLD_LIST;
     global $OUR;
@@ -674,7 +669,7 @@ function update_ldap_entry($ds) {
     $in_dn = $_REQUEST['in_dn'];
 
     $return_list   = $FLD_LIST;
-    $return_list[] = $CON['krb_attr'];
+    $return_list[] = $CONF['attr_krb'];
     $sr = @ldap_read(
         $ds,
         $in_dn,
@@ -766,7 +761,7 @@ function update_ldap_entry($ds) {
     }
 
     // -- Make sure every entry has a kerberos principal
-    if ( empty($info[0][ $CON['krb_attr'] ][0]) ) {
+    if ( empty($info[0][ $CONF['attr_krb'] ][0]) ) {
         $krb_oc_add = 1;
         foreach ($info[0]['objectclass'] as $oc) {
             if ($oc==$CON['krb_oc']) {
@@ -774,13 +769,14 @@ function update_ldap_entry($ds) {
             }
         }
         if ($krb_oc_add > 0) {
-            $add_data['objectclass'][] = $CON['krb_oc'];
+            $add_data['objectclass'][] = $CONF['oc_krb'];
             $_SESSION['in_msg']
-                .= ok_html('objectclass ' . $CON['krb_oc'] . ' added');
+                .= ok_html('objectclass ' . $CONF['oc_krb'] . ' added');
         }
         $add_data[ $CON['krb_attr'] ][] = $OUR['principal'];
         $_SESSION['in_msg']
-            .= ok_html($CON['krb_attr'] . ' = ' . $OUR['principal'] . ' added');
+            .= ok_html($CONF['attr_krb'] . ' = ' . $OUR['principal']
+               . ' added');
         $add_cnt++;
     }
 
@@ -989,7 +985,6 @@ function update_ldap_entry($ds) {
 // Delete an LDAP Entry
 function delete_ldap_entry($ds) {
 
-    global $CON;
     global $CONF;
     global $FLD_LIST;
     global $OUR;
@@ -1030,7 +1025,7 @@ function delete_ldap_entry($ds) {
 
     // delete from app groups
     $pg_filter = '(&';
-    $pg_filter .= '(objectclass=prideApplication)';
+    $pg_filter .= '(objectclass=' . $CONF['attr_app'] . ')';
     $pg_filter .= '(memberUid=' . $_REQUEST['in_uid'] . ')';
     $pg_filter .= ')';
     $pg_attrs = array ('cn', 'description');
