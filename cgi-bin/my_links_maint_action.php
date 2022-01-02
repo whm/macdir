@@ -3,6 +3,8 @@
 // file: my_links_maint_action.php
 // author: Bill MacAllister
 
+require('inc_init.php');
+
 // -------------------------------------------------------------
 // Check to see if a uid exists
 
@@ -81,19 +83,22 @@ function multi_check($a_dn, $a_fld, $a_flag, $a_val) {
 
 // This array describes the "simple" attributes.  That is attributes
 // that have a simple value.
-$fld_list = array();
-array_push ($fld_list, 'description');
-array_push ($fld_list, 'labeleduri');
-array_push ($fld_list, $CONF['attr_link_url']);
-array_push ($fld_list, $CONF['attr_link_uid']);
-array_push ($fld_list, $CONF['attr_cred']);
+$fld_list = array(
+  'description' => 'description',
+  'linkurl'     => $CONF['attr_link_url'],
+  'linkuid'     => $CONF['attr_link_uid'],
+  'credential'  => $CONF['attr_cred'],
+  'linkprivate' => $CONF['attr_link_visibility']
+);
+$attr_list = array();
+foreach ($fld_list as $fld => $attr) {
+  array_push($attr_list, $attr);
+}
 
 $access_ids = ['read', 'write'];
 
 $in_dn = empty($_REQUEST['in_dn']) ? '' : $_REQUEST['in_dn'];
 $in_cn = empty($_REQUEST['in_cn']) ? '' : $_REQUEST['in_cn'];
-
-require('inc_init.php');
 
 $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
@@ -133,7 +138,7 @@ if (!empty($_REQUEST['in_button_add'])) {
             $ldap_entry["cn"][] = $in_cn;
             $_SESSION['in_msg'] .= ok_html("Adding cn = $in_cn");
 
-            foreach ($fld_list as $fld) {
+            foreach ($fld_list as $fld => $attr) {
                 $val = stripslashes(trim($_REQUEST["in_$fld"]));
                 if ($fld == $CONF['attr_cred'] && !empty($CONF['key'])) {
                     $val = $CONF['key_prefix'] . macdir_encode($val);
@@ -144,7 +149,7 @@ if (!empty($_REQUEST['in_button_add'])) {
                     } else {
                         $_SESSION['in_msg'] .= ok_html("Adding $fld = $val");
                     }
-                    $ldap_entry[$fld][0] = $val;
+                    $ldap_entry[$attr][0] = $val;
                 }
             }
 
@@ -188,7 +193,7 @@ if (!empty($_REQUEST['in_button_add'])) {
         $ret_cnt = 0;
     } else {
 
-        $sr = @ldap_read ($ds, $in_dn, $link_filter, $fld_list);
+        $sr = @ldap_read ($ds, $in_dn, $link_filter, $attr_list);
         $info = @ldap_get_entries($ds, $sr);
         $err = ldap_errno ($ds);
         if ($err) {
@@ -200,45 +205,43 @@ if (!empty($_REQUEST['in_button_add'])) {
     if ($ret_cnt) {
         $add_cnt = 0;
 
-        foreach ($fld_list as $fld) {
-
-            if ($fld == 'objectclass') { continue; }
-            if ($fld == 'cn')          { continue; }
+        foreach ($fld_list as $fld => $attr) {
 
             $val_in = '';
             $tmp = $_REQUEST["in_$fld"];
+
             if (!empty($tmp)) {
                 $val_in  = stripslashes(trim($tmp));
             }
-            if (!empty($val_in) && $fld == $CONF['attr_cred']) {
+            if (!empty($val_in) && $attr == $CONF['attr_cred']) {
                 $val_in = $CONF['key_prefix'] . macdir_encode($val_in);
             }
 
-            $val_ldap = empty($info[0]["$fld"][0])
-                ? '' : trim($info[0]["$fld"][0]);
+            $val_ldap = empty($info[0]["$attr"][0])
+                ? '' : trim($info[0]["$attr"][0]);
 
             if ( $val_in != $val_ldap ) {
                 if (empty($val_in)) {
                     if (!empty($val_ldap)) {
 
                         // delete the attribute
-                        $new_data["$fld"] = $val_ldap;
+                        $new_data["$attr"] = $val_ldap;
                         $r = @ldap_mod_del($ds, $in_dn, $new_data);
                         $err = @ldap_errno ($ds);
                         $err_msg = ldap_error ($ds);
                         $tmp_err = error_reporting($old_err);
                         $_SESSION['in_msg']
-                            .= ok_html("$fld = $val_ldap deleted");
+                            .= ok_html("$attr = $val_ldap deleted");
                         if ($err>0) {
                             $_SESSION['in_msg']
                                 .= warn_html('LDAP error deleting attribute '
-                                . "$fld = $val_ldap : $err - $err_msg");
+                                . "$attr = $val_ldap : $err - $err_msg");
                         }
 
                     }
                 } else {
 
-                    $new_data["$fld"] = $val_in;
+                    $new_data["$attr"] = $val_in;
 
                     // try and replace it, if that fails try and add it
 
@@ -247,19 +250,19 @@ if (!empty($_REQUEST['in_button_add'])) {
                     $err = ldap_errno ($ds);
                     $err_msg = ldap_error ($ds);
                     if ($err == 0) {
-                        if ($fld == $CONF['attr_cred']) {
+                        if ($attr == $CONF['attr_cred']) {
                             $_SESSION['in_msg']
-                                .= ok_html("$fld replaced");
+                                .= ok_html("$attr replaced");
                         } else {
                             $_SESSION['in_msg']
-                                .= ok_html("$fld replaced with $in_val");
+                                .= ok_html("$attr replaced with $val_in");
                         }
                     } else {
                         // add
                         $add_cnt++;
-                        $add_data["$fld"][] = $val_in;
+                        $add_data["$attr"][] = $val_in;
                         $_SESSION['in_msg']
-                            .= ok_html("Added $fld = $in_val");
+                            .= ok_html("Added $attr = $in_val");
                     }
                 }
             }

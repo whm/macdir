@@ -134,7 +134,7 @@ if (!empty($_SESSION['in_msg'])) {
 
     <label for="in_linkuid">Username:</label>
     <input type="text" size="50" name="in_linkuid"
-         value="<?php echo set_val($info[0][ $CONF['attr_link_url'] ][0]);?>">
+         value="<?php echo set_val($info[0][ $CONF['attr_link_uid'] ][0]);?>">
     <br/>
 
     <?php
