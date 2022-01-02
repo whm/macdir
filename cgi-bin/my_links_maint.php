@@ -78,7 +78,6 @@ function checkIt() {
 ?>
 
 <div class="row">
-<div class="col-9">
 
 <form name="maint_find"
       method="post"
@@ -216,9 +215,6 @@ if (!empty($_SESSION['in_msg'])) {
  ldap_close($ds);
 ?>
 
-</div>
-
-<?php require('inc_menu.php');?>
 </div>
 
 <?php require('inc_footer.php');?>

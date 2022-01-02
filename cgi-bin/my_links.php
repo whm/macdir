@@ -184,7 +184,6 @@ $this_uid = $_SERVER['REMOTE_USER'];
 ?>
 
 <div class="row">
-<div class="col-9">
 <form name="link_search"
     action="<?php echo $_SERVER['PHP_SELF'];?>"
     method="POST">
@@ -259,9 +258,6 @@ if (!empty($_SERVER['WEBAUTH_USER'])) {
 
 ?>
 
-</div>
-
-<?php require('inc_menu.php');?>
 </div>
 
 <?php require('inc_footer.php');?>

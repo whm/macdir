@@ -315,7 +315,6 @@ function checkIt() {
 ?>
 
 <div class="row">
-<div class="col-9">
 
 <form name="user_maint_find"
       method="post"
@@ -866,9 +865,6 @@ if ( !empty($thisPosix) && $thisPosix>0 ) {
  ldap_close($ds);
 ?>
 
-</div>
-
-<?php require('inc_menu.php');?>
 </div>
 
 <?php require('inc_footer.php');?>

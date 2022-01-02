@@ -16,6 +16,8 @@ header("Content-Type: text/html; charset=UTF-8");
 
 <body>
 
+<?php require('inc_menu.php');?>
+
 <div class="header">
     <h1><?php print $heading; ?></h1>
 </div>

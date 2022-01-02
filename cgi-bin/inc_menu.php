@@ -53,7 +53,7 @@ if ( isset($_SERVER['REMOTE_USER']) ) {
 ?>
 <!-- Navigation -->
 
-<div class="col-1 menu">
+<div class="menu">
 <ul>
 <?php echo $itemList; ?>
 </ul>

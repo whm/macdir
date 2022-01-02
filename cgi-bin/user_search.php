@@ -87,7 +87,6 @@ if ( empty($base_filter) ) {
 ?>
 
 <div class="row">
-<div class="col-10">
 <p>
 To search for somone just enter a fragment of the name.  If there is more
 than one match
@@ -101,7 +100,6 @@ matches for Bill and William.
 </div>
 
 <div class="row">
-<div class="col-9">
 
 <form action="user_search.php">
     <label for "in_firstname">First Name:</label>
@@ -282,9 +280,6 @@ if ( !empty($base_filter) ) {
 }
 ?>
 
-</div>
-
-<?php require('inc_menu.php');?>
 </div>
 
 <?php require('inc_footer.php');?>

@@ -4,8 +4,9 @@ macdir-simple (4.4) UNRELEASED; urgency=medium
     means moving hardcoded custom attributes into the configuration
     file.
   * Document the configuration file with and example configuration file.
+  * Retire menu on the right and replace it with a simple top menu.
 
- -- Bill MacAllister <bill@ca-zephyr.org>  Sun, 15 Aug 2021 01:33:10 +0000
+ -- Bill MacAllister <bill@ca-zephyr.org>  Sun, 02 Jan 2022 01:46:15 +0000
 
 macdir-simple (4.3) unstable; urgency=medium
 

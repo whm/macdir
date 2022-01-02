@@ -56,7 +56,6 @@ if ( ! isset($base_filter) ) {
 ?>
 
 <div class="row">
-<div class="col-9">
 
 <form action="group_search.php">
 <?php
@@ -140,9 +139,6 @@ if ( isset($base_filter) && strlen($base_filter)>0) {
 }
 ?>
 
-</div>
-
-<?php require('inc_menu.php');?>
 </div>
 
 <?php require('inc_footer.php');?>

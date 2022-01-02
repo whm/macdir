@@ -85,11 +85,11 @@ if ($entry = ldap_first_entry ($ds, $sr)) {
     }
     
     $in_uid = $user_attr['uid'];
+    require('inc_menu.php');
     echo '<div class="header">' .  "\n";
     echo '<h2 class="person">' . $user_attr['cn'] . "</h2>\n";
     echo '</div>' . "\n";
     echo '<div class="row">' . "\n";
-    echo '<div class="col-9">' . "\n";
     echo "<blockquote>\n";
     echo "<table border=\"0\">\n";
     
@@ -116,8 +116,6 @@ if ($entry = ldap_first_entry ($ds, $sr)) {
     echo "</table>\n";
     echo "</blockquote>\n";
 
-    echo "</div>\n";
-    require('inc_menu.php');
     echo "</div>\n";
 
     echo "</div>\n";

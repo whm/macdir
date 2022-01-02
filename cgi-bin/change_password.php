@@ -6,10 +6,6 @@
 // date: December 2002
 //
 
-// Open a session 
-require('whm_php_sessions.inc');
-require('whm_php_auth.inc');
-
 // -- Print a space or the field
 function prt ($fld) {
   $str = trim ($fld);
