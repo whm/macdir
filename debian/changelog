@@ -1,4 +1,4 @@
-macdir-simple (4.4) UNRELEASED; urgency=medium
+macdir-simple (4.4) unstable; urgency=medium
 
   * Updates to support an alternate set of attributes.  This generally
     means moving hardcoded custom attributes into the configuration
