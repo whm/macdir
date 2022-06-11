@@ -86,7 +86,7 @@ if (empty($_REQUEST['in_uid']) || !empty($_REQUEST['in_button_reset'])) {
     $in_uid = '';
 } else {
     $in_uid = $_REQUEST['in_uid'];
-    $ldap_filter = "uid=$in_uid";
+    $ldap_filter = "(&(objectclass=$oc_person)(uid=$in_uid))";
 }
 if (!empty($ldap_filter)) {
 
@@ -584,7 +584,8 @@ if ( !empty($_SESSION['in_msg']) ) {
      if (isset($info[0][$attr][0])) {$z = $info[0][$attr][0];}
    ?>
  <td colspan="5"><textarea cols="60" rows="2" wrap="physical"
-            name="in_comments"><?php print $z;?></textarea></td>
+            name="in_<?php print $CONF['attr_comment']; ?>"><?php print $z;?>
+	    </textarea></td>
 </tr>
 <?php } ?>
 

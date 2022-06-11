@@ -1,3 +1,9 @@
+macdir-simple (4.5) unstable; urgency=medium
+
+  * Correct problem with updating commands on user entries.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Sat, 11 Jun 2022 22:49:55 +0000
+
 macdir-simple (4.4) unstable; urgency=medium
 
   * Updates to support an alternate set of attributes.  This generally
