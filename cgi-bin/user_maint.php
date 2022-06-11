@@ -584,8 +584,7 @@ if ( !empty($_SESSION['in_msg']) ) {
      if (isset($info[0][$attr][0])) {$z = $info[0][$attr][0];}
    ?>
  <td colspan="5"><textarea cols="60" rows="2" wrap="physical"
-            name="in_<?php print $CONF['attr_comment']; ?>"><?php print $z;?>
-	    </textarea></td>
+     name="in_<?php print $attr; ?>"><?php print $z;?></textarea></td>
 </tr>
 <?php } ?>
 
