@@ -192,6 +192,8 @@ $CONF['attr_mailalias'] = isset($attr_mailalias)
     ? strtolower($attr_mailalias) : 'mailalias';
 $CONF['attr_maildelivery'] = isset($attr_maildelivery)
     ? strtolower($attr_maildelivery) : 'maildelivery';
+$CONF['attr_priv_group'] = isset($attr_priv_group)
+    ? $attr_priv_group : 'czprivilegegroup';
 
 # Controls for updating Cyrus IMAP.  Not tested in a long time and
 # not documented.

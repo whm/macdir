@@ -118,7 +118,7 @@ if (!empty($ldap_filter)) {
     $old_err = error_reporting(E_ERROR | E_PARSE);
     $sr = ldap_search (
         $ds,
-        $CONF['ldap_groupbase'],
+        $CONF['ldap_group_base'],
         $posixFilter,
         $posixReturn
     );
@@ -797,47 +797,66 @@ foreach ($login_shells as $sh) {
 <tr>
  <td align="right">Groups:</td>
  <td colspan="5">
+     <input type="hidden"
+            name="in_posixgroup_cnt" ';
+            value="<?php print $thisPosix_cnt; ?>"
+     >
 <?php
 
-$br = '';
-$posix_display = array();
-$posix_checked = array();
-if ( !empty($thisPosix) && $thisPosix>0 ) {
-  foreach ($thisPosix as $group => $description) {
-    $posix_display[$group] = $description;
-    $posix_checked[$group] = 'CHECKED';
-  }
+$i = 0;
+foreach ($thisPosix as $group => $description) {
+?>
+     <input type="checkbox" CHECKED
+            name="in_posixgroup_<?php print $i; ?>"
+            value="<?php print $group; ?>"
+     > <?php print $description;?>
+     <input type="hidden"
+            name="in_posixgroup_list_<?php print $i;?> "
+            value="<?php print $group;?>"
+     >
+     <br>
+<?php
+  // end of for loop
+  $i++;
 }
 ?>
- <input type="text"
-        name="in_posix_new">
+    <input type="text"
+           name="in_posix_new">
  </td>
 </tr>
+
 <tr>
  <td align="right">Privilege Groups:</td>
  <td colspan="5">
-  <?php
-  $pg_cnt = empty($info[0]["czprivilegegroup"]["count"])
-          ? 0 : $info[0]["czprivilegegroup"]["count"];
-  echo '    <input type="hidden" ';
-  echo            'name="in_czprivilegegroup_cnt" ';
-  echo            'value="' . $pg_cnt . '"' . ">\n";
+<?php
+  $attr_pg = $CONF["attr_priv_group"];
+  $pg_cnt = in_array($info[0], $attr_pg)
+          ? 0 : $info[0][$attr_pg]["count"];
+?>
+    <input type="hidden"
+          name="in_priv_group_cnt"
+          value="<?php print $pg_cnt;?>"
+    >
+<?php
+  $pg = array();
   if ($pg_cnt>0) {
       for ($i=0; $i<$pg_cnt; $i++) {
-          $ma[] = $info[0]["czprivilegegroup"][$i];
+          $pg[] = $info[0][$attr_pg][$i];
       }
-      sort($ma);
+      sort($pg);
       $i = 0;
       foreach ($pg as $thisPG) {
-  ?>
+?>
      <input type="checkbox" CHECKED
-            name="in_czprivilegegroup_<?php echo $i;?>"
-            value="<?php print $thisPG;?>"><?php print "$thisPG\n";?>
+            name="in_priv_group_<?php echo $i;?>"
+            value="<?php print $thisPG;?>"
+     > <?php print "$thisPG\n";?>
      <input type="hidden"
-            name="in_czprivilegegroup_list_<?php echo $i;?>"
-            value="<?php print $thisPG;?>">
+            name="in_priv_group_list_<?php echo $i;?>"
+            value="<?php print $thisPG;?>"
+     >
      <br>
-  <?php
+<?php
       // end of for loop
           $i++;
       }
@@ -845,7 +864,7 @@ if ( !empty($thisPosix) && $thisPosix>0 ) {
 ?>
      <input type="text"
             size="40"
-            name="in_new_czprivilegegroup"></td>
+            name="in_new_priv_group"></td>
 </tr>
 <?php } ?>
 

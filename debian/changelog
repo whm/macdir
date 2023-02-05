@@ -1,3 +1,10 @@
+macdir-simple (4.6) unstable; urgency=medium
+
+  * Correct problems with updating Posix and Privilege groups in
+    user_maint.
+
+ -- Bill MacAllister <bill@ca-zephyr.org>  Sun, 05 Feb 2023 01:41:24 +0000
+
 macdir-simple (4.5) unstable; urgency=medium
 
   * Correct problem with updating commands on user entries.

@@ -506,6 +506,15 @@ function add_ldap_entry($ds) {
         $a_maildelivery = strtok(',');
     }
     
+    // create privilege group entries
+    $a_priv_group = strtok($_REQUEST['in_new_priv_group'], ',');
+    while ( !empty($a_priv_group) ) {
+        $attr =  $CONF['attr_priv_group'];
+        $_SESSION['in_msg'] .= ok_html("Adding $attr = $a_priv_group");
+        $ldap_entry[$attr][] = $a_priv_group;
+        $a_priv_group = strtok(',');
+    }
+
     // see if we need posix objectclasses
     if ($posix_entry) {
         $ldap_entry['objectclass'][] = 'posixAccount';
@@ -838,6 +847,28 @@ function update_ldap_entry($ds) {
         }
     }
 
+    // Check priv groups
+    if ( !empty($_REQUEST['in_new_priv_group'])>0 ) {
+        $a_priv_group = trim(strtok($_REQUEST['in_new_priv_group'], ','));
+        while (strlen($a_priv_group)>0) {
+            multi_check($in_dn,
+                        $CONF['attr_priv_group'],
+                        $a_priv_group,
+                        $a_priv_group);
+            $a_priv_group = trim(strtok(','));
+        }
+    }
+    if ( $_REQUEST['in_priv_group_cnt']>0 ) {
+        for ($i=0; $i<$_REQUEST['in_priv_group_cnt']; $i++) {
+            multi_check(
+                $_REQUEST['in_dn'],
+                $CONF['attr_priv_group'],
+                $_REQUEST["in_priv_group_$i"],
+                $_REQUEST["in_priv_group_list_$i"]
+            );
+        }
+    }
+    
     // Check common name
     if ( !empty($_REQUEST['in_new_cn']) ) {
         $a_cn = stripslashes(trim(strtok($_REQUEST['in_new_cn'], ',')));
