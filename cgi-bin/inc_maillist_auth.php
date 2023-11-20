@@ -7,21 +7,9 @@ function ldap_maillist_admin ($right='email-admin') {
 
   $admin_access = 0;
 
-  if ( isset($_SESSION['WEBAUTH_LDAP_PRIVGROUP1']) ) { 
-      $cnt = 1;
-      while ($cnt > 0) {
-          $pg = 'WEBAUTH_LDAP_PRIVGROUP'.$cnt;
-          if ( isset($_SESSION[$pg]) ) {
-              if ($_SESSION[$pg] == $right) {
-                  $admin_access = 2;
-                  $cnt = 0;
-                  break;
-              } else {
-                  $cnt++;
-              }
-          } else {
-              $cnt = 0;
-          }
+  if ( isset($_SERVER['REMOTE_USER']) ) {
+      if ($_SERVER['REMOTE_USER'] == $CONF['ldap_owner']) {
+          $admin_access = 2;
       }
   }
   return $admin_access;

@@ -102,7 +102,7 @@ $in_cn = empty($_REQUEST['in_cn']) ? '' : $_REQUEST['in_cn'];
 
 $ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
-$link_base = 'uid=' . $_SERVER['REMOTE_USER'] . ',' . $ldap_user_base;
+$link_base = 'uid=' . krb_uid() . ',' . $ldap_user_base;
 $link_filter = '(&(objectclass=' . $CONF['oc_link'] . ")(cn=$in_cn))";
 
 if (!empty($_REQUEST['in_button_add'])) {

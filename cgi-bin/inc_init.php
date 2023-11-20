@@ -34,6 +34,22 @@ function set_val ($txt) {
 }
 
 # --------------------------------------------------------------
+# Return the UID portion of a Kerberos principal
+function krb_uid ($p) {
+    if (isset($p)) {
+        $princ = $p;
+    } else {
+        if (isset($_SERVER['REMOTE_USER'])) {
+          $princ = $_SERVER['REMOTE_USER'];
+        }
+    }
+    if (isset($princ)) {
+        $return_uid = strtok($princ, '@');
+    }
+    return $return_uid;
+}
+
+# --------------------------------------------------------------
 # Bind to the directory and die if there is an error
 
 function macdir_bind ($this_server, $bind_type) {
@@ -115,9 +131,11 @@ $CONF['ldap_uidnumber_base'] = isset($ldap_uidnumber_base)
 $CONF['ldap_user_base'] = isset($ldap_user_base)
     ? $ldap_user_base : 'ou=people,' . $CONF['ldap_base'];
 $CONF['ldap_server'] = isset($ldap_server)
-    ? $ldap_server : 'localhost';
+    ? $ldap_server : '127.0.0.1';
 $CONF['ldap_title'] = isset($ldap_title)
     ? $ldap_title : 'LDAP Directory';
+$CONF['ldap_owner'] = isset($ldap_owner)
+    ? $ldap_owner : 'mac@CA-ZEPHYR.ORG';
 
 $CONF['k5start'] = isset($k5start)
     ? $k5start : '/usr/bin/k5start -f /etc/keytab/macdir.keytab -U';
@@ -234,25 +252,10 @@ $phone_admin  = 0;
 $this_user    = '';
 if ( isset($_SERVER['REMOTE_USER']) ) {
     $this_user  = $_SERVER['REMOTE_USER'];
-    if (empty($_SERVER['WEBAUTH_LDAP_CZPRIVILEGEGROUP1'])) {
-        if ($_SERVER['WEBAUTH_LDAP_CZPRIVILEGEGROUP']=='ldap:phoneadmin') {
-            $phone_admin = 1;
-        }
-        if ($_SERVER['WEBAUTH_LDAP_CZPRIVILEGEGROUP']=='ldap:admin') {
-            $ldap_admin = 1;
-        }
+    if ($_SERVER['REMOTE_USER'] == $CONF['ldap_owner']) {
+        $ldap_admin = 1;
     } else {
-        $i = 1;
-        while(!empty($_SERVER["WEBAUTH_LDAP_CZPRIVILEGEGROUP$i"])) {
-            if ($_SERVER["WEBAUTH_LDAP_CZPRIVILEGEGROUP$i"]=='ldap:phoneadmin')
-            {
-                $phone_admin = 1;
-            }
-            if ($_SERVER["WEBAUTH_LDAP_CZPRIVILEGEGROUP$i"]=='ldap:admin') {
-                $ldap_admin = 1;
-            }
-            $i++;
-        }
+        $phone_admin = 1;
     }
     // Make the privilege state unambiguous
     if ($ldap_admin > 0) {

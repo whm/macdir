@@ -180,7 +180,7 @@ if ($base_filter == '') {
     }
 }
 
-$this_uid = $_SERVER['REMOTE_USER'];
+$this_uid = krb_uid();
 ?>
 
 <div class="row">
@@ -238,8 +238,8 @@ if ($ret_cnt) {
     echo '<p class="error">No entries found.</p>' . "\n";
 }
 
-if (!empty($_SERVER['WEBAUTH_USER'])) {
-    $u           = $_SERVER['WEBAUTH_USER'];
+if (!empty($_SERVER['REMOTE_USER'])) {
+    $u           = krb_uid();
     $link_filter = '(|(' . $CONF['attr_link_read'] . "=${u})"
                  . '(' . $CONF['attr_link_write'] . "=${u}))";
     $filter      = '(&'

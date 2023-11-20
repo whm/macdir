@@ -4,7 +4,7 @@
 # The auth credentials are not used that are in this file.  The only
 # think that is use is the ldap server and the ldap base.
 
-$thisUser = $_SERVER['REMOTE_USER'];
+$thisUser = krb_uid();
 $thisServer = $CONF['ldap_server'];
 
 # Bind to the directory Server
@@ -33,7 +33,7 @@ if (ldap_sasl_bind($ldap,"","","GSSAPI")) {
     echo "Host: $thisServer<br />\n";
     echo "Base DN: $dn<br />\n";
     echo "Filter: $filter<br />\n";
-    echo "REMOTE_USER: $thisUser<br />\n";
+    echo "UID: $thisUser<br />\n";
 
     $result = ldap_search($ldap, $dn, $filter);
     if ($result) {

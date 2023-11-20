@@ -6,8 +6,8 @@ $app_base = 'ou=applications,'.$pidir_base;
 // get a list of application group managed by this user
 
 $this_user = 'unknownUser';
-if ( isset($_SESSION['WEBAUTH_USER']) ) { 
-    $this_user = $_SESSION['WEBAUTH_USER'];
+if ( isset($_SERVER['REMOTE_USER']) ) { 
+    $this_user = krb_uid();
 }
 
 $g_filter = '(&';
