@@ -4,7 +4,7 @@
 $g_filter = "(objectclass=posixGroup)";
 $g_attrs  = array ('cn','description');
 $old_err  = error_reporting(E_ERROR | E_PARSE);
-$sr       = ldap_search ($ds, $ldap_groupbase, $g_filter, $g_attrs);  
+$sr       = ldap_search ($ds, $CONF['ldap_group_base'], $g_filter, $g_attrs);  
 $g_group  = ldap_get_entries($ds, $sr);
 $tmp_err  = error_reporting($old_err);
 

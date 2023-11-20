@@ -35,8 +35,8 @@ function set_val ($txt) {
 
 # --------------------------------------------------------------
 # Return the UID portion of a Kerberos principal
-function krb_uid ($p) {
-    if (isset($p)) {
+function krb_uid ($p = '') {
+    if (isset($p) && strlen($p) > 0) {
         $princ = $p;
     } else {
         if (isset($_SERVER['REMOTE_USER'])) {

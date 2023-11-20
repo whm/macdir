@@ -10,6 +10,24 @@ $heading = 'Search for a Person';
 require('inc_init.php');
 require('inc_header_user_search.php');
 
+##############################################################################
+# Subroutines
+##############################################################################
+
+function get_attr_val ($i, $attr) {
+    global $info;
+    if (array_key_exists($attr, $info[$i])) {
+        $val = $info[$i][$attr][0];
+    } else {
+        $val = '';
+    }
+    return nbsp_html($val);
+}
+
+##############################################################################
+# Main routine
+##############################################################################
+
 // set default for amount of search details to display
 if ( !empty($_REQUEST['in_more_search']) ) {
     $in_more_search = $_REQUEST['in_more_search'];
@@ -243,10 +261,10 @@ if ( !empty($base_filter) ) {
       $a_cn     = $info[$i]["cn"][0];
       $a_uid    = $info[$i]["uid"][0];
 
-      $a_mail      = nbsp_html($info[$i]["mail"][0]);
-      $a_mobile    = nbsp_html($info[$i]["mobile"][0]);
-      $a_workphone = nbsp_html($info[$i]["workphone"][0]);
-      $a_phone     = nbsp_html($info[$i]["telephonenumber"][0]);
+      $a_mail      = get_attr_val($i, 'mail');
+      $a_mobile    = get_attr_val($i, 'mobile');
+      $a_workphone = get_attr_val($i, 'workphone');
+      $a_phone     = get_attr_val($i, 'telephonenumber');
       $a_maint_link = '&nbsp;';
       if ($ldap_admin>0) {
         $a_maint_link = '<a href="user_maint.php'

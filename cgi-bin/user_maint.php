@@ -830,8 +830,8 @@ foreach ($thisPosix as $group => $description) {
  <td colspan="5">
 <?php
   $attr_pg = $CONF["attr_priv_group"];
-  $pg_cnt = in_array($info[0], $attr_pg)
-          ? 0 : $info[0][$attr_pg]["count"];
+  $pg_cnt = in_array($attr_pg, $info[0])
+          ? count($info[0][$attr_pg]) : 0;
 ?>
     <input type="hidden"
           name="in_priv_group_cnt"
@@ -840,8 +840,8 @@ foreach ($thisPosix as $group => $description) {
 <?php
   $pg = array();
   if ($pg_cnt>0) {
-      for ($i=0; $i<$pg_cnt; $i++) {
-          $pg[] = $info[0][$attr_pg][$i];
+      foreach ($info[0][$attr_pg] as $v) {
+          $pg[] = $v;
       }
       sort($pg);
       $i = 0;
