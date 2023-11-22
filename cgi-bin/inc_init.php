@@ -56,9 +56,7 @@ function macdir_bind ($this_server, $bind_type) {
 
     # Bind to the directory Server
     $ldap = ldap_connect("ldap://$this_server");
-    if($ldap) {
-        $r = ldap_bind($ldap);
-    } else {
+    if(!$ldap) {
         die("ERROR: Unable to connect to $this_server!");
     }
     # Set an option
@@ -70,7 +68,10 @@ function macdir_bind ($this_server, $bind_type) {
         if (!isset($r)) {
             die("ERROR: GSSAPI bind to $this_server failed.");
         }
+    } else {
+        $r = ldap_bind($ldap);
     }
+
     return $ldap;
 }
 

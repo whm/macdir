@@ -247,7 +247,6 @@ if (!empty($_SERVER['REMOTE_USER'])) {
                  . $link_filter
                  . ')';
     $sr = ldap_search($ds, $ldap_user_base, $filter, $return_attr);
-    ldap_sort($ds, $sr, 'description');
     $info = ldap_get_entries($ds, $sr);
     $ret_cnt = $info["count"];
     if ($ret_cnt) {

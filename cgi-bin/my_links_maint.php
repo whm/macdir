@@ -17,7 +17,8 @@ if (empty($_REQUEST['in_cn']) || !empty($_REQUEST['in_button_reset'])) {
     $in_cn = $_REQUEST['in_cn'];
 
     $return_attr = array();
-    $link_base = 'uid='.$_SERVER['REMOTE_USER'] . ',' . $ldap_user_base;
+    $link_base = 'uid=' . krb_uid($_SERVER['REMOTE_USER'])
+               . ',' . $ldap_user_base;
     $link_filter = '(&(objectclass=' . $CONF['oc_link'] . ")(cn=$in_cn))";
     $sr = @ldap_search ($ds, $link_base, $link_filter, $return_attr);
     $info = @ldap_get_entries($ds, $sr);
