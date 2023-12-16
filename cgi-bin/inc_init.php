@@ -50,32 +50,6 @@ function krb_uid ($p = '') {
 }
 
 # --------------------------------------------------------------
-# Bind to the directory and die if there is an error
-
-function macdir_bind ($this_server, $bind_type) {
-
-    # Bind to the directory Server
-    $ldap = ldap_connect("ldap://$this_server");
-    if(!$ldap) {
-        die("ERROR: Unable to connect to $this_server!");
-    }
-    # Set an option
-    ldap_set_option($ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-    # Attempt a GSSAPI bind only if requested and the user has
-    # authenticated.
-    if ($bind_type == 'GSSAPI' && isset($_SERVER['REMOTE_USER'])) {
-        $r = ldap_sasl_bind($ldap,"","","GSSAPI");
-        if (!isset($r)) {
-            die("ERROR: GSSAPI bind to $this_server failed.");
-        }
-    } else {
-        $r = ldap_bind($ldap);
-    }
-
-    return $ldap;
-}
-
-# --------------------------------------------------------------
 # Encode a string
 
 function macdir_encode ($str) {
@@ -180,37 +154,37 @@ $CONF['maint_workphone']  = isset($maint_workphone)
 
 # Objectclasses
 $CONF['oc_app'] = isset($oc_app)
-    ? strtolower($oc_app) : 'prideapplication';
+    ? $oc_app : 'prideapplication';
 $CONF['oc_person'] = isset($oc_person)
-    ? strtolower($oc_person) : 'pridePerson';
+    ? $oc_person : 'pridePerson';
 $CONF['oc_krb'] = isset($oc_krb)
-    ? strtolower($oc_krb) : 'krb5principal';
+    ? $oc_krb : 'krb5principal';
 $CONF['oc_link'] = isset($oc_link)
-    ? strtolower($oc_link) : 'pridelistobject';
+    ? $oc_link : 'pridelistobject';
 
 # Attributes
 $CONF['attr_app'] = isset($attr_app)
-    ? strtolower($attr_app) : 'prideapplication';
+    ? $attr_app : 'prideapplication';
 $CONF['attr_comment'] = isset($attr_comment)
-    ? strtolower($attr_comment) : 'comments';
+    ? $attr_comment : 'comments';
 $CONF['attr_cred'] = isset($attr_cred)
-    ? strtolower($attr_cred) : 'pridecredential';
+    ? $attr_cred : 'pridecredential';
 $CONF['attr_krb'] = isset($attr_krb)
-    ? strtolower($attr_krb) : 'krb5principalname';
+    ? $attr_krb : 'krb5principalname';
 $CONF['attr_link_read'] = isset($attr_link_read)
-    ? strtolower($attr_link_read) : 'pridereaduid';
+    ? $attr_link_read : 'pridereaduid';
 $CONF['attr_link_uid'] = isset($attr_link_uid)
-    ? strtolower($attr_link_uid) : 'linkuid';
+    ? $attr_link_uid : 'linkuid';
 $CONF['attr_link_write'] = isset($attr_link_read)
-    ? strtolower($attr_link_write) : 'pridewriteuid';
+    ? $attr_link_write : 'pridewriteuid';
 $CONF['attr_link_url'] = isset($attr_link_url)
-    ? strtolower($attr_link_url) : 'prideurl';
+    ? $attr_link_url : 'prideurl';
 $CONF['attr_link_visibility'] = isset($attr_link_visibility)
-    ? strtolower($attr_link_visibility) : 'prideurlprivate';
+    ? $attr_link_visibility : 'prideurlprivate';
 $CONF['attr_mailalias'] = isset($attr_mailalias)
-    ? strtolower($attr_mailalias) : 'mailalias';
+    ? $attr_mailalias : 'mailalias';
 $CONF['attr_maildelivery'] = isset($attr_maildelivery)
-    ? strtolower($attr_maildelivery) : 'maildelivery';
+    ? $attr_maildelivery : 'maildelivery';
 $CONF['attr_priv_group'] = isset($attr_priv_group)
     ? $attr_priv_group : 'czprivilegegroup';
 

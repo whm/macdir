@@ -1,3 +1,4 @@
+perl/*    usr/bin
 cgi-bin/* usr/share/macdir/cgi-bin/auth
 images/*  usr/share/macdir/images
 styles/*  usr/share/macdir/styles

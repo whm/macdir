@@ -1,0 +1,340 @@
+#!/usr/bin/perl
+#
+# macdir-ldap-read --- Read ldap and return json objects
+#
+# Copyright 2023, CZ Software
+
+use AppConfig qw(:argcount :expand);
+use Carp;
+use CZ::LDAPtools;
+use Getopt::Long;
+use JSON;
+use Net::LDAPapi;
+use Pod::Usage;
+use strict;
+
+my $CONF;
+my $DEBUG_TIME = time();
+my $LDAP;
+
+my $opt_attrs;
+my $opt_base;
+my $opt_conf = '/etc/macdir/ldap.conf';
+my $opt_debug;
+my $opt_example;
+my $opt_filter;
+my $opt_help;
+my $opt_manual;
+
+##############################################################################
+# Subroutines
+##############################################################################
+
+# ------------------------------------------------
+# output debugging information
+
+sub dbg {
+    if (!$opt_debug) {
+        return;
+    }
+    my ($tmp)   = @_;
+    my $now     = time();
+    my $elapsed = $now - $DEBUG_TIME;
+    print {*STDOUT} "$now ($elapsed) $tmp \n"
+      or croak("debugging print to STDOUT failed: $!");
+    $DEBUG_TIME = $now;
+    return;
+}
+
+#-------------------------------------------------------------------------
+# standard output
+
+sub msg {
+    my ($msg) = @_;
+    print {*STDOUT} "$msg\n" or croak("print to STDOUT failed: $!");
+    return;
+}
+
+#-------------------------------------------------------------------------
+# example conf file
+
+sub example_conf {
+    msg("# file: $opt_conf");
+    return;
+}
+
+# ------------------------------------------------------------------------
+# Read configuration properties
+
+sub read_conf {
+    my ($filename) = @_;
+
+    if (!$filename) {
+        $filename = $opt_conf;
+    }
+
+    my $conf = AppConfig->new({});
+    $conf->define(
+        'ldap_bindtype',
+        {
+            DEFAULT  => 'gssapi',
+            ARGCOUNT => ARGCOUNT_ONE
+        }
+    );
+    $conf->define(
+        'ldap_base',
+        {
+            DEFAULT  => 'dc=ca-zephyr,dc=org',
+            ARGCOUNT => ARGCOUNT_ONE
+        }
+    );
+    $conf->define(
+        'ldap_host',
+        {
+            DEFAULT  => 'localhost',
+            ARGCOUNT => ARGCOUNT_ONE
+        }
+    );
+    $conf->define(
+        'ldap_port',
+        {
+            DEFAULT  => '389',
+            ARGCOUNT => ARGCOUNT_ONE
+        }
+    );
+    $conf->define('ldap_password', { ARGCOUNT => ARGCOUNT_ONE });
+    $conf->define('ldap_user',     { ARGCOUNT => ARGCOUNT_ONE });
+
+    if (-e $filename) {
+        $conf->file($filename) or die "ERROR: problem reading $filename";
+    } else {
+        dbg("$filename not found");
+    }
+
+    if ($conf->ldap_host() =~ /,/xms) {
+        my $one_host = lt_pool_host($conf->ldap_host);
+        $conf->ldap_host($one_host);
+    }
+
+    return $conf;
+}
+
+# --------------------------------------------------------------------
+# Search for a secret
+
+sub link_search {
+    my ($base, $filter, $attr_string) = @_;
+    my @attrs = ();
+    if (length($attr_string) > 0) {
+	@attrs = split(/,/, $attr_string);
+    }    
+    dbg("link search - base:$base filter:$filter attrs:$attr_string");
+    my $msg = $LDAP->search_s(
+        -basedn    => $base,
+        -scope     => LDAP_SCOPE_SUBTREE,
+        -filter    => $filter,
+        -attrs     => [],
+        -attrsonly => 0,
+    );
+    if ($opt_debug && $LDAP->errno != 0) {
+        msg('errno: ' . $LDAP->errno . 'errstring:' . $LDAP->errstring);
+        $LDAP->perror(
+            "ERROR: problem searching using base:$base filter:$filter\n");
+    }
+
+    my %entries = %{ $LDAP->get_all_entries };
+    my $json_text;
+    if (scalar(%entries) > 0) {
+        $json_text = encode_json(\%entries);
+    }
+
+    return $json_text;
+}
+
+##############################################################################
+# Main routine
+##############################################################################
+
+# -- get options
+GetOptions(
+    'attrs=s'  => \$opt_attrs,
+    'base=s'   => \$opt_base,
+    'conf=s'   => \$opt_conf,
+    'debug'    => \$opt_debug,
+    'example'  => \$opt_example,
+    'filter=s' => \$opt_filter,
+    'help'     => \$opt_help,
+    'manual'   => \$opt_manual
+);
+
+# -- Flush output immediately
+local $| = 1;
+
+# Display an example configuration file
+if ($opt_example) {
+    example_conf();
+    exit;
+}
+
+if (defined($ARGV[0]) && $ARGV[0] eq 'host') {
+    shift;
+}
+
+if ($ARGV[0] eq 'help') {
+    $opt_help = 1;
+}
+if ($ARGV[0] eq 'manual') {
+    $opt_manual = 1;
+}
+
+# Display help if requested
+if ($opt_help) {
+    pod2usage(-verbose => 0);
+}
+if ($opt_manual) {
+    pod2usage(-verbose => 2);
+}
+
+# Read the configuration file
+dbg("Configuration file: $opt_conf");
+$CONF = read_conf($opt_conf);
+
+if ($CONF->ldap_bindtype eq 'simple') {
+    $LDAP = lt_ldap_connect(
+        {
+            host     => $CONF->ldap_host,
+            port     => $CONF->ldap_port,
+            bindtype => $CONF->ldap_bindtype,
+            user_dn  => $CONF->ldap_user,
+            user_pw  => $CONF->ldap_password,
+            debug    => $opt_debug
+        }
+    );
+} else {
+    $LDAP = lt_ldap_connect(
+        {
+            host     => $CONF->ldap_host,
+            port     => $CONF->ldap_port,
+            bindtype => $CONF->ldap_bindtype,
+            debug    => $opt_debug
+        }
+    );
+}
+
+my $j = link_search($opt_base, $opt_filter, $opt_attrs);
+msg($j);
+      
+$LDAP->unbind;
+
+exit;
+
+__END__
+
+=head1 NAME
+
+cz-pdns-ldap - Update PowerDNS entries in LDAP
+
+=head1 SYNOPSIS
+
+    cz-pdns-ldap find [<name fragment>] [<options>]
+    cz-pdns-ldap show <hostname> [<options>]
+
+    cz-pdns-ldap add <type> <id> [<attributes>] [<options>]
+    cz-pdns-ldap update <hostname> [<attributes>] [<options>]
+    cz-pdns-ldap delete <type> <hostname>|<ip> [--debug]
+
+    cz-pdns-ldap create <hostname> <ip> [<attributes>] [<options>]
+    cz-pdns-ldap purge <hostname> [--debug]
+
+=head1 DESCRIPTION
+
+Update Power DNS entries in an LDAP directory.
+
+=head1 ACTIONS
+
+=over 4
+
+=item add <type> <hostname> <ip address>
+
+Add directory entries for A, PTR, CNAME DNS records or add an LDAP
+mapping entry for Kerberos principals.
+
+=item create <hostname> <ip>
+
+Create both A and PTR records and a Kerberos LDAP mapping entry.
+
+=item delete <type> <hostname>
+
+Delete an A, PTR, CNAME, and Kerberos LDAP entries.
+
+=item find <hostname fragment>
+
+=item purge <hostname>
+
+Delete A, PTR, and Kerberos entries in the directory.
+
+=item show <hostname>
+
+=item update <hostname>
+
+=back
+
+=head1 OPTIONS
+
+=over 4
+
+=item --example
+
+Print an example configuration file to STDOUT.
+
+=item --help
+
+Display short help text.
+
+=item --manual
+
+Display the complete documentation.
+
+=item --debug
+
+Display debugging messages.
+
+=back
+
+=head1 EXAMPLES
+
+=head2 Add SRV entry
+
+    cz-pdns-ldap add srv afs-prserver udp 86400 \
+        2 10 7003 afs1.cz.org \
+        2 20 7003 afs2.cz.org \
+        2 10 7003 afs3.cz.org
+
+=head1 AUTHOR
+
+Bill MacAllister <bill@ca-zephyr.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2023, CZ Software
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut

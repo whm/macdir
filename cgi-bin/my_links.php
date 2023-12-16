@@ -9,6 +9,10 @@ $heading = "Search My Links";
 require('inc_init.php');
 require('inc_header_my_links.php');
 
+#echo "<pre>\n";
+#print_r($CONF);
+#echo "</pre>\n";
+
 # ----------------------------------------------------------------------
 # Subroutines
 
@@ -28,7 +32,7 @@ function uid_from_dn($dn) {
 // ----------------------------------------
 // Display search results
 
-function display_links($edit_flag, $title, $info) {
+function display_links($edit_flag, $title, $entries) {
 
     global $CONF;
 
@@ -43,20 +47,20 @@ function display_links($edit_flag, $title, $info) {
     echo "</tr>\n";
     echo "</thead>\n";
     echo "<tbody>\n";
-    for ($i=0; $i<$info["count"]; $i++) {
-        $a_cn = $info[$i]["cn"][0];
+    foreach ($entries as $dn => $entry) {
+        $a_cn = $entry['cn'][0];
         $a_cn_url = urlencode($a_cn);
 
         $a_maint_link
             = '<a href="my_links_maint.php' . '?in_cn=' . $a_cn_url . '">'
             . '<img src="/macdir-images/icon-edit.png" border="0"></a>';
-        $a_desc    = empty($info[$i]["description"][0])
-            ? '' : $info[$i]["description"][0];
+        $a_desc    = empty($entry['description'][0])
+            ? '' : $entry['description'][0];
 
         $a_url_list = '&nbsp;';
         $a_url_attr = $CONF['attr_link_url'];
-        if (array_key_exists($a_url_attr, $info[$i])) {
-            $url_list = explode(' ', $info[$i][$a_url_attr][0]);
+        if (array_key_exists($a_url_attr, $entry)) {
+            $url_list = explode(' ', $entry[$a_url_attr][0]);
             $a_br = '';
             $a_url_list = '';
             foreach ($url_list as $u) {
@@ -69,8 +73,8 @@ function display_links($edit_flag, $title, $info) {
 
         $a_pw_list = '&nbsp;';
         $a_pw_attr = $CONF['attr_cred'];
-        if (array_key_exists($a_pw_attr, $info[$i])) {
-            $pw_list = explode(' ', $info[$i][$a_pw_attr][0]);
+        if (array_key_exists($a_pw_attr, $entry)) {
+            $pw_list = explode(' ', $entry[$a_pw_attr][0]);
             $a_br = '';
             $a_pw_list = '';
             foreach ($pw_list as $pw) {
@@ -89,11 +93,11 @@ function display_links($edit_flag, $title, $info) {
         if ($edit_flag) {
             $a_desc_link = $a_maint_link . $a_desc;
         } else {
-            $a_desc_link = $a_desc . ' (' . uid_from_dn($info[$i]['dn']) . ')';
+            $a_desc_link = $a_desc . ' (' . uid_from_dn($entry['dn']) . ')';
         }
         $a_attr_uid = $CONF['attr_link_uid'];
-        if (array_key_exists($a_attr_uid, $info[$i])) {
-            $a_uid = $info[$i][$a_attr_uid][0];
+        if (array_key_exists($a_attr_uid, $entry)) {
+            $a_uid = $entry[$a_attr_uid][0];
         } else {
             $a_uid = '';
         }
@@ -111,8 +115,6 @@ function display_links($edit_flag, $title, $info) {
 
 # ----------------------------------------------------------------------
 # Main Routine
-
-$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 # create a form to attribute mapping
 $form["commonname"]  = "cn";
@@ -180,7 +182,8 @@ if ($base_filter == '') {
     }
 }
 
-$this_uid = krb_uid();
+$this_princ = getenv('REMOTE_USER');
+$this_uid = krb_uid($this_princ);
 ?>
 
 <div class="row">
@@ -222,35 +225,43 @@ if ( !empty($_SESSION['in_msg']) ) {
 $link_base = "uid=${this_uid},${ldap_user_base}";
 $base_filter .= $class_filter;
 $filter = '(&(objectclass=' . $CONF['oc_link'] . ')'. $base_filter. ')';
-$return_attr = array('cn',
-                     'description',
-                     $CONF['attr_cred'],
-                     $CONF['attr_link_url'],
-                     $CONF['attr_link_uid'],
-                     $CONF['attr_link_visibility']);
-$sr = ldap_search($ds, $link_base, $filter, $return_attr);
-$info = ldap_get_entries($ds, $sr);
-$ret_cnt = $info["count"];
-if ($ret_cnt) {
-    display_links(1, 'Links', $info);
+$thisTgt = getenv('KRB5CCNAME');
+$attr_list = array('cn',
+                   'description',
+                    $CONF['attr_cred'],
+                    $CONF['attr_link_url'],
+                    $CONF['attr_link_uid'],
+                    $CONF['attr_link_visibility']);
+$attrs = implode(',', $attr_list);
+
+$cmd = 'KRB5CCNAME=' . $thisTgt . ' /usr/bin/macdir-ldap-read'
+   . ' --base=' . $link_base
+   . ' --filter="' . $filter . '"'
+   . ' --attrs=' . $attrs;
+$ldap_json = shell_exec($cmd);
+if (isset($ldap_json) && strlen($ldap_json) > 0) {
+    $entries = json_decode($ldap_json, true);
+    display_links(1, 'Links', $entries);
 } else {
     echo '<p class="error">No entries found.</p>' . "\n";
 }
 
 if (!empty($_SERVER['REMOTE_USER'])) {
-    $u           = krb_uid();
-    $link_filter = '(|(' . $CONF['attr_link_read'] . "=${u})"
-                 . '(' . $CONF['attr_link_write'] . "=${u}))";
+    $link_filter = '(|(' . $CONF['attr_link_read'] . "=${this_uid})"
+                 . '(' . $CONF['attr_link_write'] . "=${this_uid}))";
     $filter      = '(&'
                  . '(objectclass=' . $CONF['oc_link'] . ')'
                  . $base_filter
                  . $link_filter
                  . ')';
-    $sr = ldap_search($ds, $ldap_user_base, $filter, $return_attr);
-    $info = ldap_get_entries($ds, $sr);
-    $ret_cnt = $info["count"];
-    if ($ret_cnt) {
-        display_links(0, 'Shared Links', $info);
+    $ldap_json = shell_exec('KRB5CCNAME=' . $thisTgt
+	   . ' /home/mac/macdir-ldap-read --conf=/etc/macdir/ldap.conf'
+	   . ' -b ' . $ldap_user_base
+	   . '"' . $filter . '"'
+	   . $attrs);
+    if (isset($ldap_json) && strlen($ldap_json) > 0) {
+        $entries = json_decode($ldap_json, true);
+        display_links(0, 'Shared Links', $entries);
     }
 }
 

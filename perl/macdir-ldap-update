@@ -1,0 +1,493 @@
+#!/usr/bin/perl
+#
+# macdir-ldap-update --- Update an LDAP directory
+#
+# Copyright 2023, CZ Software
+
+use AppConfig qw(:argcount :expand);
+use Carp;
+use CZ::LDAPtools;
+use Getopt::Long;
+use Net::LDAPapi;
+use Pod::Usage;
+use strict;
+
+my $CONF;
+my $DEBUG_TIME = time();
+my $LDAP;
+
+my $opt_conf = '/etc/macdir/ldap.conf';
+my $opt_debug;
+my $opt_example;
+my $opt_help;
+my $opt_manual;
+
+##############################################################################
+# Subroutines
+##############################################################################
+
+# ------------------------------------------------
+# output debugging information
+
+sub dbg {
+    if (!$opt_debug) {
+        return;
+    }
+    my ($tmp)   = @_;
+    my $now     = time();
+    my $elapsed = $now - $DEBUG_TIME;
+    print {*STDOUT} "$now ($elapsed) $tmp \n"
+      or croak("debugging print to STDOUT failed: $!");
+    $DEBUG_TIME = $now;
+    return;
+}
+
+#-------------------------------------------------------------------------
+# standard output
+
+sub msg {
+    my ($msg) = @_;
+    print {*STDOUT} "$msg\n" or croak("print to STDOUT failed: $!");
+    return;
+}
+
+# ------------------------------------------------------------------------
+# Read configuration properties
+
+sub read_conf {
+    my ($filename) = @_;
+
+    if (!$filename) {
+        $filename = $opt_conf;
+    }
+
+    my $conf = AppConfig->new({});
+    $conf->define(
+        'default_domain',
+        {
+            DEFAULT  => 'ca-zephyr.org',
+            ARGCOUNT => ARGCOUNT_ONE
+        }
+    );
+    $conf->define(
+        'krb_realm',
+        {
+            DEFAULT  => 'CA-ZEPHYR.ORG',
+            ARGCOUNT => ARGCOUNT_ONE
+        }
+    );
+    $conf->define(
+        'ldap_bindtype',
+        {
+            DEFAULT  => 'gssapi',
+            ARGCOUNT => ARGCOUNT_ONE
+        }
+    );
+    $conf->define(
+        'ldap_base',
+        {
+            DEFAULT  => 'dc=ca-zephyr,dc=org',
+            ARGCOUNT => ARGCOUNT_ONE
+        }
+    );
+    $conf->define(
+        'ldap_net_base',
+        {
+            DEFAULT  => 'cn=net,dc=ca-zephyr,dc=org',
+            ARGCOUNT => ARGCOUNT_ONE
+        }
+    );
+    $conf->define(
+        'ldap_host',
+        {
+            DEFAULT  => 'localhost',
+            ARGCOUNT => ARGCOUNT_ONE
+        }
+    );
+    $conf->define(
+        'ldap_port',
+        {
+            DEFAULT  => '389',
+            ARGCOUNT => ARGCOUNT_ONE
+        }
+    );
+    $conf->define('ldap_password', { ARGCOUNT => ARGCOUNT_ONE });
+    $conf->define('ldap_user',     { ARGCOUNT => ARGCOUNT_ONE });
+
+    if (-e $filename) {
+        $conf->file($filename) or die "ERROR: problem reading $filename";
+    }
+
+    if ($conf->ldap_host() =~ /,/xms) {
+        my $one_host = lt_pool_host($conf->ldap_host);
+        $conf->ldap_host($one_host);
+    }
+
+    return $conf;
+}
+
+#-------------------------------------------------------------------------
+# Add an A record given a hostname/fqdn and an IP address
+
+sub a_add {
+    my ($hostname, $ip) = @_;
+
+    my @bits = split /[.]/, $ip;
+    my $ptr_dn;
+    $ptr_dn = 'dc=' . $bits[3] . ',';
+    $ptr_dn .= 'dc=' . $bits[2] . ',';
+    $ptr_dn .= 'dc=' . $bits[1] . ',';
+    $ptr_dn .= 'dc=' . $bits[0] . ',';
+    $ptr_dn .= 'dc=in-addr,dc=arpa' . ',';
+    $ptr_dn .= $CONF->ldap_net_base;
+    my $ptr_dc = $bits[3];
+    my $ptr_domain
+      = $bits[3] . '.'
+      . $bits[2] . '.'
+      . $bits[1] . '.'
+      . $bits[0] . '.'
+      . 'in-addr.arpa';
+    my $ptr_parent;
+    $ptr_parent .= 'dc=' . $bits[2] . ',';
+    $ptr_parent .= 'dc=' . $bits[1] . ',';
+    $ptr_parent .= 'dc=' . $bits[0] . ',';
+    $ptr_parent .= 'dc=in-addr,dc=arpa' . ',';
+    $ptr_parent .= $CONF->ldap_net_base;
+    my $parent_cnt = ldap_base_search($ptr_parent);
+
+    if ($parent_cnt == 0) {
+        msg("ERROR: invalid IP address ($ip)");
+        msg("ERROR: $ptr_parent not found");
+        return;
+    }
+
+    my $fqdn;
+    if ($hostname =~ /([.].*)/xms) {
+        $fqdn = $1;
+        $hostname =~ s/([.].*)//xms;
+    } else {
+        $fqdn = $hostname . '.' . $opt_domain;
+    }
+
+    my ($dn_a, $fqdn_a, $ip_a) = find_dns_a($hostname);
+    if ($dn_a) {
+        msg("ERROR: A record for host $hostname exists");
+        return;
+    }
+
+    my $ldap_fqdn = "dc=${fqdn}";
+    $ldap_fqdn =~ s/[.]/,dc=/xmsg;
+    my $princ = "host/${fqdn}@" . $CONF->krb_realm;
+
+    my $dn      = "${ldap_fqdn}," . $CONF->ldap_net_base;
+    my %ldap_av = (
+        'dc'                => $hostname,
+        'associatedDomain'  => $fqdn,
+        'aRecord'           => $ip,
+        'krb5PrincipalName' => $princ,
+        'objectClass'       => [
+            'top',                 'dNSDomain2',
+            'domainRelatedObject', 'PdnsRecordData',
+            'krb5Principal'
+        ],
+    );
+    msg("Adding A record: $hostname $ip");
+    my $status = $LDAP->add_s($dn, \%ldap_av);
+
+    if ($status != 0) {
+        msg("status: $status");
+        msg('errno:' . $LDAP->errno . ' errstring:' . $LDAP->errstring);
+        $LDAP->perror("ERROR: problem adding $dn\n");
+        exit 1;
+    }
+    return;
+}
+
+# --------------------------------------------------------------------
+# Delete an A record
+
+sub a_delete {
+    my ($hostname) = @_;
+
+    my $dn_a;
+    my $fqdn_a;
+    my $ip_a;
+    ($dn_a, $fqdn_a, $ip_a) = find_dns_a($hostname);
+
+    if (!$dn_a) {
+        msg("ERROR: $hostname not found to delete\n");
+        return;
+    }
+
+    msg("Deleting $dn_a\n");
+    my $status = $LDAP->delete_s($dn_a);
+    if ($status != 0) {
+        msg("status: $status\n");
+        msg('errno:' . $LDAP->errno . ' errstring:' . $LDAP->errstring);
+        $LDAP->perror("ERROR: problem deleting $dn_a\n");
+        exit 1;
+    }
+
+    return $ip_a;
+}
+
+# --------------------------------------------------------------------
+# Add a CNAME
+#
+#     $hostname is the target of the cname
+#     $cname is the alias for $hostname
+
+sub cname_add {
+    my ($cname, $hostname) = @_;
+
+    my $target_hostname = $hostname;
+    my $target_domain;
+    my $target_fqdn;
+    if ($target_fqdn =~ /[.](.*)/xms) {
+        $target_domain = $1;
+        $target_hostname =~ s/[.].*//xms;
+    } else {
+        $target_domain .= $opt_domain;
+        $target_fqdn = $target_hostname . '.' . $target_domain;
+    }
+
+    my $cname_host = $cname;
+    my $cname_fqdn;
+    my $cname_domain;
+    if ($cname =~ /[.](.*)/xms) {
+        $cname_domain = $1;
+        $cname_host =~ s/[.].*//xms;
+        $cname_fqdn = $cname;
+    } else {
+        $cname_domain = $opt_domain;
+        $cname_fqdn   = $cname . '.' . $cname_domain;
+    }
+
+    if (find_dns_cname($cname)) {
+        msg("ERROR: CNAME for $cname exists");
+        return;
+    }
+
+    my $ldap_fqdn = "dc=${cname_fqdn}";
+    $ldap_fqdn =~ s/[.]/,dc=/xmsg;
+
+    my $dn      = "$ldap_fqdn," . $CONF->ldap_net_base;
+    my %ldap_av = (
+        'dc'               => $cname_host,
+        'associatedDomain' => $cname_fqdn,
+        'cNAMERecord'      => $target_fqdn,
+        'objectClass'      => ['top', 'dnsDomain', 'domainRelatedObject'],
+    );
+    msg("Adding CNAME $cname -> $hostname");
+    my $status = $LDAP->add_s($dn, \%ldap_av);
+    if ($status != 0) {
+        msg("status: $status");
+        msg('errno: ' . $LDAP->errno . ' errstring:' . $LDAP->errstring);
+        $LDAP->perror("ERROR: problem adding $dn\n");
+        exit 1;
+    }
+
+    return;
+}
+
+##############################################################################
+# Main routine
+##############################################################################
+
+# -- get options
+GetOptions(
+    'cname'    => \$opt_cname,
+    'conf=s'   => \$opt_conf,
+    'debug'    => \$opt_debug,
+    'domain=s' => \$opt_domain,
+    'example'  => \$opt_example,
+    'help'     => \$opt_help,
+    'manual'   => \$opt_manual
+);
+
+# -- Flush output immediately
+local $| = 1;
+
+# Display an example configuration file
+if ($opt_example) {
+    example_conf();
+    exit;
+}
+
+if (defined($ARGV[0]) && $ARGV[0] eq 'host') {
+    shift;
+}
+
+if ($ARGV[0] eq 'help') {
+    $opt_help = 1;
+}
+if ($ARGV[0] eq 'manual') {
+    $opt_manual = 1;
+}
+
+# Display help if requested
+if ($opt_help) {
+    pod2usage(-verbose => 0);
+}
+if ($opt_manual) {
+    pod2usage(-verbose => 2);
+}
+
+# Read the configuration file
+dbg("Configuration file: $opt_conf");
+$CONF = read_conf($opt_conf);
+if (!$opt_domain) {
+    $opt_domain = $CONF->default_domain;
+}
+
+if ($CONF->ldap_bindtype eq 'simple') {
+    $LDAP = lt_ldap_connect(
+        {
+            host     => $CONF->ldap_host,
+            port     => $CONF->ldap_port,
+            bindtype => $CONF->ldap_bindtype,
+            user_dn  => $CONF->ldap_user,
+            user_pw  => $CONF->ldap_password,
+            debug    => $opt_debug
+        }
+    );
+} else {
+    $LDAP = lt_ldap_connect(
+        {
+            host     => $CONF->ldap_host,
+            port     => $CONF->ldap_port,
+            bindtype => $CONF->ldap_bindtype,
+            debug    => $opt_debug
+        }
+    );
+}
+
+my $action = shift(@ARGV);
+if (!$action) {
+    msg('ERROR: Missing action');
+    exit 1;
+}
+
+if ($action =~ /^(add|update|delete|create|purge)$/xmsi) {
+    host_maint($action);
+} elsif ($action =~ /^(find|show)$/xmsi) {
+    host_search($action);
+} else {
+    msg("ERROR: action '$action' unknown");
+    exit 1;
+}
+
+$LDAP->unbind;
+
+exit;
+
+__END__
+
+=head1 NAME
+
+cz-pdns-ldap - Update PowerDNS entries in LDAP
+
+=head1 SYNOPSIS
+
+    cz-pdns-ldap find [<name fragment>] [<options>]
+    cz-pdns-ldap show <hostname> [<options>]
+
+    cz-pdns-ldap add <type> <id> [<attributes>] [<options>]
+    cz-pdns-ldap update <hostname> [<attributes>] [<options>]
+    cz-pdns-ldap delete <type> <hostname>|<ip> [--debug]
+
+    cz-pdns-ldap create <hostname> <ip> [<attributes>] [<options>]
+    cz-pdns-ldap purge <hostname> [--debug]
+
+=head1 DESCRIPTION
+
+Update Power DNS entries in an LDAP directory.
+
+=head1 ACTIONS
+
+=over 4
+
+=item add <type> <hostname> <ip address>
+
+Add directory entries for A, PTR, CNAME DNS records or add an LDAP
+mapping entry for Kerberos principals.
+
+=item create <hostname> <ip>
+
+Create both A and PTR records and a Kerberos LDAP mapping entry.
+
+=item delete <type> <hostname>
+
+Delete an A, PTR, CNAME, and Kerberos LDAP entries.
+
+=item find <hostname fragment>
+
+=item purge <hostname>
+
+Delete A, PTR, and Kerberos entries in the directory.
+
+=item show <hostname>
+
+=item update <hostname>
+
+=back
+
+=head1 OPTIONS
+
+=over 4
+
+=item --example
+
+Print an example configuration file to STDOUT.
+
+=item --help
+
+Display short help text.
+
+=item --manual
+
+Display the complete documentation.
+
+=item --debug
+
+Display debugging messages.
+
+=back
+
+=head1 EXAMPLES
+
+=head2 Add SRV entry
+
+    cz-pdns-ldap add srv afs-prserver udp 86400 \
+        2 10 7003 afs1.cz.org \
+        2 20 7003 afs2.cz.org \
+        2 10 7003 afs3.cz.org
+
+=head1 AUTHOR
+
+Bill MacAllister <bill@ca-zephyr.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2023, CZ Software
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
