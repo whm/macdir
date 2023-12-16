@@ -15,6 +15,7 @@ use strict;
 my $CONF;
 my $DEBUG_TIME = time();
 my $LDAP;
+my %VALID_ATTR = ();
 
 my $opt_conf = '/etc/macdir/ldap.conf';
 my $opt_debug;
@@ -63,20 +64,6 @@ sub read_conf {
 
     my $conf = AppConfig->new({});
     $conf->define(
-        'default_domain',
-        {
-            DEFAULT  => 'ca-zephyr.org',
-            ARGCOUNT => ARGCOUNT_ONE
-        }
-    );
-    $conf->define(
-        'krb_realm',
-        {
-            DEFAULT  => 'CA-ZEPHYR.ORG',
-            ARGCOUNT => ARGCOUNT_ONE
-        }
-    );
-    $conf->define(
         'ldap_bindtype',
         {
             DEFAULT  => 'gssapi',
@@ -87,13 +74,6 @@ sub read_conf {
         'ldap_base',
         {
             DEFAULT  => 'dc=ca-zephyr,dc=org',
-            ARGCOUNT => ARGCOUNT_ONE
-        }
-    );
-    $conf->define(
-        'ldap_net_base',
-        {
-            DEFAULT  => 'cn=net,dc=ca-zephyr,dc=org',
             ARGCOUNT => ARGCOUNT_ONE
         }
     );
@@ -127,71 +107,165 @@ sub read_conf {
 }
 
 #-------------------------------------------------------------------------
-# Add an A record given a hostname/fqdn and an IP address
+# Set valid attribute hash
 
-sub a_add {
-    my ($hostname, $ip) = @_;
+sub set_valid_attr_list {
 
-    my @bits = split /[.]/, $ip;
-    my $ptr_dn;
-    $ptr_dn = 'dc=' . $bits[3] . ',';
-    $ptr_dn .= 'dc=' . $bits[2] . ',';
-    $ptr_dn .= 'dc=' . $bits[1] . ',';
-    $ptr_dn .= 'dc=' . $bits[0] . ',';
-    $ptr_dn .= 'dc=in-addr,dc=arpa' . ',';
-    $ptr_dn .= $CONF->ldap_net_base;
-    my $ptr_dc = $bits[3];
-    my $ptr_domain
-      = $bits[3] . '.'
-      . $bits[2] . '.'
-      . $bits[1] . '.'
-      . $bits[0] . '.'
-      . 'in-addr.arpa';
-    my $ptr_parent;
-    $ptr_parent .= 'dc=' . $bits[2] . ',';
-    $ptr_parent .= 'dc=' . $bits[1] . ',';
-    $ptr_parent .= 'dc=' . $bits[0] . ',';
-    $ptr_parent .= 'dc=in-addr,dc=arpa' . ',';
-    $ptr_parent .= $CONF->ldap_net_base;
-    my $parent_cnt = ldap_base_search($ptr_parent);
-
-    if ($parent_cnt == 0) {
-        msg("ERROR: invalid IP address ($ip)");
-        msg("ERROR: $ptr_parent not found");
-        return;
-    }
-
-    my $fqdn;
-    if ($hostname =~ /([.].*)/xms) {
-        $fqdn = $1;
-        $hostname =~ s/([.].*)//xms;
-    } else {
-        $fqdn = $hostname . '.' . $opt_domain;
-    }
-
-    my ($dn_a, $fqdn_a, $ip_a) = find_dns_a($hostname);
-    if ($dn_a) {
-        msg("ERROR: A record for host $hostname exists");
-        return;
-    }
-
-    my $ldap_fqdn = "dc=${fqdn}";
-    $ldap_fqdn =~ s/[.]/,dc=/xmsg;
-    my $princ = "host/${fqdn}@" . $CONF->krb_realm;
-
-    my $dn      = "${ldap_fqdn}," . $CONF->ldap_net_base;
-    my %ldap_av = (
-        'dc'                => $hostname,
-        'associatedDomain'  => $fqdn,
-        'aRecord'           => $ip,
-        'krb5PrincipalName' => $princ,
-        'objectClass'       => [
-            'top',                 'dNSDomain2',
-            'domainRelatedObject', 'PdnsRecordData',
-            'krb5Principal'
-        ],
+    my $note_oc = 'czPersonNote';
+    my $base    = 'cn=schema,cn=config';
+    my $filter  = 'cn={*}ca-zephyr';
+    my @attrs   = ('olcObjectClasses');
+    dbg("schema search - base:$base filter:$filter");
+    my $msg = $LDAP->search_s(
+        -basedn    => $base,
+        -scope     => LDAP_SCOPE_SUBTREE,
+        -filter    => $filter,
+        -attrs     => \@attrs,
+        -attrsonly => 0,
     );
-    msg("Adding A record: $hostname $ip");
+    if ($opt_debug && $LDAP->errno != 0) {
+        msg('errno: ' . $LDAP->errno . 'errstring:' . $LDAP->errstring);
+        $LDAP->perror(
+            "ERROR: problem searching using base:$base filter:$filter\n");
+    }
+
+    my %entries = %{ $LDAP->get_all_entries };
+
+    for my $dn (keys %entries) {
+        for my $oc (@{ $entries{$dn}{'olcObjectClasses'} }) {
+            my $this_name;
+            my $this_must_may;
+            if ($oc =~ /\s+ name\s+(\S+)/xmsi) {
+                $this_name = $1;
+                $this_name =~ s/'//xmsg;
+            }
+            for my $type (('may', 'must')) {
+                if ($oc =~ /\s+ ($type)\s+ \( ([\S\s\$]+?) \)/xmsi) {
+                    my $mm = $2;
+                    if ($this_must_may) {
+                        $this_must_may .= '$' . $mm;
+                    } else {
+                        $this_must_may = $mm;
+                    }
+                }
+            }
+            if (!$this_name || !$this_must_may) {
+                next;
+            }
+            if (lc($this_name) eq lc($note_oc)) {
+                my @a_list = split /\$/, $this_must_may;
+                for my $a (@a_list) {
+                    $a =~ s/\s+//xmsg;
+                    $VALID_ATTR{$a} = 1;
+                }
+                last;
+            }
+        }
+    }
+
+    if ($opt_debug) {
+        for my $a (sort keys %VALID_ATTR) {
+            dbg("VALID_ATTR = $a");
+        }
+    }
+
+    return;
+}
+
+#-------------------------------------------------------------------------
+# Find user dn given a user principal
+
+sub find_user_dn {
+    my ($id) = @_;
+
+    if (!$id) {
+        if ($ENV{'REMOTE_USER'}) {
+            $id = $ENV{'REMOTE_USER'};
+        } else {
+            msg("ERROR: no user identifier specified");
+            return;
+        }
+    }
+
+    my $base;
+    my $filter;
+    my $scope;
+    if ($id =~ /\@/xms) {
+        $base   = $CONF->ldap_base;
+        $scope  = LDAP_SCOPE_SUBTREE;
+        $filter = "(&(objectClass=person)(krb5PrincipalName=$id))";
+    } elsif ($id =~ /=/xms) {
+        $base   = $id;
+        $scope  = LDAP_SCOPE_BASE;
+        $filter = '(objectClass=person)';
+    } else {
+        $base   = $CONF->ldap_base;
+        $scope  = LDAP_SCOPE_SUBTREE;
+        $filter = "(&(objectClass=person)(uid=$id))";
+    }
+    my @attrs       = ('objectClass');
+    my $this_search = "base:$base filter:$filter scope:$scope";
+    dbg($this_search);
+    my $msg = $LDAP->search_s(
+        -basedn    => $base,
+        -scope     => $scope,
+        -filter    => $filter,
+        -attrs     => \@attrs,
+        -attrsonly => 0,
+    );
+    if ($opt_debug && $LDAP->errno != 0) {
+        msg('errno: ' . $LDAP->errno . 'errstring:' . $LDAP->errstring);
+        $LDAP->perror("ERROR: problem searching using $this_search\n");
+    }
+
+    my %entries = %{ $LDAP->get_all_entries };
+
+    if (scalar(keys %entries) > 1) {
+        msg("ERROR: ambigious entry $this_search");
+        return;
+    }
+    my $this_dn;
+    for my $dn (keys %entries) {
+        $this_dn = $dn;
+    }
+    dbg("user dn:$this_dn");
+    return $this_dn;
+}
+
+#-------------------------------------------------------------------------
+# Add a personal entry
+
+sub add_pw {
+    my ($cn, $av_ref) = @_;
+
+    my $user_base = find_user_dn();
+    if (!$user_base) {
+        exit 1;
+    }
+    my $dn      = "cn=$cn,$user_base";
+    my @av_list = @{$av_ref};
+
+    my %ldap_av = (
+        'objectClass' => ['top', 'czPersonNote'],
+        'cn'          => [$cn],
+    );
+    my $err = '';
+    for my $av (@av_list) {
+        if ($av =~ /(\S+)=(.*)/xms) {
+            my $a = $1;
+            my $v = $2;
+            if (!$VALID_ATTR{$a}) {
+                $err .= "ERROR: invalid attribute $a\n";
+                next;
+            }
+            push @{ $ldap_av{$a} }, $v;
+        } else {
+            $err .= "ERROR: invalid attrbute=value expression\n";
+            next;
+        }
+    }
+
+    msg("Adding entry: $cn");
     my $status = $LDAP->add_s($dn, \%ldap_av);
 
     if ($status != 0) {
@@ -204,86 +278,39 @@ sub a_add {
 }
 
 # --------------------------------------------------------------------
-# Delete an A record
+# Update a password entry
 
-sub a_delete {
-    my ($hostname) = @_;
+sub update_pw {
+    my ($cn, $vals_ref) = @_;
+    my @vals = @{$vals_ref};
 
-    my $dn_a;
-    my $fqdn_a;
-    my $ip_a;
-    ($dn_a, $fqdn_a, $ip_a) = find_dns_a($hostname);
-
-    if (!$dn_a) {
-        msg("ERROR: $hostname not found to delete\n");
-        return;
-    }
-
-    msg("Deleting $dn_a\n");
-    my $status = $LDAP->delete_s($dn_a);
-    if ($status != 0) {
-        msg("status: $status\n");
-        msg('errno:' . $LDAP->errno . ' errstring:' . $LDAP->errstring);
-        $LDAP->perror("ERROR: problem deleting $dn_a\n");
+    my $user_base = find_user_dn();
+    if (!$user_base) {
         exit 1;
     }
+    msg("Updating $cn\n");
 
-    return $ip_a;
+    return;
 }
 
 # --------------------------------------------------------------------
-# Add a CNAME
-#
-#     $hostname is the target of the cname
-#     $cname is the alias for $hostname
+# Delete an A record
 
-sub cname_add {
-    my ($cname, $hostname) = @_;
-
-    my $target_hostname = $hostname;
-    my $target_domain;
-    my $target_fqdn;
-    if ($target_fqdn =~ /[.](.*)/xms) {
-        $target_domain = $1;
-        $target_hostname =~ s/[.].*//xms;
-    } else {
-        $target_domain .= $opt_domain;
-        $target_fqdn = $target_hostname . '.' . $target_domain;
+sub delete_pw {
+    my ($cn) = @_;
+    my $user_base = find_user_dn();
+    if (!$user_base) {
+        exit 1;
     }
 
-    my $cname_host = $cname;
-    my $cname_fqdn;
-    my $cname_domain;
-    if ($cname =~ /[.](.*)/xms) {
-        $cname_domain = $1;
-        $cname_host =~ s/[.].*//xms;
-        $cname_fqdn = $cname;
-    } else {
-        $cname_domain = $opt_domain;
-        $cname_fqdn   = $cname . '.' . $cname_domain;
-    }
+    my $dn = "cn=$cn,$user_base";
 
-    if (find_dns_cname($cname)) {
-        msg("ERROR: CNAME for $cname exists");
-        return;
-    }
-
-    my $ldap_fqdn = "dc=${cname_fqdn}";
-    $ldap_fqdn =~ s/[.]/,dc=/xmsg;
-
-    my $dn      = "$ldap_fqdn," . $CONF->ldap_net_base;
-    my %ldap_av = (
-        'dc'               => $cname_host,
-        'associatedDomain' => $cname_fqdn,
-        'cNAMERecord'      => $target_fqdn,
-        'objectClass'      => ['top', 'dnsDomain', 'domainRelatedObject'],
-    );
-    msg("Adding CNAME $cname -> $hostname");
-    my $status = $LDAP->add_s($dn, \%ldap_av);
+    msg("Deleting $dn\n");
+    my $status = $LDAP->delete_s($dn);
     if ($status != 0) {
-        msg("status: $status");
-        msg('errno: ' . $LDAP->errno . ' errstring:' . $LDAP->errstring);
-        $LDAP->perror("ERROR: problem adding $dn\n");
+        msg("status: $status\n");
+        msg('errno:' . $LDAP->errno . ' errstring:' . $LDAP->errstring);
+        $LDAP->perror("ERROR: problem deleting $dn\n");
         exit 1;
     }
 
@@ -296,13 +323,11 @@ sub cname_add {
 
 # -- get options
 GetOptions(
-    'cname'    => \$opt_cname,
-    'conf=s'   => \$opt_conf,
-    'debug'    => \$opt_debug,
-    'domain=s' => \$opt_domain,
-    'example'  => \$opt_example,
-    'help'     => \$opt_help,
-    'manual'   => \$opt_manual
+    'conf=s'  => \$opt_conf,
+    'debug'   => \$opt_debug,
+    'example' => \$opt_example,
+    'help'    => \$opt_help,
+    'manual'  => \$opt_manual
 );
 
 # -- Flush output immediately
@@ -312,10 +337,6 @@ local $| = 1;
 if ($opt_example) {
     example_conf();
     exit;
-}
-
-if (defined($ARGV[0]) && $ARGV[0] eq 'host') {
-    shift;
 }
 
 if ($ARGV[0] eq 'help') {
@@ -336,9 +357,6 @@ if ($opt_manual) {
 # Read the configuration file
 dbg("Configuration file: $opt_conf");
 $CONF = read_conf($opt_conf);
-if (!$opt_domain) {
-    $opt_domain = $CONF->default_domain;
-}
 
 if ($CONF->ldap_bindtype eq 'simple') {
     $LDAP = lt_ldap_connect(
@@ -362,16 +380,26 @@ if ($CONF->ldap_bindtype eq 'simple') {
     );
 }
 
+set_valid_attr_list();
+
 my $action = shift(@ARGV);
 if (!$action) {
     msg('ERROR: Missing action');
     exit 1;
 }
 
-if ($action =~ /^(add|update|delete|create|purge)$/xmsi) {
-    host_maint($action);
-} elsif ($action =~ /^(find|show)$/xmsi) {
-    host_search($action);
+dbg("action: $action");
+if ($action =~ /^add$/xmsi) {
+    my $cn   = shift(@ARGV);
+    my @vals = @ARGV;
+    add_pw($cn, \@vals);
+} elsif ($action =~ /^update$/xmsi) {
+    my $cn      = shift(@ARGV);
+    my @updates = @ARGV;
+    update_pw($cn, \@updates);
+} elsif ($action =~ /^delete$/xmsi) {
+    my $cn = shift(@ARGV);
+    delete_pw($cn);
 } else {
     msg("ERROR: action '$action' unknown");
     exit 1;
