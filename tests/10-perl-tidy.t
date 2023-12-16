@@ -5,8 +5,8 @@
 use Test::More qw( no_plan );
 
 my @script_list = (
-    'usr/bin/macdir-ldap-read',
-    'usr/bin/macdir-ldap-write',
+    'perl/macdir-ldap-read',
+    'perl/macdir-ldap-update',
     );
 
 for $this_script (@script_list) {

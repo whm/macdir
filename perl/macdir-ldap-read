@@ -126,8 +126,8 @@ sub link_search {
     my ($base, $filter, $attr_string) = @_;
     my @attrs = ();
     if (length($attr_string) > 0) {
-	@attrs = split(/,/, $attr_string);
-    }    
+        @attrs = split(/,/, $attr_string);
+    }
     dbg("link search - base:$base filter:$filter attrs:$attr_string");
     my $msg = $LDAP->search_s(
         -basedn    => $base,
@@ -223,7 +223,7 @@ if ($CONF->ldap_bindtype eq 'simple') {
 
 my $j = link_search($opt_base, $opt_filter, $opt_attrs);
 msg($j);
-      
+
 $LDAP->unbind;
 
 exit;

@@ -2,12 +2,31 @@ Source: macdir-simple
 Section: web
 Priority: optional
 Maintainer: Bill MacAllister <bill@ca-zephyr.org>
-Build-Depends: debhelper (>= 9), php, php-mbstring
+Build-Depends: debhelper (>= 9),
+ libappconfig-perl,
+ libcz-ldaptools-perl,
+ libgetopt-long-descriptive-perl,
+ libjson-perl,
+ libnet-ldapapi-perl,
+ perl,
+ perl-doc,
+ perltidy,
+ php,
+ php-mbstring
 Standards-Version: 4.1.2
 
 Package: macdir-simple
 Architecture: all
-Depends: ${misc:Depends}, apache2, libapache2-mod-php, php-ldap
+Depends: ${misc:Depends},
+ apache2,
+ libapache2-mod-php
+ libappconfig-perl,
+ libcz-ldaptools-perl,
+ libgetopt-long-descriptive-perl,
+ libjson-perl,
+ libnet-ldapapi-perl,
+ perl,
+ perl-doc,
 Provides: macdir
 Conflicts: macdir
 Replaces: macdir
