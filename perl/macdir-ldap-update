@@ -264,6 +264,10 @@ sub add_pw {
             next;
         }
     }
+    my $v_attr = 'labeledUriVisibility';
+    if (!$ldap_av{$v_attr}) {
+        $ldap_av{$v_attr} = ['Y'];
+    }
 
     msg("Adding entry: $cn");
     my $status = $LDAP->add_s($dn, \%ldap_av);
@@ -288,7 +292,119 @@ sub update_pw {
     if (!$user_base) {
         exit 1;
     }
-    msg("Updating $cn\n");
+
+    # Get current attribute values
+    my $note_oc = 'czPersonNote';
+    my $base    = $user_base;
+    my $filter  = "(cn=$cn)";
+    my @attrs   = ();
+    dbg("user search - base:$base filter:$filter");
+    my $msg = $LDAP->search_s(
+        -basedn    => $base,
+        -scope     => LDAP_SCOPE_SUBTREE,
+        -filter    => $filter,
+        -attrs     => \@attrs,
+        -attrsonly => 0,
+    );
+    if ($opt_debug && $LDAP->errno != 0) {
+        msg('errno: ' . $LDAP->errno . 'errstring:' . $LDAP->errstring);
+        $LDAP->perror(
+            "ERROR: problem searching using base:$base filter:$filter\n");
+    }
+
+    my %entries = %{ $LDAP->get_all_entries };
+    my $cnt_dn  = scalar(keys %entries);
+    if ($cnt_dn < 1) {
+        msg("ERROR: $cn not found");
+        return;
+    }
+    if ($opt_debug) {
+        for my $dn (keys %entries) {
+            dbg($dn);
+            for my $attr (keys %{ $entries{$dn} }) {
+                dbg("  $attr");
+                for my $val (@{ $entries{$dn}{$attr} }) {
+                    dbg("    $val");
+                }
+            }
+        }
+    }
+
+    for my $dn (keys %entries) {
+        my %ldap_mods = ();
+        my $update_msg;
+        my $err_flag;
+        for my $attr_mod (@vals) {
+            my $a;
+            my $v;
+            my $action;
+            if ($attr_mod =~ /(\S+)([=\/])(.*)/xms) {
+                $a      = $1;
+                $action = $2;
+                $v      = $3;
+            } else {
+                msg("ERROR: invalid update specification $attr_mod");
+                $err_flag += 1;
+                next;
+            }
+            if (!$VALID_ATTR{$a}) {
+                msg("ERROR: invalid attribute $a");
+                $err_flag += 1;
+                next;
+            }
+            if ($action eq '=') {
+                if (!$v) {
+                    msg("ERROR: no value specified for $a");
+                    $err_flag += 1;
+                    next;
+                }
+                if ($entries{$dn}{$a}[0]) {
+                    if ($entries{$dn}{$a}[0] eq $v) {
+                        msg("INFO: $a already set to $v");
+                    } else {
+                        $ldap_mods{$a} = { 'r', [$v] };
+                        $update_msg .= "Setting $a = $v\n";
+                    }
+                    next;
+                } else {
+                    $ldap_mods{$a} = { 'a', [$v] };
+                    $update_msg .= "Adding $a = $v\n";
+                }
+            } elsif ($action eq '/') {
+                my $del_cnt;
+                for my $old_val ($entries{$dn}{$a}) {
+                    if (!$v) {
+                        $ldap_mods{$a} = { 'd', [$old_val] };
+                        $update_msg .= "Deleting $a = $v\n";
+                        $del_cnt += 1;
+                    } else {
+                        if ($old_val eq $v) {
+                            $ldap_mods{$a} = { 'd', [$v] };
+                            $update_msg .= "Deleting $a = $v\n";
+                            $del_cnt += 1;
+                        }
+                    }
+                }
+                if (!$del_cnt) {
+                    msg("INFO: Nothing found to delete for $a");
+                }
+            } else {
+                msg("ERROR: invalid action $action");
+            }
+        }
+        if ($err_flag) {
+            msg("INFO: $err_flag encountered");
+            msg("ERROR: update of $cn abandoned");
+            return;
+        }
+        msg("Updating $cn\n");
+        msg($update_msg);
+        $LDAP->modify_s($dn, \%ldap_mods);
+        if ($LDAP->errno != 0) {
+            msg('errno: ' . $LDAP->errno . 'errstring:' . $LDAP->errstring);
+            $LDAP->perror("ERROR: problem updating $dn\n");
+        }
+    }
 
     return;
 }
