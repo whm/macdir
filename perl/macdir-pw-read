@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
-# macdir-ldap-read --- Read ldap and return json objects
+# macdir-pw-read --- Read ldap and return json objects
 #
-# Copyright 2023, CZ Software
+# Copyright 2023-2024, CZ Software
 
 use AppConfig qw(:argcount :expand);
 use Carp;
@@ -59,7 +59,15 @@ sub msg {
 # example conf file
 
 sub example_conf {
+
     msg("# file: $opt_conf");
+    msg('ldap_bindtype = gssapi|simple');
+    msg('ldap_base = dc=ca-zephyr,dc=org');
+    msg('ldap_host = localhost');
+    msg('ldap_port = 389');
+    msg('# ldap_password = somepassword');
+    msg('# ldap_user = some-user-dn');
+
     return;
 }
 
@@ -176,14 +184,10 @@ if ($opt_example) {
     exit;
 }
 
-if (defined($ARGV[0]) && $ARGV[0] eq 'host') {
-    shift;
-}
-
-if ($ARGV[0] eq 'help') {
+if (defined($ARGV[0]) && $ARGV[0] eq 'help') {
     $opt_help = 1;
 }
-if ($ARGV[0] eq 'manual') {
+if (defined($ARGV[0]) && $ARGV[0] eq 'manual') {
     $opt_manual = 1;
 }
 
@@ -221,6 +225,19 @@ if ($CONF->ldap_bindtype eq 'simple') {
     );
 }
 
+if (!$opt_base) {
+    $opt_base = $CONF->ldap_base;
+}
+
+if (!$opt_filter) {
+    msg('ERROR: required --filter switch is missing');
+    exit 1;
+}
+if ($opt_filter !~ /=/) {
+    msg("ERROR: bad filter ($opt_filter)");
+    exit 1;
+}
+
 my $j = link_search($opt_base, $opt_filter, $opt_attrs);
 msg($j);
 
@@ -232,56 +249,48 @@ __END__
 
 =head1 NAME
 
-cz-pdns-ldap - Update PowerDNS entries in LDAP
+macdir-pw-read - Update PowerDNS entries in LDAP
 
 =head1 SYNOPSIS
 
-    cz-pdns-ldap find [<name fragment>] [<options>]
-    cz-pdns-ldap show <hostname> [<options>]
-
-    cz-pdns-ldap add <type> <id> [<attributes>] [<options>]
-    cz-pdns-ldap update <hostname> [<attributes>] [<options>]
-    cz-pdns-ldap delete <type> <hostname>|<ip> [--debug]
-
-    cz-pdns-ldap create <hostname> <ip> [<attributes>] [<options>]
-    cz-pdns-ldap purge <hostname> [--debug]
+macdir-pw-read [read|help|manual] --filter=<filter> [--base=<dn>] \
+    [--debug] [--help] [--manual]
 
 =head1 DESCRIPTION
 
-Update Power DNS entries in an LDAP directory.
+This script searches an ldap directory given a filter and returns the
+entry as JSON.
 
 =head1 ACTIONS
 
 =over 4
 
-=item add <type> <hostname> <ip address>
+=item help
 
-Add directory entries for A, PTR, CNAME DNS records or add an LDAP
-mapping entry for Kerberos principals.
+Display a short help messsage.
 
-=item create <hostname> <ip>
+=item manual
 
-Create both A and PTR records and a Kerberos LDAP mapping entry.
-
-=item delete <type> <hostname>
-
-Delete an A, PTR, CNAME, and Kerberos LDAP entries.
-
-=item find <hostname fragment>
-
-=item purge <hostname>
-
-Delete A, PTR, and Kerberos entries in the directory.
-
-=item show <hostname>
-
-=item update <hostname>
+Display this documentation.
 
 =back
 
-=head1 OPTIONS
+=head1 SWITCHES
 
 =over 4
+
+=item --filter=<filter>
+
+The filter must be a valid LDAP filter.  This switch is required.
+
+=item --base <dn>
+
+The base distinguished name to use for the ldap search.
+
+=item --attrs=<csv list of attributes>
+
+A list of attributes to return.  If not specificed then all attributes
+are returned.
 
 =item --example
 
@@ -303,12 +312,9 @@ Display debugging messages.
 
 =head1 EXAMPLES
 
-=head2 Add SRV entry
+=head2 Find all of Ned's entries in the directory.
 
-    cz-pdns-ldap add srv afs-prserver udp 86400 \
-        2 10 7003 afs1.cz.org \
-        2 20 7003 afs2.cz.org \
-        2 10 7003 afs3.cz.org
+    macdir-pw-read --base=dc=mrochek,dc=com --filter=uid=ned
 
 =head1 AUTHOR
 
@@ -316,7 +322,7 @@ Bill MacAllister <bill@ca-zephyr.org>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2023, CZ Software
+Copyright (C) 2023-2024, CZ Software
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

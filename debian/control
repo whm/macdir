@@ -2,9 +2,11 @@ Source: macdir-simple
 Section: web
 Priority: optional
 Maintainer: Bill MacAllister <bill@ca-zephyr.org>
-Build-Depends: debhelper (>= 9),
+Build-Depends: debhelper (>= 12),
+ ldap-utils,
  libappconfig-perl,
  libcz-ldaptools-perl,
+ libdatetime-perl,
  libgetopt-long-descriptive-perl,
  libjson-perl,
  libnet-ldapapi-perl,
@@ -12,7 +14,8 @@ Build-Depends: debhelper (>= 9),
  perl-doc,
  perltidy,
  php,
- php-mbstring
+ php-mbstring,
+ slapd
 Standards-Version: 4.1.2
 
 Package: macdir-simple

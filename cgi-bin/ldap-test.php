@@ -16,7 +16,7 @@ system("KRB5CCNAME=$thisTgt /usr/bin/klist");
 echo "</pre>\n";
 
 echo "<h1>Perl directory search</h1>\n";
-$json = shell_exec("KRB5CCNAME=$thisTgt /home/mac/macdir-ldap-read --conf=/home/mac/macdir.conf");
+$json = shell_exec("KRB5CCNAME=$thisTgt /home/mac/macdir-pw-read --conf=/home/mac/macdir.conf");
 
 echo "$json<br/>\n";
 echo "<br/>\n";

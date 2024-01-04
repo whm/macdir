@@ -1,0 +1,138 @@
+dn: dc=ca-zephyr,dc=org
+objectClass: organization
+objectClass: dcObject
+objectClass: top
+o: MacAllister Family
+dc: ca-zephyr
+
+dn: ou=people,dc=ca-zephyr,dc=org
+objectClass: organizationalUnit
+objectClass: top
+ou: people
+description: MacAllisters and friends
+
+dn: uid=mac,ou=people,dc=ca-zephyr,dc=org
+objectClass: top
+objectClass: person
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: inetOrgPerson
+objectClass: czPerson
+objectClass: krb5Principal
+objectClass: czPerson
+cn: Billy MacAllister
+givenName: William
+sn: MacAllister
+uid: mac
+st: CA
+czMailDistributionID: ip-notes
+czMailDistributionID: info-pmdf-list
+czMailDistributionID: bill-mir
+czMailDistributionID: rings
+l: Half Moon Bay
+postalCode: 94019
+telephoneNumber: 123-123-1234
+czMailAlias: 2013@ca-zephyr.org
+czMailAlias: null@ca-zephyr.org
+czMailAlias: cousins@ca-zephyr.org
+czMailAlias: mrbill@ca-zephyr.org
+czMailDelivery: mac@shelter-imap.ca-zephyr.org
+uidNumber: 2000
+gidNumber: 2000
+mail: bill@ca-zephyr.org
+krb5PrincipalName: mac@CA-ZEPHYR.ORG
+czComments: Yahoo: bill3i
+czPrivilegeGroup: ldap:admin
+czPrivilegeGroup: ring:admin
+czPrivilegeGroup: wallet:admin
+postalAddress: 221 Shelter Cove Drive
+homeDirectory: /home/mac
+czWorkPhone: 123-123-1234
+loginShell: /bin/bash
+
+dn: uid=mir,ou=people,dc=ca-zephyr,dc=org
+objectClass: top
+objectClass: person
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: inetOrgPerson
+objectClass: czPerson
+objectClass: krb5Principal
+objectClass: czPerson
+cn: Miriam MacAllister
+cn: Miriam
+givenName: Miriam
+sn: MacAllister
+uid: mir
+homeDirectory: /home/mir
+gidNumber: 2003
+uidNumber: 2003
+czMailAlias: miriam@ca-zephyr.org
+czMailAlias: mirmeyd@ca-zephyr.org
+czMailAlias: mir@mirmeyd.com
+czMailAlias: miriam@macallister.grass-valley.ca.us
+czMailAlias: mir@macallister.dana-point.ca.us
+czMailAlias: miriam@macallister.dana-point.ca.us
+czMailAlias: mir@ca-zephyr.org
+czMailAlias: mirmeyd@macallister.grass-valley.ca.us
+czMailAlias: wonderwoman@mirmeyd.com
+czMailAlias: miriam@mirmeyd.com
+czMailAlias: mermaid@mirmeyd.com
+czMailAlias: mirmac@ca-zephyr.org
+czMailAlias: cousins@ca-zephyr.org
+czMailDistributionID: bill-mir
+czMailDistributionID: rings
+czMailDelivery: mir@shelter-imap.ca-zephyr.org
+krb5PrincipalName: mir@CA-ZEPHYR.ORG
+telephoneNumber: 123-123-1234
+mail: mir@mirmeyd.com
+loginShell: /bin/bash
+czWorkPhone: 123-123-1234
+czPrivilegeGroup: ring:admin
+
+dn: uid=whm,ou=people,dc=ca-zephyr,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: czPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: krb5Principal
+cn: B MacAllister
+cn: mr billy
+czMailDelivery: whm@shelter-imap.ca-zephyr.org
+krb5PrincipalName: whm@CA-ZEPHYR.ORG
+gidNumber: 1783
+homeDirectory: /home/whm
+mail: whm@ca-zephyr.org
+sn: MacAllister
+uid: whm
+uidNumber: 1783
+l: cranbury
+postalAddress: 123 main
+postalCode: 01010
+st: nj
+czMailAlias: zoot@ca-zephyr.org
+loginShell: /bin/bash
+givenName: Test
+czPrivilegeGroup: wallet:user
+
+dn: cn=f5,uid=mac,ou=people,dc=ca-zephyr,dc=org
+objectClass: top
+objectClass: czPersonNote
+cn: f5
+description: F5 web site access
+labeledURI: http://www.f5.com
+labeledUriVisibility: Y
+uid: whm@stanford.edu
+czCredential: somepassword
+
+dn: cn=pi,uid=mac,ou=people,dc=ca-zephyr,dc=org
+objectClass: top
+objectClass: czPersonNote
+cn: pi
+description: Pi at Raspberry
+labeledUriVisibility: Y
+uid: pi
+czCredential: somepassword
+

@@ -184,6 +184,11 @@ if ($base_filter == '') {
 
 $this_princ = getenv('REMOTE_USER');
 $this_uid = krb_uid($this_princ);
+
+$my_cn  = empty($_SESSION['MY_commonname'])  ? '' : $_SESSION['MY_commonname'];
+$my_url = empty($_SESSION['MY_url'])         ? '' : $_SESSION['MY_url'];
+$my_desc = empty($_SESSION['MY_description'])
+        ? '' : $_SESSION['MY_description'];
 ?>
 
 <div class="row">
@@ -193,18 +198,18 @@ $this_uid = krb_uid($this_princ);
 
     <label for="in_commonname">Name</label>
     <input type="text" name="in_commonname"
-           value="<?php print $_SESSION['MY_commonname'];?>"
+           value="<?php print $my_cn;?>"
            placeholder="Fragment of a Name">
     <br/>
 
     <label for="in_description">Description</label>
     <input type="text" name="in_description"
-           value="<?php print $_SESSION['MY_description'];?>">
+           value="<?php print $my_desc;?>">
     <br/>
 
     <label for="in_url">URL</label>
     <input type="text" name="in_url"
-           value="<?php print $_SESSION['MY_url'];?>">
+           value="<?php print $my_url;?>">
     <br/>
 
     <p align="center">Search:
@@ -234,7 +239,7 @@ $attr_list = array('cn',
                     $CONF['attr_link_visibility']);
 $attrs = implode(',', $attr_list);
 
-$cmd = 'KRB5CCNAME=' . $thisTgt . ' /usr/bin/macdir-ldap-read'
+$cmd = 'KRB5CCNAME=' . $thisTgt . ' /usr/bin/macdir-pw-read'
    . ' --base=' . $link_base
    . ' --filter="' . $filter . '"'
    . ' --attrs=' . $attrs;
@@ -255,7 +260,7 @@ if (!empty($_SERVER['REMOTE_USER'])) {
                  . $link_filter
                  . ')';
     $ldap_json = shell_exec('KRB5CCNAME=' . $thisTgt
-	   . ' /home/mac/macdir-ldap-read --conf=/etc/macdir/ldap.conf'
+	   . ' /home/mac/macdir-pw-read --conf=/etc/macdir/ldap.conf'
 	   . ' -b ' . $ldap_user_base
 	   . '"' . $filter . '"'
 	   . $attrs);

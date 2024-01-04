@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
-# macdir-ldap-update --- Update an LDAP directory
+# macdir-pw-update --- Update an LDAP directory
 #
-# Copyright 2023, CZ Software
+# Copyright 2023-2024, CZ Software
 
 use AppConfig qw(:argcount :expand);
 use Carp;
@@ -22,6 +22,7 @@ my $opt_debug;
 my $opt_example;
 my $opt_help;
 my $opt_manual;
+my $opt_update;
 
 ##############################################################################
 # Subroutines
@@ -107,7 +108,23 @@ sub read_conf {
 }
 
 #-------------------------------------------------------------------------
-# Set valid attribute hash
+# display an example configuration file
+
+sub show_example_conf {
+
+    msg("# file: $opt_conf");
+    msg('ldap_bindtype = gssapi|simple');
+    msg('ldap_base = dc=ca-zephyr,dc=org');
+    msg('ldap_host = localhost');
+    msg('ldap_port = 389');
+    msg('# ldap_password = somepassword');
+    msg('# ldap_user = some-user-dn');
+
+    return;
+}
+
+#-------------------------------------------------------------------------
+# Set the valid attribute hash
 
 sub set_valid_attr_list {
 
@@ -178,10 +195,10 @@ sub set_valid_attr_list {
 sub find_user_dn {
     my ($id) = @_;
 
-    if (!$id) {
-        if ($ENV{'REMOTE_USER'}) {
-            $id = $ENV{'REMOTE_USER'};
-        } else {
+    if ($ENV{'REMOTE_USER'}) {
+        $id = $ENV{'REMOTE_USER'};
+    } else {
+        if (!$id) {
             msg("ERROR: no user identifier specified");
             return;
         }
@@ -233,7 +250,7 @@ sub find_user_dn {
 }
 
 #-------------------------------------------------------------------------
-# Add a personal entry
+# Add an entry
 
 sub add_pw {
     my ($cn, $av_ref) = @_;
@@ -269,15 +286,20 @@ sub add_pw {
         $ldap_av{$v_attr} = ['Y'];
     }
 
-    msg("Adding entry: $cn");
-    my $status = $LDAP->add_s($dn, \%ldap_av);
+    if ($opt_update) {
+        msg("Adding entry: $cn");
+        my $status = $LDAP->add_s($dn, \%ldap_av);
 
-    if ($status != 0) {
-        msg("status: $status");
-        msg('errno:' . $LDAP->errno . ' errstring:' . $LDAP->errstring);
-        $LDAP->perror("ERROR: problem adding $dn\n");
-        exit 1;
+        if ($status != 0) {
+            msg("status: $status");
+            msg('errno:' . $LDAP->errno . ' errstring:' . $LDAP->errstring);
+            $LDAP->perror("ERROR: problem adding $dn\n");
+            exit 1;
+        }
+    } else {
+        msg("Proposing to add $dn");
     }
+
     return;
 }
 
@@ -397,12 +419,21 @@ sub update_pw {
             msg("ERROR: update of $cn abandoned");
             return;
         }
-        msg("Updating $cn\n");
-        msg($update_msg);
-        $LDAP->modify_s($dn, \%ldap_mods);
-        if ($LDAP->errno != 0) {
-            msg('errno: ' . $LDAP->errno . 'errstring:' . $LDAP->errstring);
-            $LDAP->perror("ERROR: problem updating $dn\n");
+        if ($opt_update) {
+            msg("Updating $cn\n");
+            msg($update_msg);
+            $LDAP->modify_s($dn, \%ldap_mods);
+            if ($LDAP->errno != 0) {
+                msg(    'errno: '
+                      . $LDAP->errno
+                      . 'errstring:'
+                      . $LDAP->errstring);
+                $LDAP->perror("ERROR: problem updating $dn\n");
+            }
+        } else {
+            msg("Proposing to update $dn");
+            msg('Proposed updates:');
+            msg($update_msg);
         }
     }
 
@@ -410,7 +441,7 @@ sub update_pw {
 }
 
 # --------------------------------------------------------------------
-# Delete an A record
+# Delete pw entry
 
 sub delete_pw {
     my ($cn) = @_;
@@ -422,12 +453,16 @@ sub delete_pw {
     my $dn = "cn=$cn,$user_base";
 
     msg("Deleting $dn\n");
-    my $status = $LDAP->delete_s($dn);
-    if ($status != 0) {
-        msg("status: $status\n");
-        msg('errno:' . $LDAP->errno . ' errstring:' . $LDAP->errstring);
-        $LDAP->perror("ERROR: problem deleting $dn\n");
-        exit 1;
+    if ($opt_update) {
+        my $status = $LDAP->delete_s($dn);
+        if ($status != 0) {
+            msg("status: $status\n");
+            msg('errno:' . $LDAP->errno . ' errstring:' . $LDAP->errstring);
+            $LDAP->perror("ERROR: problem deleting $dn\n");
+            exit 1;
+        }
+    } else {
+        msg("Proposing to delete $dn");
     }
 
     return;
@@ -443,7 +478,8 @@ GetOptions(
     'debug'   => \$opt_debug,
     'example' => \$opt_example,
     'help'    => \$opt_help,
-    'manual'  => \$opt_manual
+    'manual'  => \$opt_manual,
+    'update'  => \$opt_update
 );
 
 # -- Flush output immediately
@@ -451,11 +487,11 @@ local $| = 1;
 
 # Display an example configuration file
 if ($opt_example) {
-    example_conf();
+    show_example_conf();
     exit;
 }
 
-if ($ARGV[0] eq 'help') {
+if (!scalar(@ARGV) || $ARGV[0] eq 'help') {
     $opt_help = 1;
 }
 if ($ARGV[0] eq 'manual') {
@@ -503,18 +539,21 @@ if (!$action) {
     msg('ERROR: Missing action');
     exit 1;
 }
+my $cn = shift(@ARGV);
+if (!$cn) {
+    msg('ERROR: Missing common name');
+    exit 1;
+}
 
 dbg("action: $action");
+dbg("cn: $cn");
 if ($action =~ /^add$/xmsi) {
-    my $cn   = shift(@ARGV);
     my @vals = @ARGV;
     add_pw($cn, \@vals);
 } elsif ($action =~ /^update$/xmsi) {
-    my $cn      = shift(@ARGV);
     my @updates = @ARGV;
     update_pw($cn, \@updates);
 } elsif ($action =~ /^delete$/xmsi) {
-    my $cn = shift(@ARGV);
     delete_pw($cn);
 } else {
     msg("ERROR: action '$action' unknown");
@@ -529,56 +568,65 @@ __END__
 
 =head1 NAME
 
-cz-pdns-ldap - Update PowerDNS entries in LDAP
+macdir-pw-update - Update person entries in LDAP
 
 =head1 SYNOPSIS
 
-    cz-pdns-ldap find [<name fragment>] [<options>]
-    cz-pdns-ldap show <hostname> [<options>]
-
-    cz-pdns-ldap add <type> <id> [<attributes>] [<options>]
-    cz-pdns-ldap update <hostname> [<attributes>] [<options>]
-    cz-pdns-ldap delete <type> <hostname>|<ip> [--debug]
-
-    cz-pdns-ldap create <hostname> <ip> [<attributes>] [<options>]
-    cz-pdns-ldap purge <hostname> [--debug]
+macdir-pw-update add|update|delete <cn> <attr>(=/)<val> \
+     [<attr>(=/)<val>] [options]
 
 =head1 DESCRIPTION
 
-Update Power DNS entries in an LDAP directory.
+Add, update, and delete LDAP entries.
+
+The updates rely on the environment variable REMOTE_USER to construct
+the distinguished name (DN) to update.  If the REMOTE_USER contains an
+'@' then it is assumed to be a Kerberos principal and a search is
+performed to find the user's DN.  Otherwise the REMOTE_USER is used to
+perform an LDAP search using the filter of the form
+(&(uid=<REMOTE_USR>)(objectclass=person)).
+
+One the user base DN is established updates are performed to the DN
+cn=<command line cn>,<user base dn>.
 
 =head1 ACTIONS
 
 =over 4
 
-=item add <type> <hostname> <ip address>
+=item add cn <attr=val> [<attr=val>]
 
-Add directory entries for A, PTR, CNAME DNS records or add an LDAP
-mapping entry for Kerberos principals.
+Add an entry to the directory.
 
-=item create <hostname> <ip>
+=item update cn attr(=/)val
 
-Create both A and PTR records and a Kerberos LDAP mapping entry.
+Update existing entries in the directory.
 
-=item delete <type> <hostname>
+Values to be added are specified as attr=val.  If the attribute is
+single valued the existing value will be replaced otherwise the attribute
+is added to the existing entry.
 
-Delete an A, PTR, CNAME, and Kerberos LDAP entries.
+Values to be deleted are specified as attr/val or just attr/.  If no
+value is spefified then all values are deleted.
 
-=item find <hostname fragment>
+=item delete cn
 
-=item purge <hostname>
-
-Delete A, PTR, and Kerberos entries in the directory.
-
-=item show <hostname>
-
-=item update <hostname>
+Delete an entry from the directory.
 
 =back
 
 =head1 OPTIONS
 
 =over 4
+
+=item --conf=<file path>
+
+The configuration file to use.  The default path is
+/etc/macdir/ldap.conf.  See --example for documentation of value
+configuration file entries.
+
+=item --debug
+
+Display debugging messages.
 
 =item --example
 
@@ -592,20 +640,31 @@ Display short help text.
 
 Display the complete documentation.
 
-=item --debug
+=item --update
 
-Display debugging messages.
+Perform the updates.  The default is to show what will be updated without
+changing anything.
 
 =back
 
 =head1 EXAMPLES
 
-=head2 Add SRV entry
+=head2 Add an entry
 
-    cz-pdns-ldap add srv afs-prserver udp 86400 \
-        2 10 7003 afs1.cz.org \
-        2 20 7003 afs2.cz.org \
-        2 10 7003 afs3.cz.org
+    macdir-pw-update add router \
+        "description=Ned's Router Password" czCredential=somesecret \
+        --update
+
+=head2 Show what updates will be performed
+
+    macdir-pw-update update router \
+        czCredential/ \
+        czCredential=newsecret \
+        --update
+
+=head2 Delete an entry
+
+    macdir-pw-update delete router --update
 
 =head1 AUTHOR
 
@@ -613,7 +672,7 @@ Bill MacAllister <bill@ca-zephyr.org>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2023, CZ Software
+Copyright (C) 2023-2024, CZ Software
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

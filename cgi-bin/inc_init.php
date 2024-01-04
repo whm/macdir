@@ -34,6 +34,14 @@ function set_val ($txt) {
 }
 
 # --------------------------------------------------------------
+# Test if a variable is set and if not return an empty string
+function set_conf_val ($txt) {
+    global $CONF;
+    $return_txt = empty(trim($txt)) ? '' : $txt;
+    return $return_txt;
+}
+
+# --------------------------------------------------------------
 # Return the UID portion of a Kerberos principal
 function krb_uid ($p = '') {
     if (isset($p) && strlen($p) > 0) {

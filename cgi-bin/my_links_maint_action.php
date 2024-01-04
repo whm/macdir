@@ -16,12 +16,20 @@ function is_uid($uid) {
 
     $return_attr = array('objectclass');
     $uid_filter = "(&(objectclass=person)(uid=$uid))";
-    $sr = @ldap_search ($ds, $ldap_user_base, $uid_filter, $return_attr);
-    $info = @ldap_get_entries($ds, $sr);
-    if ($info["count"] > 0) {
-        $found = 1;
-    }
+    # FIXME - search needed to find the user
+    
+    $found = 1;
     return $found;
+}
+
+// --------------------------------------------------------------
+// Return a space if given a non-empty string
+
+function add_space($s) {
+    if (!empty($s)) {
+        return ' ';
+    }
+    return;
 }
 
 // --------------------------------------------------------------
@@ -100,9 +108,8 @@ $access_ids = ['read', 'write'];
 $in_dn = empty($_REQUEST['in_dn']) ? '' : $_REQUEST['in_dn'];
 $in_cn = empty($_REQUEST['in_cn']) ? '' : $_REQUEST['in_cn'];
 
-$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
-
-$link_base = 'uid=' . krb_uid() . ',' . $ldap_user_base;
+$link_base   = 'uid=' . krb_uid($_SERVER['REMOTE_USER']) . ','
+             . $ldap_user_base;
 $link_filter = '(&(objectclass=' . $CONF['oc_link'] . ")(cn=$in_cn))";
 
 if (!empty($_REQUEST['in_button_add'])) {
@@ -117,27 +124,33 @@ if (!empty($_REQUEST['in_button_add'])) {
 
         // check for duplicates first
 
-        $filter = "(cn=$in_cn)";
+        $filter = '(&(objectclass=' . $CONF['oc_link'] . ")(cn=$in_cn))";
         $attrs = array ('cn');
-        $sr = @ldap_search ($ds, $link_base, $link_filter, $attrs);
-        $entries = @ldap_get_entries($ds, $sr);
-        $cn_cnt = $entries["count"];
+        $cmd = 'KRB5CCNAME=' . $this_tgt . ' /usr/bin/macdir-pw-read'
+           . ' --base=' . $link_base
+           . ' --filter="' . $link_filter . '"'
+           . ' --attrs=cn';
+        $ldap_json = shell_exec($cmd);
+        $ret_cnt = 0;
+        $entries = array();
+        if (isset($ldap_json) && strlen($ldap_json) > 0) {
+            $entries = json_decode($ldap_json, true);
+            foreach ($entries as $dn => $entry) {
+                $this_dn = $dn;
+                $ret_cnt++;
+            }
+        }
+
         if ($cn_cnt>0) {
-            $a_cn = $entries[0]['cn'][0];
+            $a_cn = $entries['cn'][0];
             $_SESSION['in_msg'] .= warn_html("cn is already in use ($a_cn)");
             $_SESSION['in_msg'] .= warn_html('Add of entry aborted');
         } else {
 
             // add the new entry
+            $_SESSION['in_msg'] .= ok_html("Adding = $in_cn");
 
-            $ldap_entry["objectclass"][] = "top";
-            $_SESSION['in_msg'] .= ok_html('Adding objectClass = top');
-            $ldap_entry["objectclass"][] = $CONF['oc_link'];
-            $_SESSION['in_msg']
-                .= ok_html('Adding objectClass = ' . $CONF['oc_link']);
-            $ldap_entry["cn"][] = $in_cn;
-            $_SESSION['in_msg'] .= ok_html("Adding cn = $in_cn");
-
+            $ldap_av_list = array();
             foreach ($fld_list as $fld => $attr) {
                 $val = stripslashes(trim($_REQUEST["in_$fld"]));
                 if ($fld == $CONF['attr_cred'] && !empty($CONF['key'])) {
@@ -149,29 +162,19 @@ if (!empty($_REQUEST['in_button_add'])) {
                     } else {
                         $_SESSION['in_msg'] .= ok_html("Adding $fld = $val");
                     }
-                    $ldap_entry[$attr][0] = $val;
+                    $ldap_av_list .= add_space($ldap_av_list);
+                    $ldap_av_list .= "'$attr=$val'";
                 }
             }
 
-            // add data to directory
-            $this_dn = "cn=$in_cn,$link_base";
-            if (@ldap_add($ds, $this_dn, $ldap_entry)) {
-                $_SESSION['in_msg'] .= ok_html('Directory updated');
-            } else {
-                $_SESSION['in_msg'] .= warn_html("Problem adding $this_dn");
-                $ldapErr = ldap_errno ($ds);
-                $ldapMsg = ldap_error ($ds);
-                $_SESSION['in_msg'] .= warn_html("Error: $ldapErr, $ldapMsg");
-            }
-
-            // Add any access controls
             foreach ($access_ids as $a) {
                 $in_list = 'in_new_' . strtolower($a);
                 $in_attr = $CONF["attr_link_${a}"];
                 $a_user = trim(strtok($_REQUEST[$in_list], ','));
                 while ($a_user) {
                     if (is_uid($a_user)) {
-                        multi_check($this_dn, $in_attr, $a_user, $a_user);
+                        $ldap_av_list .= add_space($ldap_av_list);
+                        $ldap_av_list .= "'$in_attr=$a_user'";
                     } else {
                         $_SESSION['in_msg']
                             .= warn_html("ERROR: Invalid UID $a_uid");
@@ -179,6 +182,10 @@ if (!empty($_REQUEST['in_button_add'])) {
                     $a_user = trim(strtok(','));
                 }
             }
+            
+            $cmd = 'KRB5CCNAME=' . $this_tgt . ' /usr/bin/macdir-pw-update'
+               . " add $cn $ldap_av_list";           
+            $return_text = shell_exec($cmd);
         }
     }
 
@@ -193,18 +200,36 @@ if (!empty($_REQUEST['in_button_add'])) {
         $ret_cnt = 0;
     } else {
 
-        $sr = @ldap_read ($ds, $in_dn, $link_filter, $attr_list);
-        $info = @ldap_get_entries($ds, $sr);
-        $err = ldap_errno ($ds);
-        if ($err) {
-            $err_msg = ldap_error ($ds);
-            $_SESSION['in_msg'] .= "errors: $err $err_msg<br>\n";
+        $cmd = 'KRB5CCNAME=' . $this_tgt . ' /usr/bin/macdir-pw-read'
+           . ' --base=' . $link_base
+           . ' --filter="' . $link_filter . '"';
+        $ldap_json = shell_exec($cmd);
+        $ret_cnt   = 0;
+        $info      = array();
+        $entries   = array();
+        $err_msg   = '';
+        if (isset($ldap_json) && strlen($ldap_json) > 0) {
+            $entries = json_decode($ldap_json, true);
+            foreach ($entries as $dn => $entry) {
+                $this_dn = $dn;
+                $ret_cnt++;
+            }
         }
-        $ret_cnt = $info["count"];
+        if ($ret_cnt == 1) {
+            $entry_found = 1;
+            $info = $entries[$this_dn];
+        } elseif ($retcnt > 1) {
+            $err_msg = "More than one entry found for $link_filter search.";
+            $_SESSION['in_msg'] .= warn_html($err_msg);
+        } else {
+            $err_msg = 'No entry found.';
+            $_SESSION['in_msg'] .= warn_html($err_msg);
+        }
     }
-    if ($ret_cnt) {
-        $add_cnt = 0;
-
+    if ($ret_cnt == 1) {
+        $add_cnt      = 0;
+        $ldap_av_list = '';
+        
         foreach ($fld_list as $fld => $attr) {
 
             $val_in = '';
@@ -217,68 +242,29 @@ if (!empty($_REQUEST['in_button_add'])) {
                 $val_in = $CONF['key_prefix'] . macdir_encode($val_in);
             }
 
-            $val_ldap = empty($info[0]["$attr"][0])
-                ? '' : trim($info[0]["$attr"][0]);
+            $val_ldap = empty($info["$attr"][0])
+                ? '' : trim($info["$attr"][0]);
 
             if ( $val_in != $val_ldap ) {
                 if (empty($val_in)) {
                     if (!empty($val_ldap)) {
-
                         // delete the attribute
-                        $new_data["$attr"] = $val_ldap;
-                        $r = @ldap_mod_del($ds, $in_dn, $new_data);
-                        $err = @ldap_errno ($ds);
-                        $err_msg = ldap_error ($ds);
-                        $tmp_err = error_reporting($old_err);
+                        $ldap_av_list .= add_space($ldap_av_list);
+                        $ldap_av_list .= "'" . $new_data["$attr"]
+                            . '/' . $val_ldap;
                         $_SESSION['in_msg']
                             .= ok_html("$attr = $val_ldap deleted");
-                        if ($err>0) {
-                            $_SESSION['in_msg']
-                                .= warn_html('LDAP error deleting attribute '
-                                . "$attr = $val_ldap : $err - $err_msg");
-                        }
-
                     }
                 } else {
-
-                    $new_data["$attr"] = $val_in;
-
-                    // try and replace it, if that fails try and add it
-
-                    // replace
-                    $r = @ldap_mod_replace($ds, $in_dn, $new_data);
-                    $err = ldap_errno ($ds);
-                    $err_msg = ldap_error ($ds);
-                    if ($err == 0) {
-                        if ($attr == $CONF['attr_cred']) {
-                            $_SESSION['in_msg']
-                                .= ok_html("$attr replaced");
-                        } else {
-                            $_SESSION['in_msg']
-                                .= ok_html("$attr replaced with $val_in");
-                        }
-                    } else {
-                        // add
-                        $add_cnt++;
-                        $add_data["$attr"][] = $val_in;
-                        $_SESSION['in_msg']
-                            .= ok_html("Added $attr = $in_val");
-                    }
+                   // perform update
+                   $new_data["$attr"] = $val_in;
+                   $ldap_av_list .= add_space($ldap_av_list);
+                   $ldap_av_list .= "'" . $new_data["$attr"]
+                            . '/' . $val_in;
+                   $ldap_av_list .= add_space($ldap_av_list);
+                   $ldap_av_list .= "'" . $new_data["$attr"]
+                            . '=' . $val_in;
                 }
-            }
-        }
-
-        // -- add attributes
-        if ($add_cnt>0) {
-
-            // -- add the needed attributes
-            $r = @ldap_mod_add($ds, $in_dn, $add_data);
-            $err = ldap_errno ($ds);
-            $err_msg = ldap_error ($ds);
-            if ($err != 0) {
-                $_SESSION['in_msg']
-                    .= warn_html('LDAP error adding attributes: '
-                    . "$err - $err_msg");
             }
         }
 
@@ -287,45 +273,41 @@ if (!empty($_REQUEST['in_button_add'])) {
             // add new
             $in_list = 'in_new_' . strtolower($a);
             $in_attr = $CONF["attr_link_${a}"];
-        $a_user = trim(strtok($_REQUEST[$in_list], ','));
+            $a_user = trim(strtok($_REQUEST[$in_list], ','));
             while ($a_user) {
                 if (is_uid($a_user)) {
-                    multi_check($in_dn, $in_attr, $a_user, $a_user);
+                    $ldap_av_list .= add_space($ldap_av_list);
+                    $ldap_av_list .= "'$in_attr/$a_user'";
+                    $ldap_av_list .= add_space($ldap_av_list);
+                    $ldap_av_list .= "'$in_attr=$a_user'";
                 } else {
                     $_SESSION['in_msg']
-                        .= warn_html("ERROR: Invalid UID $a_uid");
+                      .= warn_html("ERROR: Invalid UID $a_uid");
                 }
                 $a_user = trim(strtok(','));
             }
-            // Update old
-            $in_prefix  = 'in_' . strtolower($a) . 'uid_';
-            $in_var_cnt = $_REQUEST[$in_prefix . 'cnt'];
-            if ($in_var_cnt>0) {
-                for ($i=0; $i<$in_var_cnt; $i++) {
-                    $a_flag = empty($_REQUEST[$in_prefix . $i])
-                            ? '' : $_REQUEST[$in_prefix . $i];
-                    $a_cur  = empty($_REQUEST[$in_prefix . "current_$i"])
-                            ? '' : $_REQUEST[$in_prefix . "current_$i"];
-                    multi_check($in_dn, $in_attr, $a_flag, $a_cur);
-                }
-            }
+        }
+            
+        // -- perform the update
+        if (strlen($ldap_av_list) > 0) {
+            $cmd = 'KRB5CCNAME=' . $this_tgt . ' /usr/bin/macdir-pw-update'
+               . " add $cn $ldap_av_list";           
+            $update_text = shell_exec($cmd);
         }
     }
-
 } elseif (!empty($_REQUEST['in_button_delete'])) {
 
     // -----------------------------------------------------
     // Delete an LDAP Entry
     // -----------------------------------------------------
 
-    $r = @ldap_delete($ds, $in_dn);
-    $err = ldap_errno ($ds);
-    $err_msg = ldap_error ($ds);
-    if ($err == 0) {
-        $_SESSION['in_msg'] .= ok_html("$in_dn deleted");
+    $cmd = 'KRB5CCNAME=' . $this_tgt . ' /usr/bin/macdir-pw-update'
+          . " delete $in_cn";
+    $update_text = shell_exec($cmd);
+    if (preg_match('/ERROR/', $update_text, $mat)) {
+        $_SESSION['in_msg'] .= warn_html($update_text);
     } else {
-        $_SESSION['in_msg']
-            .= warn_html("ldap error deleting $in_dn: $err - $err_msg");
+        $_SESSION['in_msg'] .= ok_html($update_text);
     }
 
 } else {
