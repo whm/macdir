@@ -17,7 +17,7 @@ function is_uid($uid) {
     $return_attr = array('objectclass');
     $uid_filter = "(&(objectclass=person)(uid=$uid))";
     # FIXME - search needed to find the user
-    
+
     $found = 1;
     return $found;
 }
@@ -112,6 +112,8 @@ $link_base   = 'uid=' . krb_uid($_SERVER['REMOTE_USER']) . ','
              . $ldap_user_base;
 $link_filter = '(&(objectclass=' . $CONF['oc_link'] . ")(cn=$in_cn))";
 
+$this_tgt = getenv('KRB5CCNAME');
+
 if (!empty($_REQUEST['in_button_add'])) {
 
     // -----------------------------------------------------
@@ -141,7 +143,7 @@ if (!empty($_REQUEST['in_button_add'])) {
             }
         }
 
-        if ($cn_cnt>0) {
+        if ($ret_cnt>0) {
             $a_cn = $entries['cn'][0];
             $_SESSION['in_msg'] .= warn_html("cn is already in use ($a_cn)");
             $_SESSION['in_msg'] .= warn_html('Add of entry aborted');
@@ -150,7 +152,7 @@ if (!empty($_REQUEST['in_button_add'])) {
             // add the new entry
             $_SESSION['in_msg'] .= ok_html("Adding = $in_cn");
 
-            $ldap_av_list = array();
+            $ldap_av_list = '';
             foreach ($fld_list as $fld => $attr) {
                 $val = stripslashes(trim($_REQUEST["in_$fld"]));
                 if ($fld == $CONF['attr_cred'] && !empty($CONF['key'])) {
@@ -182,9 +184,9 @@ if (!empty($_REQUEST['in_button_add'])) {
                     $a_user = trim(strtok(','));
                 }
             }
-            
+
             $cmd = 'KRB5CCNAME=' . $this_tgt . ' /usr/bin/macdir-pw-update'
-               . " add $cn $ldap_av_list";           
+               . " add $in_cn $ldap_av_list";
             $return_text = shell_exec($cmd);
         }
     }
@@ -229,7 +231,7 @@ if (!empty($_REQUEST['in_button_add'])) {
     if ($ret_cnt == 1) {
         $add_cnt      = 0;
         $ldap_av_list = '';
-        
+
         foreach ($fld_list as $fld => $attr) {
 
             $val_in = '';
@@ -287,11 +289,11 @@ if (!empty($_REQUEST['in_button_add'])) {
                 $a_user = trim(strtok(','));
             }
         }
-            
+
         // -- perform the update
         if (strlen($ldap_av_list) > 0) {
             $cmd = 'KRB5CCNAME=' . $this_tgt . ' /usr/bin/macdir-pw-update'
-               . " add $cn $ldap_av_list";           
+               . " add $in_cn $ldap_av_list";
             $update_text = shell_exec($cmd);
         }
     }

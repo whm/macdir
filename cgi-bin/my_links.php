@@ -36,6 +36,10 @@ function display_links($edit_flag, $title, $entries) {
 
     global $CONF;
 
+    if (!is_array($entries)) {
+        return;
+    }
+    
     echo "<h2>$title</h2>\n";
     echo "<table>\n";
     echo "<thead>\n";
