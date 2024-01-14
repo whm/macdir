@@ -57,12 +57,9 @@ function multi_check($a_dn, $a_fld, $a_flag, $a_val) {
             $err_msg = ldap_error ($ds);
             if ($err>0) {
                 $e = "$err - $err_msg";
-                $_SESSION['in_msg'] .=
-                    warn_html(
-                        "LDAP error removing $a_fld=$a_val from $a_dn: $e");
+                set_warn("LDAP error removing $a_fld=$a_val from $a_dn: $e");
             } else {
-                $_SESSION['in_msg'] .=
-                    ok_html("$a_fld=$a_val removed from $a_dn");
+                set_ok("$a_fld=$a_val removed from $a_dn");
             }
         }
 
@@ -74,12 +71,9 @@ function multi_check($a_dn, $a_fld, $a_flag, $a_val) {
             $err_msg = ldap_error ($ds);
             if ($err != 0) {
                 $e =  "$err - $err_msg";
-                $_SESSION['in_msg']
-                    .= warn_html(
-                        "LDAP error adding $a_fld=$a_val to $a_dn: $e");
+                set_warn("LDAP error adding $a_fld=$a_val to $a_dn: $e");
             } else {
-                $_SESSION['in_msg']
-                    .= ok_html("$a_fld=$a_val added to $a_dn");
+                set_ok("$a_fld=$a_val added to $a_dn");
             }
         }
     }
@@ -121,7 +115,7 @@ if (!empty($_REQUEST['in_button_add'])) {
     // -----------------------------------------------------
 
     if (empty($in_cn)) {
-        $_SESSION['in_msg'] .= warn_html('Common Name is required');
+        set_warn('Common Name is required');
     } else {
 
         // check for duplicates first
@@ -145,12 +139,12 @@ if (!empty($_REQUEST['in_button_add'])) {
 
         if ($ret_cnt>0) {
             $a_cn = $entries['cn'][0];
-            $_SESSION['in_msg'] .= warn_html("cn is already in use ($a_cn)");
-            $_SESSION['in_msg'] .= warn_html('Add of entry aborted');
+            set_warn("cn is already in use ($a_cn)");
+            set_warn('Add of entry aborted');
         } else {
 
             // add the new entry
-            $_SESSION['in_msg'] .= ok_html("Adding = $in_cn");
+            set_ok("Adding = $in_cn");
 
             $ldap_av_list = '';
             foreach ($fld_list as $fld => $attr) {
@@ -160,9 +154,9 @@ if (!empty($_REQUEST['in_button_add'])) {
                 }
                 if (!empty($val)) {
                     if ($fld == $CONF['attr_cred']) {
-                        $_SESSION['in_msg'] .= ok_html("Adding $fld");
+                        set_ok("Adding $fld");
                     } else {
-                        $_SESSION['in_msg'] .= ok_html("Adding $fld = $val");
+                        set_ok("Adding $fld = $val");
                     }
                     $ldap_av_list .= add_space($ldap_av_list);
                     $ldap_av_list .= "'$attr=$val'";
@@ -178,8 +172,7 @@ if (!empty($_REQUEST['in_button_add'])) {
                         $ldap_av_list .= add_space($ldap_av_list);
                         $ldap_av_list .= "'$in_attr=$a_user'";
                     } else {
-                        $_SESSION['in_msg']
-                            .= warn_html("ERROR: Invalid UID $a_uid");
+                        set_warn("ERROR: Invalid UID $a_uid");
                     }
                     $a_user = trim(strtok(','));
                 }
@@ -198,7 +191,7 @@ if (!empty($_REQUEST['in_button_add'])) {
     // -----------------------------------------------------
 
     if (empty($in_cn)) {
-        $_SESSION['in_msg'] .= warn_html('No entry to update');
+        set_warn('No entry to update');
         $ret_cnt = 0;
     } else {
 
@@ -220,12 +213,10 @@ if (!empty($_REQUEST['in_button_add'])) {
         if ($ret_cnt == 1) {
             $entry_found = 1;
             $info = $entries[$this_dn];
-        } elseif ($retcnt > 1) {
-            $err_msg = "More than one entry found for $link_filter search.";
-            $_SESSION['in_msg'] .= warn_html($err_msg);
+        } elseif ($ret_cnt > 1) {
+            set_warn("More than one entry found for $link_filter search.");
         } else {
-            $err_msg = 'No entry found.';
-            $_SESSION['in_msg'] .= warn_html($err_msg);
+            set_warn('No entry found.');
         }
     }
     if ($ret_cnt == 1) {
@@ -252,20 +243,16 @@ if (!empty($_REQUEST['in_button_add'])) {
                     if (!empty($val_ldap)) {
                         // delete the attribute
                         $ldap_av_list .= add_space($ldap_av_list);
-                        $ldap_av_list .= "'" . $new_data["$attr"]
-                            . '/' . $val_ldap;
-                        $_SESSION['in_msg']
-                            .= ok_html("$attr = $val_ldap deleted");
+                        $ldap_av_list .= "'$attr/$val_ldap'";
+                        set_ok("$attr = $val_ldap deleted");
                     }
                 } else {
                    // perform update
                    $new_data["$attr"] = $val_in;
                    $ldap_av_list .= add_space($ldap_av_list);
-                   $ldap_av_list .= "'" . $new_data["$attr"]
-                            . '/' . $val_in;
-                   $ldap_av_list .= add_space($ldap_av_list);
-                   $ldap_av_list .= "'" . $new_data["$attr"]
-                            . '=' . $val_in;
+                   $ldap_av_list .= "'${attr}/${val_ldap}'";
+                   $ldap_av_list .= ' ';
+                   $ldap_av_list .= "'${attr}=${val_in}'";
                 }
             }
         }
@@ -280,11 +267,10 @@ if (!empty($_REQUEST['in_button_add'])) {
                 if (is_uid($a_user)) {
                     $ldap_av_list .= add_space($ldap_av_list);
                     $ldap_av_list .= "'$in_attr/$a_user'";
-                    $ldap_av_list .= add_space($ldap_av_list);
+                    $ldap_av_list .= '';
                     $ldap_av_list .= "'$in_attr=$a_user'";
                 } else {
-                    $_SESSION['in_msg']
-                      .= warn_html("ERROR: Invalid UID $a_uid");
+                    set_warn("ERROR: Invalid UID $a_uid");
                 }
                 $a_user = trim(strtok(','));
             }
@@ -293,7 +279,7 @@ if (!empty($_REQUEST['in_button_add'])) {
         // -- perform the update
         if (strlen($ldap_av_list) > 0) {
             $cmd = 'KRB5CCNAME=' . $this_tgt . ' /usr/bin/macdir-pw-update'
-               . " add $in_cn $ldap_av_list";
+               . " update $in_cn $ldap_av_list";
             $update_text = shell_exec($cmd);
         }
     }
@@ -307,14 +293,14 @@ if (!empty($_REQUEST['in_button_add'])) {
           . " delete $in_cn";
     $update_text = shell_exec($cmd);
     if (preg_match('/ERROR/', $update_text, $mat)) {
-        $_SESSION['in_msg'] .= warn_html($update_text);
+        set_warn($update_text);
     } else {
-        $_SESSION['in_msg'] .= ok_html($update_text);
+        set_ok($update_text);
     }
 
 } else {
 
-    $_SESSION['in_msg'] .= warn_html('invalid action');
+    set_warn('invalid action');
 
 }
 

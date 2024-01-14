@@ -41,10 +41,9 @@ if (empty($_REQUEST['in_cn']) || !empty($_REQUEST['in_button_reset'])) {
         $entry_found = 1;
         $info = $entries[$this_dn];
     } elseif ($ret_cnt > 1) {
-        $_SESSION['in_msg']
-            .= warn_html("More than one entry found for $link_filter search.");
+        set_warn("More than one entry found for $link_filter search.");
     } else {
-        $_SESSION['in_msg'] .= warn_html('No entry found.');
+        set_warn('No entry found.');
     }
 
     $chk_linkprivate_y = $chk_linkprivate_n = '';

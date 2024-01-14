@@ -8,6 +8,30 @@
 ##############################################################################
 
 # --------------------------------------------------------------
+# Add warning text to the session variable in_msg
+function set_warn ($txt) {
+    $htxt = warn_html($txt);
+    if (array_key_exists('in_msg', $_SESSION)) {
+        $_SESSION['in_msg'] .= $htxt;
+    } else {
+        $_SESSION['in_msg'] = $htxt;
+    }
+    return;
+}
+
+# --------------------------------------------------------------
+# Add ok text to the session variable in_msg
+function set_ok ($txt) {
+    $htxt = ok_html($txt);
+    if (array_key_exists('in_msg', $_SESSION)) {
+        $_SESSION['in_msg'] .= $htxt;
+    } else {
+        $_SESSION['in_msg'] = $htxt;
+    }
+    return;
+}
+
+# --------------------------------------------------------------
 # Format warning HTML
 function warn_html ($txt) {
     return '<font color="#cc0000">' . $txt . "</font><br>\n";
