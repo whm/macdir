@@ -17,12 +17,11 @@ if (empty($_REQUEST['in_cn']) || !empty($_REQUEST['in_button_reset'])) {
     $in_cn = $_REQUEST['in_cn'];
     $this_tgt = getenv('KRB5CCNAME');
 
-    $link_base = 'uid=' . krb_uid($_SERVER['REMOTE_USER'])
-               . ',' . $ldap_user_base;
+    $link_owner = $_SERVER['REMOTE_USER'];
     $link_filter = '(&(objectclass=' . $CONF['oc_link'] . ")(cn=$in_cn))";
 
     $cmd = 'KRB5CCNAME=' . $this_tgt . ' /usr/bin/macdir-pw-read'
-        . ' --base=' . $link_base
+        . ' --owner=' . $link_owner
         . ' --filter="' . $link_filter . '"';
     $ldap_json = shell_exec($cmd);
     $ret_cnt = 0;

@@ -231,7 +231,7 @@ if ( !empty($_SESSION['in_msg']) ) {
 
 <?php
 
-$link_base = "uid=${this_uid},${ldap_user_base}";
+$link_owner = getenv('REMOTE_USER');
 $base_filter .= $class_filter;
 $filter = '(&(objectclass=' . $CONF['oc_link'] . ')'. $base_filter. ')';
 $thisTgt = getenv('KRB5CCNAME');
@@ -244,7 +244,7 @@ $attr_list = array('cn',
 $attrs = implode(',', $attr_list);
 
 $cmd = 'KRB5CCNAME=' . $thisTgt . ' /usr/bin/macdir-pw-read'
-   . ' --base=' . $link_base
+   . ' --owner=' . $link_owner
    . ' --filter="' . $filter . '"'
    . ' --attrs=' . $attrs;
 $ldap_json = shell_exec($cmd);

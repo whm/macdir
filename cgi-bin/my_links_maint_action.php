@@ -102,8 +102,7 @@ $access_ids = ['read', 'write'];
 $in_dn = empty($_REQUEST['in_dn']) ? '' : $_REQUEST['in_dn'];
 $in_cn = empty($_REQUEST['in_cn']) ? '' : $_REQUEST['in_cn'];
 
-$link_base   = 'uid=' . krb_uid($_SERVER['REMOTE_USER']) . ','
-             . $ldap_user_base;
+$link_owner  = $_SERVER['REMOTE_USER'];
 $link_filter = '(&(objectclass=' . $CONF['oc_link'] . ")(cn=$in_cn))";
 
 $this_tgt = getenv('KRB5CCNAME');
@@ -123,7 +122,7 @@ if (!empty($_REQUEST['in_button_add'])) {
         $filter = '(&(objectclass=' . $CONF['oc_link'] . ")(cn=$in_cn))";
         $attrs = array ('cn');
         $cmd = 'KRB5CCNAME=' . $this_tgt . ' /usr/bin/macdir-pw-read'
-           . ' --base=' . $link_base
+           . ' --owner=' . $link_owner
            . ' --filter="' . $link_filter . '"'
            . ' --attrs=cn';
         $ldap_json = shell_exec($cmd);
@@ -171,6 +170,7 @@ if (!empty($_REQUEST['in_button_add'])) {
                     if (is_uid($a_user)) {
                         $ldap_av_list .= add_space($ldap_av_list);
                         $ldap_av_list .= "'$in_attr=$a_user'";
+                        set_ok("Adding $in_attr = $a_user");
                     } else {
                         set_warn("ERROR: Invalid UID $a_uid");
                     }
@@ -178,9 +178,15 @@ if (!empty($_REQUEST['in_button_add'])) {
                 }
             }
 
-            $cmd = 'KRB5CCNAME=' . $this_tgt . ' /usr/bin/macdir-pw-update'
+            $cmd = 'KRB5CCNAME=' . $this_tgt
+               . ' /usr/bin/macdir-pw-update'
+               . ' --owner=' . $link_owner
+               . ' --update'
                . " add $in_cn $ldap_av_list";
             $return_text = shell_exec($cmd);
+            if (preg_match('/ERROR/', $return_text)) {
+                set_warn($return_text);
+            }
         }
     }
 
@@ -196,7 +202,7 @@ if (!empty($_REQUEST['in_button_add'])) {
     } else {
 
         $cmd = 'KRB5CCNAME=' . $this_tgt . ' /usr/bin/macdir-pw-read'
-           . ' --base=' . $link_base
+           . ' --owner=' . $link_owner
            . ' --filter="' . $link_filter . '"';
         $ldap_json = shell_exec($cmd);
         $ret_cnt   = 0;
@@ -250,9 +256,13 @@ if (!empty($_REQUEST['in_button_add'])) {
                    // perform update
                    $new_data["$attr"] = $val_in;
                    $ldap_av_list .= add_space($ldap_av_list);
-                   $ldap_av_list .= "'${attr}/${val_ldap}'";
-                   $ldap_av_list .= ' ';
+                   if ($val_ldap) {
+                       $ldap_av_list .= "'${attr}/${val_ldap}'";
+                       $ldap_av_list .= ' ';
+                       set_ok("Deleting $attr = $val_ldap");
+                   }
                    $ldap_av_list .= "'${attr}=${val_in}'";
+                   set_ok("Adding $attr = $val_in");
                 }
             }
         }
@@ -266,9 +276,8 @@ if (!empty($_REQUEST['in_button_add'])) {
             while ($a_user) {
                 if (is_uid($a_user)) {
                     $ldap_av_list .= add_space($ldap_av_list);
-                    $ldap_av_list .= "'$in_attr/$a_user'";
-                    $ldap_av_list .= '';
                     $ldap_av_list .= "'$in_attr=$a_user'";
+                    set_ok("Adding $in_attr = $a_user");
                 } else {
                     set_warn("ERROR: Invalid UID $a_uid");
                 }
@@ -278,9 +287,15 @@ if (!empty($_REQUEST['in_button_add'])) {
 
         // -- perform the update
         if (strlen($ldap_av_list) > 0) {
-            $cmd = 'KRB5CCNAME=' . $this_tgt . ' /usr/bin/macdir-pw-update'
+            $cmd = 'KRB5CCNAME=' . $this_tgt
+               . ' /usr/bin/macdir-pw-update'
+               . ' --owner=' . $link_owner
+               . ' --update'
                . " update $in_cn $ldap_av_list";
             $update_text = shell_exec($cmd);
+            if (preg_match('/ERROR/', $update_text)) {
+                set_warn($update_text);
+            }
         }
     }
 } elseif (!empty($_REQUEST['in_button_delete'])) {
@@ -290,6 +305,8 @@ if (!empty($_REQUEST['in_button_add'])) {
     // -----------------------------------------------------
 
     $cmd = 'KRB5CCNAME=' . $this_tgt . ' /usr/bin/macdir-pw-update'
+          . ' --owner=' . $link_owner
+          . ' --update'
           . " delete $in_cn";
     $update_text = shell_exec($cmd);
     if (preg_match('/ERROR/', $update_text, $mat)) {

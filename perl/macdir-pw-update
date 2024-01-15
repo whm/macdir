@@ -22,6 +22,7 @@ my $opt_debug;
 my $opt_example;
 my $opt_help;
 my $opt_manual;
+my $opt_owner;
 my $opt_update;
 
 ##############################################################################
@@ -173,7 +174,7 @@ sub set_valid_attr_list {
                 my @a_list = split /\$/, $this_must_may;
                 for my $a (@a_list) {
                     $a =~ s/\s+//xmsg;
-                    $VALID_ATTR{$a} = 1;
+                    $VALID_ATTR{ lc($a) } = 1;
                 }
                 last;
             }
@@ -190,18 +191,17 @@ sub set_valid_attr_list {
 }
 
 #-------------------------------------------------------------------------
-# Find user dn given a user principal
+# Find user dn given either an owner or REMOTE_USER
 
 sub find_user_dn {
-    my ($id) = @_;
 
+    my $id;
     if ($ENV{'REMOTE_USER'}) {
         $id = $ENV{'REMOTE_USER'};
+    } elsif ($opt_owner) {
+        $id = $opt_owner;
     } else {
-        if (!$id) {
-            msg("ERROR: no user identifier specified");
-            return;
-        }
+        msg('ERROR: --owner or REMOTE_USER must be present');
     }
 
     my $base;
@@ -268,8 +268,8 @@ sub add_pw {
     );
     my $err = '';
     for my $av (@av_list) {
-        if ($av =~ /(\S+)=(.*)/xms) {
-            my $a = $1;
+        if ($av =~ /^([a-zA-Z0-9]+)=(.*)/xms) {
+            my $a = lc($1);
             my $v = $2;
             if (!$VALID_ATTR{$a}) {
                 $err .= "ERROR: invalid attribute $a\n";
@@ -360,8 +360,8 @@ sub update_pw {
             my $a;
             my $v;
             my $action;
-            if ($attr_mod =~ /(\S+)([=\/])(.*)/xms) {
-                $a      = $1;
+            if ($attr_mod =~ /^([a-zA-Z0-9]+)([=\/])(.*)/xms) {
+                $a      = lc($1);
                 $action = $2;
                 $v      = $3;
             } else {
@@ -479,6 +479,7 @@ GetOptions(
     'example' => \$opt_example,
     'help'    => \$opt_help,
     'manual'  => \$opt_manual,
+    'owner=s' => \$opt_owner,
     'update'  => \$opt_update
 );
 

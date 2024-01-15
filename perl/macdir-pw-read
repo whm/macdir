@@ -18,13 +18,13 @@ my $DEBUG_TIME = time();
 my $LDAP;
 
 my $opt_attrs;
-my $opt_base;
 my $opt_conf = '/etc/macdir/ldap.conf';
 my $opt_debug;
 my $opt_example;
 my $opt_filter;
 my $opt_help;
 my $opt_manual;
+my $opt_owner;
 
 ##############################################################################
 # Subroutines
@@ -127,11 +127,71 @@ sub read_conf {
     return $conf;
 }
 
+#-------------------------------------------------------------------------
+# Find user dn given either an owner or REMOTE_USER
+
+sub find_user_dn {
+
+    my $id;
+    if ($ENV{'REMOTE_USER'}) {
+        $id = $ENV{'REMOTE_USER'};
+    } elsif ($opt_owner) {
+        $id = $opt_owner;
+    } else {
+        msg('ERROR: --owner or REMOTE_USER must be present');
+    }
+
+    my $base;
+    my $filter;
+    my $scope;
+    if ($id =~ /\@/xms) {
+        $base   = $CONF->ldap_base;
+        $scope  = LDAP_SCOPE_SUBTREE;
+        $filter = "(&(objectClass=person)(krb5PrincipalName=$id))";
+    } elsif ($id =~ /=/xms) {
+        $base   = $id;
+        $scope  = LDAP_SCOPE_BASE;
+        $filter = '(objectClass=person)';
+    } else {
+        $base   = $CONF->ldap_base;
+        $scope  = LDAP_SCOPE_SUBTREE;
+        $filter = "(&(objectClass=person)(uid=$id))";
+    }
+    my @attrs       = ('objectClass');
+    my $this_search = "base:$base filter:$filter scope:$scope";
+    dbg($this_search);
+    my $msg = $LDAP->search_s(
+        -basedn    => $base,
+        -scope     => $scope,
+        -filter    => $filter,
+        -attrs     => \@attrs,
+        -attrsonly => 0,
+    );
+    if ($opt_debug && $LDAP->errno != 0) {
+        msg('errno: ' . $LDAP->errno . 'errstring:' . $LDAP->errstring);
+        $LDAP->perror("ERROR: problem searching using $this_search\n");
+    }
+
+    my %entries = %{ $LDAP->get_all_entries };
+
+    if (scalar(keys %entries) > 1) {
+        msg("ERROR: ambigious entry $this_search");
+        return;
+    }
+    my $this_dn;
+    for my $dn (keys %entries) {
+        $this_dn = $dn;
+    }
+    dbg("user dn:$this_dn");
+    return $this_dn;
+}
+
 # --------------------------------------------------------------------
 # Search for a secret
 
 sub link_search {
-    my ($base, $filter, $attr_string) = @_;
+    my ($filter, $attr_string) = @_;
+    my $base  = find_user_dn();
     my @attrs = ();
     if (length($attr_string) > 0) {
         @attrs = split(/,/, $attr_string);
@@ -166,13 +226,13 @@ sub link_search {
 # -- get options
 GetOptions(
     'attrs=s'  => \$opt_attrs,
-    'base=s'   => \$opt_base,
     'conf=s'   => \$opt_conf,
     'debug'    => \$opt_debug,
     'example'  => \$opt_example,
     'filter=s' => \$opt_filter,
     'help'     => \$opt_help,
-    'manual'   => \$opt_manual
+    'manual'   => \$opt_manual,
+    'owner=s'  => \$opt_owner
 );
 
 # -- Flush output immediately
@@ -225,10 +285,6 @@ if ($CONF->ldap_bindtype eq 'simple') {
     );
 }
 
-if (!$opt_base) {
-    $opt_base = $CONF->ldap_base;
-}
-
 if (!$opt_filter) {
     msg('ERROR: required --filter switch is missing');
     exit 1;
@@ -238,7 +294,7 @@ if ($opt_filter !~ /=/) {
     exit 1;
 }
 
-my $j = link_search($opt_base, $opt_filter, $opt_attrs);
+my $j = link_search($opt_filter, $opt_attrs);
 msg($j);
 
 $LDAP->unbind;
