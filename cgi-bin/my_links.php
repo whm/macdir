@@ -64,10 +64,9 @@ function display_links($edit_flag, $title, $entries) {
         $a_url_list = '&nbsp;';
         $a_url_attr = $CONF['attr_link_url'];
         if (array_key_exists($a_url_attr, $entry)) {
-            $url_list = explode(' ', $entry[$a_url_attr][0]);
             $a_br = '';
             $a_url_list = '';
-            foreach ($url_list as $u) {
+            foreach ($entry[$a_url_attr] as $u) {
                 $a_url_list .= $a_br
                     . '<a href="' . htmlentities($u) . '" target="_BLANK">'
                     . $u . '</a>';
@@ -78,10 +77,9 @@ function display_links($edit_flag, $title, $entries) {
         $a_pw_list = '&nbsp;';
         $a_pw_attr = $CONF['attr_cred'];
         if (array_key_exists($a_pw_attr, $entry)) {
-            $pw_list = explode(' ', $entry[$a_pw_attr][0]);
             $a_br = '';
             $a_pw_list = '';
-            foreach ($pw_list as $pw) {
+            foreach ($entry[$a_pw_attr] as $pw) {
                 $this_pat = '/^' . $CONF['key_prefix'] . '(.*)/';
                 if (!empty($CONF['key'])
                     && preg_match($this_pat, $pw, $m))
