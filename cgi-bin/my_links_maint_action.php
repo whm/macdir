@@ -181,8 +181,11 @@ if (!empty($_REQUEST['in_button_add'])) {
             $cmd = 'KRB5CCNAME=' . $this_tgt
                . ' /usr/bin/macdir-pw-update'
                . ' --owner=' . $link_owner
-               . ' --update'
-               . " add $in_cn $ldap_av_list";
+               . ' --update';
+            if ($CONF['perl_debug']) {
+                $cmd .= ' --debug';
+            }
+            $cmd .= " add $in_cn $ldap_av_list";
             $return_text = shell_exec($cmd);
             if (preg_match('/ERROR/', $return_text)) {
                 set_warn($return_text);
@@ -290,8 +293,11 @@ if (!empty($_REQUEST['in_button_add'])) {
             $cmd = 'KRB5CCNAME=' . $this_tgt
                . ' /usr/bin/macdir-pw-update'
                . ' --owner=' . $link_owner
-               . ' --update'
-               . " update $in_cn $ldap_av_list";
+               . ' --update';
+            if ($CONF['perl_debug']) {
+                $cmd .= ' --debug';
+            }
+            $cmd .= " update $in_cn $ldap_av_list";
             $update_text = shell_exec($cmd);
             if (preg_match('/ERROR/', $update_text)) {
                 set_warn($update_text);
@@ -306,8 +312,11 @@ if (!empty($_REQUEST['in_button_add'])) {
 
     $cmd = 'KRB5CCNAME=' . $this_tgt . ' /usr/bin/macdir-pw-update'
           . ' --owner=' . $link_owner
-          . ' --update'
-          . " delete $in_cn";
+          . ' --update';
+     if ($CONF['perl_debug']) {
+         $cmd .= ' --debug';
+     }
+    $cmd .= " delete $in_cn";
     $update_text = shell_exec($cmd);
     if (preg_match('/ERROR/', $update_text, $mat)) {
         set_warn($update_text);

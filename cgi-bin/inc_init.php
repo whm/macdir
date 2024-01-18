@@ -124,6 +124,8 @@ if (file_exists('/etc/macdir/config.php')) {
 }
 
 $CONF = array();
+$CONF['perl_debug'] = isset($perl_debug)
+    ? $perl_debug : '';
 $CONF['manager_mailbox'] = isset($ldap_manager_mailbox)
     ? $ldap_manager_mailbox : 'bill@ca-zephyr.org';
 
