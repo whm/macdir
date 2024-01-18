@@ -125,15 +125,19 @@ if (!empty($_REQUEST['in_button_add'])) {
            . ' --owner=' . $link_owner
            . ' --filter="' . $link_filter . '"'
            . ' --attrs=cn';
+        perl_debug("Executing: $cmd");
         $ldap_json = shell_exec($cmd);
         $ret_cnt = 0;
         $entries = array();
         if (isset($ldap_json) && strlen($ldap_json) > 0) {
+            perl_debug(strlen($ldap_json) . ' bytes returned');
             $entries = json_decode($ldap_json, true);
             foreach ($entries as $dn => $entry) {
                 $this_dn = $dn;
                 $ret_cnt++;
             }
+        } else {
+            perl_debug('0 bytes returned');
         }
 
         if ($ret_cnt>0) {
@@ -177,19 +181,20 @@ if (!empty($_REQUEST['in_button_add'])) {
                     $a_user = trim(strtok(','));
                 }
             }
-
             $cmd = 'KRB5CCNAME=' . $this_tgt
                . ' /usr/bin/macdir-pw-update'
                . ' --owner=' . $link_owner
                . ' --update';
+            $cmd .= " add $in_cn $ldap_av_list";
             if ($CONF['perl_debug']) {
                 $cmd .= ' --debug';
             }
-            $cmd .= " add $in_cn $ldap_av_list";
+            perl_debug("Executing: $cmd");
             $return_text = shell_exec($cmd);
             if (preg_match('/ERROR/', $return_text)) {
                 set_warn($return_text);
             }
+            perl_debug($return_text);
         }
     }
 
@@ -207,17 +212,21 @@ if (!empty($_REQUEST['in_button_add'])) {
         $cmd = 'KRB5CCNAME=' . $this_tgt . ' /usr/bin/macdir-pw-read'
            . ' --owner=' . $link_owner
            . ' --filter="' . $link_filter . '"';
+        perl_debug("Executing: $cmd");
         $ldap_json = shell_exec($cmd);
         $ret_cnt   = 0;
         $info      = array();
         $entries   = array();
         $err_msg   = '';
         if (isset($ldap_json) && strlen($ldap_json) > 0) {
+            perl_debug(strlen($ldap_json) . ' bytes returned');
             $entries = json_decode($ldap_json, true);
             foreach ($entries as $dn => $entry) {
                 $this_dn = $dn;
                 $ret_cnt++;
             }
+        } else {
+            perl_debug('0 bytes returned');
         }
         if ($ret_cnt == 1) {
             $entry_found = 1;
@@ -294,14 +303,16 @@ if (!empty($_REQUEST['in_button_add'])) {
                . ' /usr/bin/macdir-pw-update'
                . ' --owner=' . $link_owner
                . ' --update';
+            $cmd .= " update $in_cn $ldap_av_list";
             if ($CONF['perl_debug']) {
                 $cmd .= ' --debug';
             }
-            $cmd .= " update $in_cn $ldap_av_list";
+            perl_debug("Executing $cmd");
             $update_text = shell_exec($cmd);
             if (preg_match('/ERROR/', $update_text)) {
                 set_warn($update_text);
             }
+            perl_debug($update_text);
         }
     }
 } elseif (!empty($_REQUEST['in_button_delete'])) {
@@ -317,12 +328,15 @@ if (!empty($_REQUEST['in_button_add'])) {
          $cmd .= ' --debug';
      }
     $cmd .= " delete $in_cn";
+    perl_debug("Executing: $cmd");
+    
     $update_text = shell_exec($cmd);
     if (preg_match('/ERROR/', $update_text, $mat)) {
         set_warn($update_text);
     } else {
         set_ok($update_text);
     }
+    perl_debug($update_text);
 
 } else {
 

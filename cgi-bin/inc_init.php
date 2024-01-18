@@ -32,6 +32,17 @@ function set_ok ($txt) {
 }
 
 # --------------------------------------------------------------
+# Display perl debugging messages
+function perl_debug ($txt) {
+    global $CONF;
+    if (!$CONF['perl_debug']) {
+        return;
+    }
+    set_warn($txt . '<br/>');
+    return;
+}
+
+# --------------------------------------------------------------
 # Format warning HTML
 function warn_html ($txt) {
     return '<font color="#cc0000">' . $txt . "</font><br>\n";
