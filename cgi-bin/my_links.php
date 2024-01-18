@@ -86,7 +86,9 @@ function display_links($edit_flag, $title, $entries) {
                 {
                     $this_epw = $m[1];
                     $pw = macdir_decode($this_epw);
-                }
+                } else {
+		    $pw = '';
+		}
                 $a_pw_list .= $a_br . $pw;
                 $a_br = "<br/>\n";
             }
