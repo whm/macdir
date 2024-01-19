@@ -68,10 +68,22 @@ olcObjectClasses: {0}( 1.3.6.1.4.1.39513.2.1  NAME 'czPerson'  SUP top AUXILIA
  RY  MUST ( uid )  MAY ( czComments    $ czDisabledFlag    $ czMailAlias    $ 
  czMailDelivery    $ czMailDistributionID    $ czPrivilegeGroup    $ czWorkPho
  ne ) )
-olcObjectClasses: {1}( 1.3.6.1.4.1.39513.2.2  NAME 'czPersonNote'  SUP top STR
- UCTURAL  MUST ( cn ) MAY ( czcomments $ czCommentsVisibility $ czCredential $
-  description $ descriptionVisibility $ czCredential $ labeledUri     $ labele
- dUriVisibility $ uid $ uidVisibility $ czReadUID $ czWriteUID) )
+olcObjectClasses: {1}( 1.3.6.1.4.1.39513.2.2
+  NAME 'czPersonNote'
+  SUP top STRUCTURAL
+  MUST ( cn )
+  MAY ( czcomments $
+  czCommentsVisibility $
+  czCredential $
+  description $
+  descriptionVisibility $
+  czCredential $
+  labeledURI $
+  labeledUriVisibility $
+  uid $
+  uidVisibility $
+  czReadUID $
+  czWriteUID) )
 olcObjectClasses: {2}( 1.3.6.1.4.1.39513.2.3  NAME 'czSecurityObject'  SUP top
    STRUCTURAL  MUST ( cn )  MAY ( uid    $ czCredential    $ description $ krb
  5PrincipalName ) )

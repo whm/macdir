@@ -87,8 +87,8 @@ function display_links($edit_flag, $title, $entries) {
                     $this_epw = $m[1];
                     $pw = macdir_decode($this_epw);
                 } else {
-		    $pw = '';
-		}
+                    $pw = '';
+                }
                 $a_pw_list .= $a_br . $pw;
                 $a_br = "<br/>\n";
             }
@@ -243,10 +243,15 @@ $attr_list = array('cn',
                     $CONF['attr_link_visibility']);
 $attrs = implode(',', $attr_list);
 
-$cmd = 'KRB5CCNAME=' . $thisTgt . ' /usr/bin/macdir-pw-read'
-   . ' --owner=' . $link_owner
-   . ' --filter="' . $filter . '"'
-   . ' --attrs=' . $attrs;
+$cmd = '';
+if ($thisTgt) {
+    $cmd = 'KRB5CCNAME=' . $thisTgt;
+}
+$cmd .= ' /usr/bin/macdir-pw-read';
+$cmd .= ' --owner=' . $link_owner;
+$cmd .= ' --filter="' . $filter . '"';
+$cmd .= ' --attrs=' . $attrs;
+perl_debug($cmd);
 $ldap_json = shell_exec($cmd);
 if (isset($ldap_json) && strlen($ldap_json) > 0) {
     $entries = json_decode($ldap_json, true);
@@ -263,11 +268,16 @@ if (!empty($_SERVER['REMOTE_USER'])) {
                  . $base_filter
                  . $link_filter
                  . ')';
-    $ldap_json = shell_exec('KRB5CCNAME=' . $thisTgt
-	   . ' /home/mac/macdir-pw-read --conf=/etc/macdir/ldap.conf'
-	   . ' -b ' . $ldap_user_base
-	   . '"' . $filter . '"'
-	   . $attrs);
+    $cmd = '';
+    if ($thisTgt) {
+        $cmd = 'KRB5CCNAME=' . $thisTgt;
+    }
+    $cmd .= '/usr/bin/macdir-pw-read';
+    $cmd .= ' -b ' . $ldap_user_base;
+    $cmd .= '"' . $filter . '"';
+    $cmd .= $attrs;
+    perl_debug($cmd);
+    $ldap_json = shell_exec($cmd);
     if (isset($ldap_json) && strlen($ldap_json) > 0) {
         $entries = json_decode($ldap_json, true);
         display_links(0, 'Shared Links', $entries);
