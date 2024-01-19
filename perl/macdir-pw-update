@@ -170,11 +170,11 @@ sub set_valid_attr_list {
             if (!$this_name || !$this_must_may) {
                 next;
             }
-            if (lc($this_name) eq lc($note_oc)) {
+            if ($this_name eq $note_oc) {
                 my @a_list = split /\$/, $this_must_may;
                 for my $a (@a_list) {
                     $a =~ s/\s+//xmsg;
-                    $VALID_ATTR{ lc($a) } = 1;
+                    $VALID_ATTR{$a} = 1;
                 }
                 last;
             }
@@ -269,7 +269,7 @@ sub add_pw {
     my $err = '';
     for my $av (@av_list) {
         if ($av =~ /^([a-zA-Z0-9]+)=(.*)/xms) {
-            my $a = lc($1);
+            my $a = $1;
             my $v = $2;
             if (!$VALID_ATTR{$a}) {
                 $err .= "ERROR: invalid attribute $a\n";
@@ -361,7 +361,7 @@ sub update_pw {
             my $v;
             my $action;
             if ($attr_mod =~ /^([a-zA-Z0-9]+)([=\/])(.*)/xms) {
-                $a      = lc($1);
+                $a      = $1;
                 $action = $2;
                 $v      = $3;
             } else {

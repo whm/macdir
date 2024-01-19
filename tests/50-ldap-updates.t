@@ -556,17 +556,17 @@ $t_name = "Proposing to add a neds-test entry";
 $t_out = run_cmd(@t_cmd);
 @t_strs = (
     'VALID_ATTR\s+ =\s+ cn',
-    'VALID_ATTR\s+ =\s+ czcommentsvisibility',
-    'VALID_ATTR\s+ =\s+ czcredential',
-    'VALID_ATTR\s+ =\s+ czreaduid',
-    'VALID_ATTR\s+ =\s+ czwriteuid',
-    'VALID_ATTR\s+ =\s+ czcomments',
+    'VALID_ATTR\s+ =\s+ czCommentsVisibility',
+    'VALID_ATTR\s+ =\s+ czCredential',
+    'VALID_ATTR\s+ =\s+ czReadUID',
+    'VALID_ATTR\s+ =\s+ czWriteUID',
+    'VALID_ATTR\s+ =\s+ czComments',
     'VALID_ATTR\s+ =\s+ description',
-    'VALID_ATTR\s+ =\s+ descriptionvisibility',
-    'VALID_ATTR\s+ =\s+ labeleduri',
-    'VALID_ATTR\s+ =\s+ labeledurivisibility',
+    'VALID_ATTR\s+ =\s+ descriptionVisibility',
+    'VALID_ATTR\s+ =\s+ labeledUri',
+    'VALID_ATTR\s+ =\s+ labeledUriVisibility',
     'VALID_ATTR\s+ =\s+ uid',
-    'VALID_ATTR\s+ =\s+ uidvisibility',
+    'VALID_ATTR\s+ =\s+ uidVisibility',
     'action:\s+ add',
     'cn:\s+ neds-test',
     'Proposing\s+ to\s+ add\s+'
@@ -602,7 +602,7 @@ $t_name = "Update neds-test entry";
     );
 $t_out = run_cmd(@t_cmd);
 @t_strs = (
-    'Adding\s+ czcredential\s+ =\s+ othersecret',
+    'Adding\s+ czCredential\s+ =\s+ othersecret',
     );
 check_output_regex($t_name, \@t_cmd, $t_out, \@t_strs);
 
