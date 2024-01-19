@@ -238,6 +238,13 @@ GetOptions(
 # -- Flush output immediately
 local $| = 1;
 
+# -- Display environment variables when debugging
+if ($opt_debug) {
+    for my $key (sort keys %ENV) {
+        dbg("ENV: $key = %ENV{$key}");
+    }
+}
+
 # Display an example configuration file
 if ($opt_example) {
     example_conf();
