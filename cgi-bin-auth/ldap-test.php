@@ -1,43 +1,13 @@
+#!/usr/bin/php
 <?php
 
 # The auth credentials are not used that are in this file.  The only
 # think that is use is the ldap server and the ldap base.
 
-$thisUser = getenv('REMOTE_USER');
-$thisTgt = getenv('KRB5CCNAME');
-$thisServer = 'cz-ldap.ca-zephyr.org';
+$thisUser = krb_uid();
+$thisServer = $CONF['ldap_server'];
 
-echo "<h1>Kerberos Credentials</h1>\n";
-echo("REMOTEUSER: $thisUser<br>\n");
-echo("KRB5CCNAME: $thisTgt<br>\n");
-
-echo "<pre>\n";
-system("KRB5CCNAME=$thisTgt /usr/bin/klist");
-echo "</pre>\n";
-
-echo "<h1>Perl directory search</h1>\n";
-$json = shell_exec("KRB5CCNAME=$thisTgt /home/mac/macdir-pw-read --conf=/home/mac/macdir.conf");
-
-echo "$json<br/>\n";
-echo "<br/>\n";
-$entries = json_decode($json, true);
-var_dump($entries);
-
-echo "<br/>\n";
-echo "<br/>\n";
-echo "iterate over array<br/>\n";
-foreach ($entries as $dn => $entry) {
-    echo "<h2>dn: $dn</h2>\n";
-    foreach ($entry as $attr => $vals) {
-        echo "&nbsp; $attr<br/>\n";
-	foreach ($vals as $val) {
-            echo "&nbsp;&nbsp;&nbsp;&nbsp; $val<br/>\n";
-	}
-    }	
-}
-    
 # Bind to the directory Server
-echo "<h1>Bind to directory</h1>\n";
 $ldap = ldap_connect("ldap://$thisServer");
 if($ldap) {
     $r = ldap_bind($ldap);
@@ -48,11 +18,15 @@ if($ldap) {
 # Set an option
 ldap_set_option($ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
 
-echo "<h1>PHP ldap_sasl_bind</h1>\n";
+echo "<h1>Kerberos Credentials</h1>\n";
+echo "<pre>\n";
+system('klist');
+echo "</pre>\n";
+
 # Bind using the default kerberos credentials
 if (ldap_sasl_bind($ldap,"","","GSSAPI")) {
-    echo "Bind successful<br/>\n";
-    # Search the Directory
+
+        # Search the Directory
     $dn = $ldap_user_base;
     $filter = "(|(uid=$thisUser)(mail=$thisUser@*))";
     echo "<h1>LDAP Search</h1>\n";
@@ -85,5 +59,4 @@ if (ldap_sasl_bind($ldap,"","","GSSAPI")) {
 
 ldap_close($ldap);
 
-phpinfo();
 ?>

@@ -1,5 +1,6 @@
-perl/*    usr/bin
-cgi-bin/* usr/share/macdir/cgi-bin/auth
-images/*  usr/share/macdir/images
-styles/*  usr/share/macdir/styles
-conf/*    etc/macdir
+perl/*         usr/bin
+cgi-bin/*      usr/share/macdir/cgi-bin
+cgi-bin-auth/* usr/share/macdir/cgi-bin/auth
+images/*       usr/share/macdir/images
+styles/*       usr/share/macdir/styles
+conf/*         etc/macdir

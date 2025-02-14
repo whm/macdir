@@ -9,44 +9,31 @@ $heading = 'Link Maintenance';
 require('inc_init.php');
 require('inc_header.php');
 
-$this_dn = '';
+$ds = macdir_bind($CONF['ldap_server'], 'GSSAPI');
 
 if (empty($_REQUEST['in_cn']) || !empty($_REQUEST['in_button_reset'])) {
     $in_cn = '';
 } else {
     $in_cn = $_REQUEST['in_cn'];
-    $this_tgt = getenv('KRB5CCNAME');
 
-    $link_owner = $_SERVER['REMOTE_USER'];
+    $return_attr = array();
+    $link_base = 'uid=' . krb_uid($_SERVER['REMOTE_USER'])
+               . ',' . $ldap_user_base;
     $link_filter = '(&(objectclass=' . $CONF['oc_link'] . ")(cn=$in_cn))";
-
-    $cmd = 'KRB5CCNAME=' . $this_tgt . ' /usr/bin/macdir-pw-read'
-        . ' --owner=' . $link_owner
-        . ' --filter="' . $link_filter . '"';
-    $ldap_json = shell_exec($cmd);
-    $ret_cnt = 0;
-    $entries = array();
-    if (isset($ldap_json) && strlen($ldap_json) > 0) {
-        $entries = json_decode($ldap_json, true);
-        if (is_array($entries)) {
-            foreach ($entries as $dn => $entry) {
-                $this_dn = $dn;
-                $ret_cnt++;
-            }
-        }
-    }
-    $info = '';
+    $sr = @ldap_search ($ds, $link_base, $link_filter, $return_attr);
+    $info = @ldap_get_entries($ds, $sr);
+    $ret_cnt = $info["count"];
     if ($ret_cnt == 1) {
         $entry_found = 1;
-        $info = $entries[$this_dn];
-    } elseif ($ret_cnt > 1) {
-        set_warn("More than one entry found for $link_filter search.");
+    } elseif ($retcnt > 1) {
+        $_SESSION['in_msg']
+            .= warn_html("More than on entry found for $ldap_filter search.");
     } else {
-        set_warn('No entry found.');
+        $_SESSION['in_msg'] .= warn_html('No entry found.');
     }
 
     $chk_linkprivate_y = $chk_linkprivate_n = '';
-    if (is_array($info) && $info[ $CONF['attr_link_visibility'] ][0] == 'N') {
+    if ($info[0][ $CONF['attr_link_visibility'] ][0] == 'N') {
         $chk_linkprivate_n = 'CHECKED';
     } else {
         $chk_linkprivate_y = 'CHECKED';
@@ -107,35 +94,9 @@ function checkIt() {
     </p>
 </form>
 <?php
-// Display any messages and clear out the message variable once
-// messages are displayed.
 if (!empty($_SESSION['in_msg'])) {
     echo '<p>' . $_SESSION['in_msg'] . "</p>\n";
     $_SESSION['in_msg'] = '';
-}
-
-// Make sure we don't reference empty variables
-$a_cn       = '';
-$a_desc     = '';
-$a_link_url = '';
-$a_link_uid = '';
-$this_pw    = '';
-if (is_array($info)) {
-    $a_cn = empty($info['cn'][0]) ?
-        '' : trim($info['cn'][0]);
-    $a_desc = empty($info['description'][0]) ?
-        '' : trim($info['description'][0]);
-    $a_link_url = empty($info[ $CONF['attr_link_url'] ][0]) ?
-        '' : trim($info[ $CONF['attr_link_url'] ][0]);
-    $a_link_uid = empty($info[ $CONF['attr_link_uid'] ][0]) ?
-        '' : trim($info[ $CONF['attr_link_uid'] ][0]);
-    $this_pw = empty($info[ $CONF['attr_cred'] ][0]) ?
-        '' : trim($info[ $CONF['attr_cred'] ][0]);
-    $this_pat = '/^' . $CONF['key_prefix'] . '(.*)/';
-    if (!empty($CONF['key']) && preg_match($this_pat, $this_pw, $m)) {
-        $this_epw = $m[1];
-        $this_pw = macdir_decode($this_epw);
-    }
 }
 ?>
 <form name="maint"
@@ -145,13 +106,13 @@ if (is_array($info)) {
 
     <label for="in_description">Description:</label>
     <input type="text" name="in_description" size="60"
-             value="<?php echo $a_desc;?>">
+             value="<?php echo set_val($info[0]['description'][0]);?>">
     <br/>
 
     <label for "in_cn">Common Name:</label>
-<?php if (is_array($info) && !empty($info['cn'][0])) { ?>
-    <input type="hidden" name="in_cn" value="<?php echo $a_cn;?>">
-    <?php echo $info['cn'][0];?>
+<?php if ( !empty($info[0]['cn'][0]) ) { ?>
+    <input type="hidden" name="in_cn" value="<?php echo $info[0]['cn'][0];?>">
+    <?php echo $info[0]['cn'][0];?>
 <?php } else { ?>
     <input type="text" name="in_cn" value="">
 <?php } ?>
@@ -169,14 +130,22 @@ if (is_array($info)) {
 
     <label for "in_linkurl">URL:</label>
     <input type="text" size="50" name="in_linkurl"
-         value="<?php echo $a_link_url;?>">
+         value="<?php echo set_val($info[0][ $CONF['attr_link_url'] ][0]);?>">
     <br/>
 
     <label for="in_linkuid">Username:</label>
     <input type="text" size="50" name="in_linkuid"
-         value="<?php echo $a_link_uid;?>">
+         value="<?php echo set_val($info[0][ $CONF['attr_link_uid'] ][0]);?>">
     <br/>
 
+    <?php
+        $this_pw = set_val($info[0][ $CONF['attr_cred'] ][0]);
+        $this_pat = '/^' . $CONF['key_prefix'] . '(.*)/';
+        if (!empty($CONF['key']) && preg_match($this_pat, $this_pw, $m)) {
+            $this_epw = $m[1];
+            $this_pw = macdir_decode($this_epw);
+        }
+    ?>
     <label for="in_credential">Password:</label>
     <input type="password" size="50" name="in_credential"
       onkeyUp="document.getElementById('printbox').innerHTML = this.value"
@@ -190,25 +159,22 @@ if (is_array($info)) {
     foreach ($access_attrs as $a) {
       $a_attr = strtolower($CONF["attr_link_${a}"]);
       $a_new_var = 'in_new_' . strtolower($a);
-      $a_old_cnt = 0;
-      if (is_array($info) && array_key_exists($a_attr, $info)) {
-          $a_old_cnt = count($info[$a_attr]);
-      }
+      $a_old_cnt = empty($info[0][$a_attr]['count'])
+                 ? 0 : $info[0][$a_attr]['count'];
       $a_old_var = 'in_' . strtolower($a) . 'uid_cnt';
     ?>
       <br/>
       <input type="hidden"
              name="<?php echo $a_old_var; ?>"
-             value="<?php echo $a_old_cnt; ?>">
+         value="<?php echo $a_old_cnt; ?>">
       <label for="<?php echo $a_new_var; ?>"><?php echo $a; ?> Access:</label>
       <input type="text" size="50" name="<?php echo $a_new_var; ?>">
 
-      <?php if (is_array($info) && array_key_exists($a_attr, $info)
-                && count($info[$a_attr]) > 0) {
-        for ($i=0; $i<count($info[$a_attr]); $i++) {
+      <?php if ($info[0][$a_attr]['count'] > 0) {
+        for ($i=0; $i<$info[0][$a_attr]['count']; $i++) {
           $a_var     = 'in_' . strtolower($a) . "uid_${i}";
           $a_var_cur = 'in_' . strtolower($a) . "uid_current_${i}";
-          $v = $info[$a_attr][$i];
+          $v = $info[0][$a_attr][$i];
       ?>
           <br/>
           <label for="$a_var">&nbsp;</label>
@@ -225,7 +191,7 @@ if (is_array($info)) {
       <?php } ?>
     <?php } ?>
 
-<?php if (is_array($info) && array_key_exists('cn', $info)) {?>
+<?php if ( !empty($info[0]['cn'][0]) ) {?>
 
  <p>
   <input type="submit" name="in_button_update" value="Update">
@@ -240,11 +206,15 @@ if (is_array($info)) {
 
 <?php } ?>
 
-<?php if (!empty($this_dn)) { ?>
-<input type="hidden" name="in_dn" value="<?php echo $this_dn;?>">
+<?php if (!empty($info[0]['dn'])) { ?>
+<input type="hidden" name="in_dn" value="<?php echo $info[0]['dn'];?>">
 <?php } ?>
 
 </form>
+
+<?php
+ ldap_close($ds);
+?>
 
 </div>
 
