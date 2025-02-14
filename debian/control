@@ -1,4 +1,4 @@
-Source: macdir-simple
+Source: macdir
 Section: web
 Priority: optional
 Maintainer: Bill MacAllister <bill@ca-zephyr.org>
@@ -18,7 +18,7 @@ Build-Depends: debhelper (>= 12),
  slapd
 Standards-Version: 4.1.2
 
-Package: macdir-simple
+Package: macdir
 Architecture: all
 Depends: ${misc:Depends},
  apache2,
