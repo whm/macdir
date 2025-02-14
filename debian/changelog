@@ -1,9 +1,10 @@
-macdir-simple (5.0~rc1) unstable; urgency=medium
+macdir (5.0) unstable; urgency=medium
 
   * Remove dependence on WEBAUTH.  Assume REMOTE_USER is set.
     Trivialize the definition of the system administrator.
+  * Rename the package to macdir.
 
- -- Bill MacAllister <bill@ca-zephyr.org>  Mon, 20 Nov 2023 18:21:40 +0000
+ -- Bill MacAllister <bill@ca-zephyr.org>  Fri, 14 Feb 2025 20:20:20 +0000
 
 macdir-simple (4.6) unstable; urgency=medium
 
