@@ -1,0 +1,10 @@
+This is a collection of perl and PHP scripts to make updating an LDAP
+directory simple.  The scripts assume the ca-zephyr.org LDAP schema
+and that the directory updates require GSSAPI authentication.  The
+application was originally PHP only, but support for GSSAPI binds
+to LDAP where never well documented or stable and now just don't
+work.  All authenicated access to the directory uses PERL and PHP
+is used to interact with web users.
+
+This is a primitive application that suits the specific of the
+ca-zephyr.org infrastructure.
